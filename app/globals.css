@@ -11,6 +11,7 @@
   --line: #e1e4ea;
   --lav: #f0edf5;
   --danger: #b3452f;
+  --violet: #7c5cbf;
   --radius: 10px;
   --focus: #4b3868;
 }
@@ -292,14 +293,28 @@ details.fixed-costs[open] summary::before {
   flex: 0 0 auto;
   min-width: 44px;
 }
-.entry-battery {
+.battery-indicator {
   display: inline-flex;
   align-items: center;
   gap: 3px;
 }
 .battery-icon {
-  color: var(--plum-deep);
   flex: 0 0 auto;
+}
+.battery-icon.pulse {
+  animation: battery-pulse 1.2s ease-in-out infinite;
+}
+.battery-label {
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+@keyframes battery-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 .field-row input {
   width: 120px;
@@ -407,9 +422,16 @@ nav.tabs button:hover {
   background: var(--lav);
   color: var(--plum);
 }
+nav.tabs button.past {
+  color: var(--ink-soft);
+}
+nav.tabs button.future {
+  color: var(--violet);
+}
 nav.tabs button.active {
   color: var(--plum);
   background: var(--lav);
+  font-weight: 700;
 }
 nav.tabs button.active::after {
   content: "";
@@ -748,6 +770,9 @@ tfoot td {
   html {
     transition: none;
     scroll-behavior: auto;
+  }
+  .battery-icon.pulse {
+    animation: none;
   }
 }
 

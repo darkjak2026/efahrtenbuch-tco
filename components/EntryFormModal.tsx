@@ -120,7 +120,7 @@ export default function EntryFormModal({
               onChange={(e) => patch({ akkuVorher: e.target.value })}
             />
             <span className="slider-value">
-              <BatteryIcon percent={parseNum(form.akkuVorher)} /> {form.akkuVorher || 0}%
+              <BatteryIcon percent={parseNum(form.akkuVorher)} />
             </span>
           </div>
         </div>
@@ -136,7 +136,7 @@ export default function EntryFormModal({
               onChange={(e) => patch({ akkuNachher: e.target.value })}
             />
             <span className="slider-value">
-              <BatteryIcon percent={parseNum(form.akkuNachher)} /> {form.akkuNachher || 0}%
+              <BatteryIcon percent={parseNum(form.akkuNachher)} />
             </span>
           </div>
         </div>

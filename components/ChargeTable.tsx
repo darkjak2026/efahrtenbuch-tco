@@ -97,16 +97,8 @@ export default function ChargeTable({
               </div>
               <div className="entry-card-bottom">
                 {row.ladestation && <span className="entry-station">{row.ladestation}</span>}
-                {row.akkuVorher && (
-                  <span className="entry-battery">
-                    <BatteryIcon percent={parseNum(row.akkuVorher)} /> {row.akkuVorher}%
-                  </span>
-                )}
-                {row.akkuNachher && (
-                  <span className="entry-battery">
-                    <BatteryIcon percent={parseNum(row.akkuNachher)} /> {row.akkuNachher}%
-                  </span>
-                )}
+                {row.akkuVorher && <BatteryIcon percent={parseNum(row.akkuVorher)} />}
+                {row.akkuNachher && <BatteryIcon percent={parseNum(row.akkuNachher)} />}
                 {row.kwh && <span>{row.kwh} kWh</span>}
                 {row.dauer && <span>{row.dauer} h</span>}
               </div>
