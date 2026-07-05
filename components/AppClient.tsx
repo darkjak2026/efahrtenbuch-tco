@@ -8,6 +8,8 @@ import type { AppData } from "@/lib/types";
 import PinGate from "./PinGate";
 import TcoPanel from "./TcoPanel";
 import FixedCostsPanel from "./FixedCostsPanel";
+import CardsPanel from "./CardsPanel";
+import InvestmentsPanel from "./InvestmentsPanel";
 import MonthTabs from "./MonthTabs";
 import ChargeTable from "./ChargeTable";
 import AddEntryFab from "./AddEntryFab";
@@ -125,7 +127,7 @@ export default function AppClient() {
         </section>
 
         <div className="tco history-toggle-wrap">
-          <Collapsible title="📜 Historie" defaultOpen={false}>
+          <Collapsible title="🔌 Lade-Historie" defaultOpen={false}>
             <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
             <section className="panel">
               <ChargeTable
@@ -140,7 +142,19 @@ export default function AppClient() {
         </div>
 
         <section className="tco fixed-panel-card">
-          <Collapsible title="🧾 Fixkosten, Ladekarten & Investitionen" defaultOpen={false}>
+          <Collapsible title="💳 Ladekarten" defaultOpen={false}>
+            <CardsPanel data={data} updateData={updateData} />
+          </Collapsible>
+        </section>
+
+        <section className="tco fixed-panel-card">
+          <Collapsible title="🧰 Investitionen" defaultOpen={false}>
+            <InvestmentsPanel data={data} updateData={updateData} />
+          </Collapsible>
+        </section>
+
+        <section className="tco fixed-panel-card">
+          <Collapsible title="🧾 Fixkosten" defaultOpen={false}>
             <FixedCostsPanel data={data} updateData={updateData} />
           </Collapsible>
         </section>
