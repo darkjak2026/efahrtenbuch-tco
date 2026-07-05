@@ -114,12 +114,6 @@ export default function AppClient() {
 
       <main>
         <section className="tco">
-          <h2 className="section-title">
-            TCO &amp; Preis pro Kilometer{" "}
-            <span style={{ fontWeight: 400, color: "var(--ink-soft)", fontSize: 13 }}>
-              — läuft fortlaufend seit Erfassungsstart
-            </span>
-          </h2>
           <TcoPanel data={data} />
           <FixedCostsPanel data={data} updateData={updateData} />
         </section>

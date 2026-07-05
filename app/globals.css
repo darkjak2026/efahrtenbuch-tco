@@ -22,7 +22,8 @@ html {
 }
 body {
   margin: 0;
-  background: var(--bg);
+  background: linear-gradient(180deg, var(--plum-deep) 0%, var(--plum) 35%, #dce8f2 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
