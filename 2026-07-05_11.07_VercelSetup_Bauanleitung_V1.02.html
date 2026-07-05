@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkliste · Vercel-Setup Ladeprotokoll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F5F7; --panel:#FFFFFF; --ink:#1E2027; --ink-soft:#5B6270;
+    --plum:#4B3868; --plum-deep:#352849; --glacier:#6FA8C7; --glacier-deep:#3E7A9B;
+    --teal:#2F8C6E; --line:#E1E4EA; --lav:#F0EDF5; --radius:10px; --focus:#4B3868;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter', system-ui, sans-serif; -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  :focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+
+  header.top{
+    background: linear-gradient(120deg, var(--plum-deep), var(--plum) 60%, var(--glacier-deep));
+    color:#fff; padding: 28px clamp(16px,4vw,48px) 30px; position:relative; overflow:hidden;
+  }
+  header.top::after{
+    content:""; position:absolute; right:-40px; top:-60px; width:220px; height:220px;
+    border-radius:50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.16), transparent 70%);
+  }
+  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; opacity:.75; margin:0 0 6px; }
+  h1{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size: clamp(22px,3.2vw,30px); margin:0; letter-spacing:-0.01em; }
+  .sub{ margin-top:10px; font-size:14px; opacity:.9; max-width:640px; }
+
+  main{ max-width: 900px; margin: -16px auto 0; padding: 0 clamp(16px,4vw,48px); }
+
+  .progress-wrap{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 20px; margin-bottom:18px;
+  }
+  .progress-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .progress-top .label{ font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600; }
+  .progress-top .value{ font-family:'JetBrains Mono', monospace; font-weight:700; color:var(--plum-deep); font-size:18px; }
+  .track{ height:12px; background:#E4DEEC; border-radius:6px; overflow:hidden; }
+  .fill{ height:100%; background: linear-gradient(90deg, var(--glacier-deep), var(--plum)); width:0%; transition: width .4s ease; border-radius:6px; }
+
+  section.step{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    margin-bottom:14px; overflow:hidden;
+  }
+  .step-head{
+    display:flex; align-items:center; gap:12px; padding:16px 18px;
+    background: var(--lav); cursor:pointer;
+  }
+  .step-head .idx{
+    font-family:'JetBrains Mono', monospace; font-weight:700; color:#fff;
+    background: var(--plum); width:28px; height:28px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; font-size:13px; flex:0 0 auto;
+  }
+  .step-head h2{ font-family:'Space Grotesk', sans-serif; font-size:15.5px; margin:0; color:var(--plum-deep); flex:1; }
+  .step-head .count{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-soft); }
+  .step-head .chev{ transition: transform .15s; color:var(--ink-soft); }
+  section.step.open .chev{ transform: rotate(90deg); }
+  .step-body{ display:none; padding: 6px 18px 18px; }
+  section.step.open .step-body{ display:block; }
+
+  .item{
+    display:flex; gap:12px; align-items:flex-start; padding:11px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .item:last-child{ border-bottom:none; }
+  .item input[type=checkbox]{
+    width:19px; height:19px; margin-top:2px; accent-color: var(--plum); flex:0 0 auto; cursor:pointer;
+  }
+  .item .txt{ flex:1; }
+  .item .txt p{ margin:0 0 4px; font-size:14px; }
+  .item.done .txt p{ color: var(--ink-soft); text-decoration: line-through; }
+  code.cmd{
+    display:block; background:#1E2027; color:#D9E6EA; font-family:'JetBrains Mono', monospace;
+    font-size:12.5px; padding:8px 10px; border-radius:6px; margin-top:5px; overflow-x:auto; white-space:pre;
+  }
+  .note{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+
+  .reset-bar{ text-align:center; margin-top:22px; }
+  .btn-reset{
+    border:1px solid var(--line); background:#fff; color:var(--ink-soft); border-radius:8px;
+    padding:9px 16px; font-size:13px; cursor:pointer;
+  }
+  .btn-reset:hover{ border-color: var(--plum); color: var(--plum); }
+
+  @media (prefers-reduced-motion: reduce){ .fill{ transition:none; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <p class="eyebrow">Familie Liese-Held · Setup-Anleitung</p>
+  <h1>Vercel-Umzug: Ladeprotokoll &amp; TCO</h1>
+  <p class="sub">Zum Abhaken — jeder Schritt bleibt gespeichert, auch wenn du die Seite schließt und später weitermachst.</p>
+</header>
+
+<main>
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="label">Fortschritt</span>
+      <span class="value" id="progressValue">0 / 0</span>
+    </div>
+    <div class="track"><div class="fill" id="progressFill"></div></div>
+  </div>
+
+  <div id="stepsWrap"></div>
+
+  <div class="reset-bar">
+    <button class="btn-reset" id="resetBtn">Fortschritt zurücksetzen</button>
+  </div>
+</main>
+
+<script>
+const STORAGE_KEY = "vercel_setup_checklist_v1";
+
+const STEPS = [
+  {
+    title: "A · Voraussetzungen",
+    items: [
+      { t: "Node.js ist installiert (Version 18 oder neuer).", cmd: "node -v" },
+      { t: "Ein GitHub-Account existiert." },
+      { t: "Ein Vercel-Account existiert und ist mit GitHub verbunden (vercel.com → Sign up with GitHub)." },
+      { t: "Claude Code ist installiert.", cmd: "npm install -g @anthropic-ai/claude-code", note: "Genauer Befehl kann sich ändern — im Zweifel die aktuelle Anthropic-Doku prüfen." }
+    ]
+  },
+  {
+    title: "B · Projekt mit Claude Code aufsetzen",
+    items: [
+      { t: "Projektordner angelegt und hineingewechselt.", cmd: "mkdir efahrtenbuch-tco && cd efahrtenbuch-tco" },
+      { t: "Git-Repo initialisiert und einen Sicherungs-Commit gemacht, bevor Claude Code lostippt.", cmd: "git init && git add -A && git commit -m \"Vor Claude Code Start\"", note: "Wichtig als Rückfallebene, falls im nächsten Schritt etwas schiefgeht." },
+      { t: "Die Datei „2026-07-05_11.00_ClaudeCode_VercelSetup_V1.03.md“ in diesen Ordner gelegt." },
+      { t: "Claude Code im durchlaufenden Modus gestartet (kein sudo/root verwenden).", cmd: "claude --dangerously-skip-permissions", note: "Läuft ohne Rückfragen durch — dafür ohne das übliche Sicherheitsnetz. Nur nutzen, weil vorher committet wurde. Bei Unsicherheit stattdessen einfach \"claude\" starten und Rückfragen einzeln bestätigen." },
+      { t: "Claude Code gebeten, die .md-Datei als Bauplan zu lesen und die Next.js-App inkl. API-Routen umzusetzen." },
+      { t: "Claude Code hat die Grundstruktur fertiggestellt (Next.js-App, API-Routen, Komponenten)." }
+    ]
+  },
+  {
+    title: "C · Online-Speicher einrichten (Upstash Redis via Vercel Marketplace)",
+    items: [
+      { t: "Projekt mit dem eigenen Vercel-Account verknüpft.", cmd: "vercel link" },
+      { t: "Im Vercel-Dashboard eine Upstash-Redis-Instanz aus dem Marketplace hinzugefügt und mit dem Projekt verbunden (Storage → Marketplace Database Integrations → Upstash Redis). Ein eigenständiges „Vercel KV“ gibt es nicht mehr — das ist der aktuelle Nachfolger." },
+      { t: "Umgebungsvariablen lokal gezogen.", cmd: "vercel env pull .env.local" },
+      { t: "Eigene PIN als Umgebungsvariable LADEPROTOKOLL_PIN in Vercel gesetzt (Dashboard → Settings → Environment Variables)." }
+    ]
+  },
+  {
+    title: "D · Lokal testen",
+    items: [
+      { t: "Abhängigkeiten installiert.", cmd: "npm install" },
+      { t: "Lokalen Server gestartet.", cmd: "npm run dev" },
+      { t: "Im Browser unter localhost getestet: einen Ladevorgang angelegt, TCO-Karten geprüft." },
+      { t: "GPS-Button lokal ausprobiert.", note: "Ohne HTTPS funktioniert die Standortabfrage evtl. nicht — das ist normal und klärt sich nach dem Deployment." }
+    ]
+  },
+  {
+    title: "E · Deployment",
+    items: [
+      { t: "Live geschaltet.", cmd: "vercel --prod" },
+      { t: "Die ausgegebene Live-URL im Browser geöffnet." },
+      { t: "PIN-Abfrage beim Aufruf funktioniert wie erwartet." },
+      { t: "Testeintrag über die Live-URL angelegt und nach Reload noch vorhanden." }
+    ]
+  },
+  {
+    title: "F · Mit Anja teilen",
+    items: [
+      { t: "Live-Link an Anja geschickt." },
+      { t: "PIN über einen anderen Kanal als den Link an Anja geschickt (z.B. Link per Messenger, PIN per SMS oder mündlich)." },
+      { t: "Gemeinsamer Test: Anja legt einen Eintrag an, Jakob sieht ihn nach Reload auf seinem Gerät." }
+    ]
+  },
+  {
+    title: "G · Absicherung",
+    items: [
+      { t: "Der bisherige lokale Stand (aus der alten HTML-Version) einmal als JSON exportiert und sicher abgelegt." },
+      { t: "Live-URL notiert (z.B. in den Notizen oder als Lesezeichen)." },
+      { t: "Optional: eigene Domain in Vercel mit dem Projekt verbunden (Settings → Domains)." }
+    ]
+  }
+];
+
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ return {}; }
+}
+function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let state = loadState();
+let openSections = new Set([0]);
+
+function itemKey(si, ii){ return si + "_" + ii; }
+
+function render(){
+  const wrap = document.getElementById("stepsWrap");
+  wrap.innerHTML = "";
+  let total = 0, done = 0;
+
+  STEPS.forEach((step, si) => {
+    const sec = document.createElement("section");
+    sec.className = "step" + (openSections.has(si) ? " open" : "");
+
+    const stepDone = step.items.filter((_, ii) => state[itemKey(si,ii)]).length;
+    total += step.items.length; done += stepDone;
+
+    const head = document.createElement("div");
+    head.className = "step-head";
+    head.innerHTML = `
+      <div class="idx">${si+1}</div>
+      <h2>${step.title}</h2>
+      <span class="count">${stepDone}/${step.items.length}</span>
+      <span class="chev">▸</span>
+    `;
+    head.addEventListener("click", () => {
+      if(openSections.has(si)) openSections.delete(si); else openSections.add(si);
+      render();
+    });
+
+    const body = document.createElement("div");
+    body.className = "step-body";
+    step.items.forEach((item, ii) => {
+      const key = itemKey(si, ii);
+      const row = document.createElement("div");
+      row.className = "item" + (state[key] ? " done" : "");
+      const cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = !!state[key];
+      cb.addEventListener("change", e => { state[key] = e.target.checked; saveState(state); render(); });
+      const txt = document.createElement("div");
+      txt.className = "txt";
+      let html = `<p>${item.t}</p>`;
+      if(item.cmd) html += `<code class="cmd">${item.cmd}</code>`;
+      if(item.note) html += `<div class="note">${item.note}</div>`;
+      txt.innerHTML = html;
+      row.append(cb, txt);
+      body.appendChild(row);
+    });
+
+    sec.append(head, body);
+    wrap.appendChild(sec);
+  });
+
+  document.getElementById("progressValue").textContent = `${done} / ${total}`;
+  document.getElementById("progressFill").style.width = total ? `${Math.round(done/total*100)}%` : "0%";
+}
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if(confirm("Wirklich den gesamten Fortschritt zurücksetzen?")){
+    state = {}; saveState(state); render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>

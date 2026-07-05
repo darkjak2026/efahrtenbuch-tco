@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eFahrtenbuch⚡TCO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root{
+    --bg: #F3F5F7;
+    --panel: #FFFFFF;
+    --ink: #1E2027;
+    --ink-soft: #5B6270;
+    --plum: #4B3868;
+    --plum-deep: #352849;
+    --glacier: #6FA8C7;
+    --glacier-deep: #3E7A9B;
+    --teal: #2F8C6E;
+    --line: #E1E4EA;
+    --lav: #F0EDF5;
+    --danger: #B3452F;
+    --radius: 10px;
+    --focus: #4B3868;
+  }
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 60px;
+  }
+  a, button, input, select, summary { font-family: inherit; }
+  :focus-visible{ outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  header.top{
+    background: linear-gradient(120deg, var(--plum-deep), var(--plum) 60%, var(--glacier-deep));
+    color: #fff;
+    padding: clamp(14px,3vw,20px) clamp(16px, 4vw, 48px);
+    position: relative;
+    overflow: hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; right:-40px; top:-60px;
+    width:220px; height:220px; border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.16), transparent 70%);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:11px;
+    letter-spacing:.14em; text-transform:uppercase; opacity:.75; margin:0 0 4px;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size: clamp(20px, 3vw, 28px); margin:0; letter-spacing:-0.01em;
+  }
+  h2.section-title{
+    font-family:'Space Grotesk', sans-serif; font-size:17px; font-weight:600;
+    color: var(--plum-deep); margin: 0 0 14px;
+  }
+  .fleet{ display:flex; gap:16px; margin-top:8px; flex-wrap:wrap; font-size:12px; opacity:.9; }
+  .fleet span{ display:flex; align-items:center; gap:6px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .dot.b10{ background:#B98FCB; box-shadow:0 0 0 3px rgba(185,143,203,.25); }
+  .dot.t03{ background:#8FC6E0; box-shadow:0 0 0 3px rgba(143,198,224,.25); }
+  .dot.house{ background:#E8B85A; box-shadow:0 0 0 3px rgba(232,184,90,.25); }
+
+  main{ max-width: 1180px; margin: -18px auto 0; padding: 0 clamp(16px, 4vw, 48px); }
+
+  /* ---- TCO panel ---- */
+  section.tco{
+    background: var(--panel); border:1px solid var(--line); border-radius: var(--radius);
+    padding: 22px clamp(14px,3vw,28px); margin-bottom: 20px;
+  }
+  .tco-cards{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:14px;
+  }
+  .tco-card{
+    border-radius:10px; padding:16px 16px 14px; position:relative; overflow:hidden;
+    background: var(--lav);
+  }
+  .tco-card.house{ background: linear-gradient(150deg, #FBF3E3, #F3E6C8); }
+  .tco-card .name{ display:flex; align-items:center; gap:8px; font-weight:600; font-size:13px; margin-bottom:10px; color:var(--plum-deep); }
+  .tco-card .kmpreis{
+    font-family:'JetBrains Mono', monospace; font-size:26px; font-weight:700; color:var(--plum-deep);
+    line-height:1.1;
+  }
+  .tco-card .kmpreis small{ font-size:13px; font-weight:500; color:var(--ink-soft); }
+  .tco-card .sub{ font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.6; }
+  .tco-card .sub b{ color:var(--ink); font-family:'JetBrains Mono', monospace; font-weight:600; }
+  .tco-card .warn{ font-size:11px; color:var(--danger); margin-top:8px; }
+
+  /* ---- collapsible fixed-cost section (deliberately quieter) ---- */
+  details.fixed-costs{
+    margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 14px;
+  }
+  details.fixed-costs summary{
+    cursor:pointer; font-size:13px; font-weight:600; color: var(--ink-soft);
+    list-style:none; display:flex; align-items:center; gap:6px;
+  }
+  details.fixed-costs summary::-webkit-details-marker{ display:none; }
+  details.fixed-costs summary::before{ content:"▸"; transition: transform .15s; display:inline-block; }
+  details.fixed-costs[open] summary::before{ transform: rotate(90deg); }
+  .fixed-grid{ margin-top: 16px; display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:18px; }
+  .fixed-box{ background:#FAFAFB; border:1px solid var(--line); border-radius:8px; padding:14px; }
+  .fixed-box h3{ font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin:0 0 10px; }
+  .fixed-box p.hint{ font-size:11px; color:var(--ink-soft); margin:6px 0 0; line-height:1.5; }
+  .field-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; }
+  .field-row label{ flex:1; color:var(--ink-soft); }
+  .field-row input{ width:120px; }
+  .small-table{ width:100%; font-size:12.5px; border-collapse:collapse; }
+  .small-table th{ text-align:left; color:var(--ink-soft); font-weight:600; padding:4px 4px; border-bottom:1px solid var(--line); }
+  .small-table td{ padding:4px 4px; }
+  .small-table input, .small-table select{ font-size:12.5px; padding:5px 6px; }
+  .mini-del{ border:none; background:transparent; color:var(--danger); cursor:pointer; font-size:14px; }
+  .add-mini{ margin-top:8px; background:none; border:1px dashed var(--line); color:var(--plum); border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; }
+  .card-chip{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:5px 6px 5px 10px; font-size:12px; margin:0 6px 6px 0; }
+  .card-chip button{ border:none; background:var(--lav); color:var(--danger); border-radius:50%; width:18px; height:18px; cursor:pointer; font-size:11px; line-height:1; }
+  .card-chip input{ width:64px; font-size:11px; padding:2px 4px; border:1px solid var(--line); border-radius:4px; }
+  .add-card-row{ display:flex; gap:6px; margin-top:8px; }
+  .add-card-row input{ flex:1; }
+
+  /* ---- charging log ---- */
+  nav.tabs{
+    display:flex; gap:6px; overflow-x:auto; background: var(--panel);
+    border-radius: var(--radius) var(--radius) 0 0; padding: 10px 10px 0;
+    border: 1px solid var(--line); border-bottom:none; scrollbar-width: thin;
+  }
+  nav.tabs button{
+    border:none; background:transparent; padding: 12px 18px; font-weight:600; font-size:14px;
+    color: var(--ink-soft); cursor:pointer; border-radius: 8px 8px 0 0; white-space:nowrap; position:relative;
+  }
+  nav.tabs button:hover{ background: var(--lav); color:var(--plum); }
+  nav.tabs button.active{ color: var(--plum); background: var(--lav); }
+  nav.tabs button.active::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:3px; background: var(--plum); border-radius:3px 3px 0 0; }
+
+  section.panel{ background: var(--panel); border: 1px solid var(--line); border-radius: 0 0 var(--radius) var(--radius); padding: 22px clamp(14px, 3vw, 28px) 28px; }
+
+  .summary-row{ display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .stat{ background: var(--lav); border-radius: 10px; padding: 14px 16px; }
+  .stat .label{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; color: var(--ink-soft); font-weight:600; margin-bottom:6px; }
+  .stat .value{ font-family:'JetBrains Mono', monospace; font-size: 22px; font-weight:600; color: var(--plum-deep); }
+  .bar-wrap{ grid-column: 1 / -1; background: var(--lav); border-radius:10px; padding: 14px 16px; }
+  .bar-wrap .label{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; margin-bottom:10px;}
+  .bar-track{ height:14px; background:#E4DEEC; border-radius:7px; overflow:hidden; }
+  .bar-fill{ height:100%; background: linear-gradient(90deg, var(--glacier-deep), var(--plum)); border-radius:7px; transition: width .5s ease; width:0%; }
+  .bar-caption{ font-size:12px; color:var(--ink-soft); margin-top:6px; font-family:'JetBrains Mono', monospace;}
+
+  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+  table{ width:100%; border-collapse: collapse; min-width: 1080px; }
+  .locate-btn{ border:1px solid var(--line); background:#fff; border-radius:6px; padding:6px 8px; cursor:pointer; font-size:13px; flex:0 0 auto; }
+  .locate-btn:hover{ border-color: var(--plum); }
+  .locate-btn.busy{ opacity:.5; cursor:wait; }
+  .station-cell{ display:flex; gap:5px; align-items:center; }
+  .station-cell input{ flex:1; }
+  thead th{ background: var(--plum-deep); color:#fff; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; padding: 11px 8px; text-align:left; position:sticky; top:0; }
+  tbody td{ padding: 6px 7px; border-bottom: 1px solid var(--line); font-size:13.5px; }
+  tbody tr:nth-child(even){ background: #FAFAFC; }
+  tbody tr:hover{ background: var(--lav); }
+  input[type=date], input[type=text], input[type=number], select{
+    width:100%; border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px; font-size: 13.5px; background:#fff; color: var(--ink);
+  }
+  input[type=number], td.num input{ font-family:'JetBrains Mono', monospace; }
+  select{ cursor:pointer; }
+  td.actions{ text-align:center; width:34px; }
+  .del-btn{ border:none; background:transparent; color: var(--danger); cursor:pointer; font-size:16px; padding:4px 6px; border-radius:6px; }
+  .del-btn:hover{ background:#F6E4DF; }
+
+  tfoot td{ padding: 10px 8px; font-weight:700; background: var(--lav); font-family:'JetBrains Mono', monospace; color: var(--plum-deep); border-top: 2px solid var(--plum); }
+
+  .toolbar{ display:flex; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; gap:10px; }
+  .btn{ border:none; border-radius:8px; padding:10px 16px; font-weight:600; font-size:14px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .btn-primary{ background: var(--plum); color:#fff; }
+  .btn-primary:hover{ background: var(--plum-deep); }
+  .btn-ghost{ background:#fff; color: var(--plum); border:1px solid var(--line); }
+  .btn-ghost:hover{ border-color: var(--plum); }
+
+  .io-bar{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 26px; padding-top:18px; border-top: 1px dashed var(--line); align-items:center; }
+  .io-note{ font-size:12px; color: var(--ink-soft); max-width: 460px; }
+  #importFile{ display:none; }
+
+  .toast{
+    position: fixed; bottom: 22px; left:50%; transform: translateX(-50%) translateY(20px);
+    background: var(--plum-deep); color:#fff; padding: 11px 20px; border-radius: 8px;
+    font-size:13px; opacity:0; pointer-events:none; transition: opacity .25s, transform .25s;
+    font-family:'JetBrains Mono', monospace; max-width: 90vw; text-align:center; z-index: 999;
+  }
+  .toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce){ .bar-fill, html{ transition:none; scroll-behavior:auto; } }
+
+  /* ---- Responsive: main charging table becomes stacked cards below 720px ---- */
+  @media (max-width: 720px){
+    main{ padding: 0 12px; }
+    section.tco, section.panel{ padding: 16px; }
+    .tco-cards{ grid-template-columns: 1fr; }
+    .summary-row{ grid-template-columns: 1fr 1fr; }
+
+    .table-scroll{ overflow: visible; border:none; border-radius:0; }
+    table{ min-width: 0; width:100%; }
+    thead{ display:none; }
+    tbody, tr, td{ display:block; width:100%; }
+    tbody tr{
+      background:#fff; border:1px solid var(--line); border-radius:10px;
+      margin-bottom:12px; padding:6px 10px; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    tbody tr:nth-child(even){ background:#fff; }
+    tbody td{
+      border-bottom: 1px dashed var(--line); padding:8px 0;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    tbody td:last-child{ border-bottom:none; }
+    tbody td::before{
+      content: attr(data-label); font-size:10.5px; font-weight:700; text-transform:uppercase;
+      color:var(--ink-soft); letter-spacing:.04em; flex: 0 0 84px;
+    }
+    tbody td.num, tbody td select, tbody td input{ text-align:right; }
+    td.actions{ justify-content:flex-end !important; }
+    td.actions::before{ content:none; }
+    .station-cell{ flex:1; justify-content:flex-end; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <p class="eyebrow">Familie Liese-Held · Halle (Saale)</p>
+  <h1>eFahrtenbuch⚡TCO</h1>
+  <p class="sub" style="margin:4px 0 0; font-size:13px; opacity:.85;">Total Cost of Ownership für B10 &amp; T03</p>
+  <div class="fleet">
+    <span><i class="dot b10"></i> B10 — Dawn Purple</span>
+    <span><i class="dot t03"></i> T03 — Glacier Blue</span>
+    <span><i class="dot house"></i> Haushalt gesamt</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="tco">
+    <h2 class="section-title">TCO &amp; Preis pro Kilometer <span style="font-weight:400;color:var(--ink-soft);font-size:13px;">— läuft fortlaufend seit Erfassungsstart</span></h2>
+    <div class="tco-cards" id="tcoCards"></div>
+
+    <details class="fixed-costs" id="fixedCostsDetails">
+      <summary>Fixkosten, Ladekarten &amp; Investitionen erfassen</summary>
+      <div class="fixed-grid">
+
+        <div class="fixed-box">
+          <h3>Leapmotor B10 — Fixkosten</h3>
+          <div class="field-row"><label for="b10_leasing">Leasingrate € / Monat</label><input type="number" step="0.01" id="b10_leasing"></div>
+          <div class="field-row"><label for="b10_versicherung">Versicherung € / Monat</label><input type="number" step="0.01" id="b10_versicherung"></div>
+          <div class="field-row"><label for="b10_start">Übergabedatum</label><input type="date" id="b10_start"></div>
+        </div>
+
+        <div class="fixed-box">
+          <h3>Leapmotor T03 — Fixkosten</h3>
+          <div class="field-row"><label for="t03_leasing">Leasingrate € / Monat</label><input type="number" step="0.01" id="t03_leasing"></div>
+          <div class="field-row"><label for="t03_versicherung">Versicherung € / Monat</label><input type="number" step="0.01" id="t03_versicherung"></div>
+          <div class="field-row"><label for="t03_start">Übergabedatum</label><input type="date" id="t03_start"></div>
+        </div>
+
+        <div class="fixed-box" style="grid-column: 1 / -1;">
+          <h3>Ladekarten &amp; Tarife verwalten</h3>
+          <div id="cardChips"></div>
+          <div class="add-card-row">
+            <input type="text" id="newCardName" placeholder="Neue Karte / Lademöglichkeit, z.B. Wallbox zuhause">
+            <button class="add-mini" id="addCard">+ hinzufügen</button>
+          </div>
+          <p class="hint">Optionaler €/kWh-Tarif pro Karte (z.B. für "Zuhause"): wird beim Ausfüllen einer Ladezeile automatisch als Preisvorschlag genutzt, sobald kWh eingetragen ist und das Preisfeld noch leer ist — überschreibt nie einen bereits eingetragenen Preis.</p>
+        </div>
+
+        <div class="fixed-box" style="grid-column: 1 / -1;">
+          <h3>Wiederkehrende Kosten (Abos, Stromtarif-Grundgebühr, Apps, finanzierte Wallbox, …)</h3>
+          <div style="overflow-x:auto;">
+          <table class="small-table" style="min-width:480px;">
+            <thead><tr><th>Beschreibung</th><th style="width:100px;">Fahrzeug</th><th style="width:90px;">€ / Monat</th><th style="width:110px;">seit</th><th style="width:30px;"></th></tr></thead>
+            <tbody id="recurringBody"></tbody>
+          </table>
+          </div>
+          <button class="add-mini" id="addRecurring">+ Position hinzufügen</button>
+          <div class="field-row" style="margin-top:10px;"><label for="erfassungStart">Standard-Startdatum (falls oben kein Datum gesetzt)</label><input type="date" id="erfassungStart"></div>
+        </div>
+
+        <div class="fixed-box" style="grid-column: 1 / -1;">
+          <h3>Investitionen / Ausstattung (Einmalkosten, z.B. Wallbox-Kauf)</h3>
+          <div style="overflow-x:auto;">
+          <table class="small-table" style="min-width:440px;">
+            <thead><tr><th style="width:110px;">Datum</th><th style="width:110px;">Fahrzeug</th><th>Beschreibung</th><th style="width:100px;">Betrag €</th><th style="width:30px;"></th></tr></thead>
+            <tbody id="investBody"></tbody>
+          </table>
+          </div>
+          <button class="add-mini" id="addInvest">+ Position hinzufügen</button>
+        </div>
+
+      </div>
+    </details>
+  </section>
+
+  <nav class="tabs" id="tabs"></nav>
+  <section class="panel">
+    <div class="summary-row" id="summaryRow"></div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:120px;">Datum</th>
+            <th style="width:90px;">Fahrzeug</th>
+            <th>Ladekarte</th>
+            <th style="width:170px;">Ladestation</th>
+            <th style="width:105px;">Dauer</th>
+            <th style="width:80px;">kWh</th>
+            <th style="width:100px;">Preis €</th>
+            <th style="width:100px;">km-Stand</th>
+            <th style="width:90px;">kWh kum.</th>
+            <th style="width:110px;">€ kum.</th>
+            <th class="actions"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5" style="text-align:right;">Summe</td>
+            <td id="sumKwh">0,00</td>
+            <td id="sumPreis">0,00 €</td>
+            <td colspan="3"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn-primary" id="addRow">+ Zeile hinzufügen</button>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-ghost" id="exportCsv">CSV (Monat)</button>
+        <button class="btn btn-ghost" id="exportPdf">📄 Kontenübersicht (PDF)</button>
+        <button class="btn btn-ghost" id="exportXlsx">📊 Gesamtexport (Excel)</button>
+      </div>
+    </div>
+
+    <div class="io-bar">
+      <button class="btn btn-ghost" id="exportJson">Alle Daten sichern (JSON)</button>
+      <button class="btn btn-ghost" id="importBtn">Sicherung einlesen</button>
+      <input type="file" id="importFile" accept="application/json">
+      <p class="io-note">Alle Eingaben (Ladeprotokoll, Fixkosten, Ladekarten, wiederkehrende Kosten, Investitionen) liegen lokal im Browser dieses Geräts. Für einen gemeinsamen Stand mit Anja bitte regelmäßig „Alle Daten sichern" nutzen, Datei teilen, dort über „Sicherung einlesen" laden.</p>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MONTHS = [
+  {key:"2026-07", label:"Juli"}, {key:"2026-08", label:"August"}, {key:"2026-09", label:"September"},
+  {key:"2026-10", label:"Oktober"}, {key:"2026-11", label:"November"}, {key:"2026-12", label:"Dezember"}
+];
+const DEFAULT_CARDS = ["EWE Go", "InCharge", "Aral pulse", "EnBW HyperNetz", "Chargemap", "Zuhause"];
+const VEHICLES = { b10: "Leapmotor B10", t03: "Leapmotor T03" };
+const STORAGE_KEY = "liese_held_ladeprotokoll_v3";
+
+function emptyRow(){ return { datum:"", fahrzeug:"", karte:"", ladestation:"", lat:"", lon:"", dauer:"", kwh:"", preis:"", km:"" }; }
+function emptyInvest(){ return { datum:"", fahrzeug:"", beschreibung:"", betrag:"" }; }
+function emptyRecurring(){ return { beschreibung:"", fahrzeug:"", betrag:"", start:"" }; }
+
+function defaultData(){
+  let months = {};
+  MONTHS.forEach(m => { months[m.key] = [emptyRow(), emptyRow(), emptyRow(), emptyRow(), emptyRow()]; });
+  return {
+    cardsList: DEFAULT_CARDS.slice(),
+    cardTarife: {},
+    vehicles: {
+      b10: { leasing: 331.51, versicherung: "", start: "" },
+      t03: { leasing: 149.00, versicherung: "", start: "" }
+    },
+    recurringCosts: [ emptyRecurring() ],
+    erfassungStart: "2026-07-01",
+    investitionen: [ emptyInvest() ],
+    months: months
+  };
+}
+
+function loadData(){
+  let raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){ try{ let d = JSON.parse(raw); return migrate(d); }catch(e){} }
+  // try migrating from the previous (v2) storage key so nothing gets lost
+  let old = localStorage.getItem("liese_held_ladeprotokoll_v2");
+  if(old){ try{ return migrate(JSON.parse(old)); }catch(e){} }
+  return defaultData();
+}
+
+function migrate(d){
+  const def = defaultData();
+  if(!d.cardsList || !d.cardsList.length) d.cardsList = def.cardsList;
+  if(!d.cardTarife) d.cardTarife = {};
+  if(!d.vehicles) d.vehicles = def.vehicles;
+  if(!d.erfassungStart) d.erfassungStart = def.erfassungStart;
+  if(!d.investitionen) d.investitionen = def.investitionen;
+  if(!d.months) d.months = def.months;
+
+  // migrate old flat "abos" object into the new recurringCosts list
+  if(!d.recurringCosts){
+    d.recurringCosts = [];
+    if(d.abos){
+      Object.entries(d.abos).forEach(([karte, fee]) => {
+        if(parseFloat(String(fee).replace(",", ".")) > 0){
+          d.recurringCosts.push({ beschreibung: karte + " (Abo)", fahrzeug: "", betrag: fee, start: d.erfassungStart });
+        }
+      });
+    }
+    if(d.recurringCosts.length === 0) d.recurringCosts.push(emptyRecurring());
+    delete d.abos;
+  }
+
+  MONTHS.forEach(m => {
+    if(!d.months[m.key]) d.months[m.key] = [emptyRow()];
+    d.months[m.key] = d.months[m.key].map(r => Object.assign(emptyRow(), r));
+  });
+  d.investitionen = d.investitionen.map(i => Object.assign(emptyInvest(), i));
+  d.recurringCosts = d.recurringCosts.map(r => Object.assign(emptyRecurring(), r));
+  return d;
+}
+
+let data = loadData();
+let activeMonth = MONTHS[0].key;
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+function parseNum(v){ if(v === "" || v === null || v === undefined) return 0; let n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? 0 : n; }
+function durationToMinutes(v){ if(!v) return 0; let m = /^(\d{1,3}):([0-5]\d)$/.exec(v.trim()); if(!m) return 0; return parseInt(m[1],10)*60 + parseInt(m[2],10); }
+function minutesToDuration(total){ let h = Math.floor(total/60), m = total%60; return h + ":" + String(m).padStart(2,"0"); }
+function fmtEUR(n){ return n.toLocaleString("de-DE", {minimumFractionDigits:2, maximumFractionDigits:2}) + " €"; }
+function fmtNum(n, d=2){ return n.toLocaleString("de-DE", {minimumFractionDigits:d, maximumFractionDigits:d}); }
+function monthsElapsed(startStr, endRef){
+  if(!startStr) return 0;
+  const start = new Date(startStr);
+  const now = endRef || new Date();
+  if(isNaN(start.getTime()) || start > now) return 0;
+  const days = (now - start) / (1000*60*60*24);
+  return days / 30.44;
+}
+
+function allRows(){
+  let out = [];
+  MONTHS.forEach(m => (data.months[m.key]||[]).forEach(r => out.push(r)));
+  return out;
+}
+
+function vehicleStats(key){
+  const rows = allRows().filter(r => r.fahrzeug === key);
+  const ladekosten = rows.reduce((s,r) => s + parseNum(r.preis), 0);
+  const kms = rows.map(r => parseNum(r.km)).filter(v => v > 0);
+  const kmDriven = kms.length >= 2 ? (Math.max(...kms) - Math.min(...kms)) : 0;
+  const v = data.vehicles[key];
+  const months = monthsElapsed(v.start);
+  const leasingKosten = parseNum(v.leasing) * months;
+  const versicherungKosten = parseNum(v.versicherung) * months;
+  const investKosten = data.investitionen.filter(i => i.fahrzeug === key).reduce((s,i) => s + parseNum(i.betrag), 0);
+  const recurringKosten = data.recurringCosts.filter(r => r.fahrzeug === key)
+    .reduce((s,r) => s + parseNum(r.betrag) * monthsElapsed(r.start || v.start || data.erfassungStart), 0);
+  const tco = ladekosten + leasingKosten + versicherungKosten + investKosten + recurringKosten;
+  return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmDriven, kmCount: kms.length };
+}
+
+function householdRecurring(){
+  return data.recurringCosts.filter(r => !r.fahrzeug)
+    .reduce((s,r) => s + parseNum(r.betrag) * monthsElapsed(r.start || data.erfassungStart), 0);
+}
+
+function householdStats(b10, t03){
+  const investHaushalt = data.investitionen.filter(i => i.fahrzeug !== "b10" && i.fahrzeug !== "t03").reduce((s,i) => s + parseNum(i.betrag), 0);
+  const recurring = householdRecurring();
+  const tco = b10.tco + t03.tco + recurring + investHaushalt;
+  const kmDriven = b10.kmDriven + t03.kmDriven;
+  return { tco, kmDriven, recurring, investHaushalt };
+}
+
+function renderTcoCard(container, title, dotClass, stats, extraLines){
+  const kmPreis = stats.kmDriven > 0 ? (stats.tco / stats.kmDriven) : null;
+  const card = document.createElement("div");
+  card.className = "tco-card" + (dotClass === "house" ? " house" : "");
+  card.innerHTML = `
+    <div class="name"><i class="dot ${dotClass}" style="width:9px;height:9px;"></i>${title}</div>
+    <div class="kmpreis">${kmPreis !== null ? fmtNum(kmPreis, 3) : "–"} <small>€/km</small></div>
+    <div class="sub">
+      TCO gesamt: <b>${fmtEUR(stats.tco)}</b><br>
+      ${extraLines}
+    </div>
+    ${stats.kmDriven === 0 ? '<div class="warn">Noch keine zwei km-Stände erfasst — €/km folgt automatisch.</div>' : `<div class="sub" style="margin-top:4px;">gefahren: <b>${fmtNum(stats.kmDriven,0)} km</b></div>`}
+  `;
+  container.appendChild(card);
+}
+
+function renderTco(){
+  const b10 = vehicleStats("b10");
+  const t03 = vehicleStats("t03");
+  const house = householdStats(b10, t03);
+  const wrap = document.getElementById("tcoCards");
+  wrap.innerHTML = "";
+  renderTcoCard(wrap, "Leapmotor B10", "b10", b10,
+    `Ladekosten: <b>${fmtEUR(b10.ladekosten)}</b><br>Leasing+Vers.: <b>${fmtEUR(b10.leasingKosten+b10.versicherungKosten)}</b><br>Wiederk. Kosten: <b>${fmtEUR(b10.recurringKosten)}</b><br>Investitionen: <b>${fmtEUR(b10.investKosten)}</b>`);
+  renderTcoCard(wrap, "Leapmotor T03", "t03", t03,
+    `Ladekosten: <b>${fmtEUR(t03.ladekosten)}</b><br>Leasing+Vers.: <b>${fmtEUR(t03.leasingKosten+t03.versicherungKosten)}</b><br>Wiederk. Kosten: <b>${fmtEUR(t03.recurringKosten)}</b><br>Investitionen: <b>${fmtEUR(t03.investKosten)}</b>`);
+  renderTcoCard(wrap, "Haushalt gesamt", "house", house,
+    `Wiederk. Kosten (Haushalt): <b>${fmtEUR(house.recurring)}</b><br>Sonst. Investitionen: <b>${fmtEUR(house.investHaushalt)}</b>`);
+}
+
+function renderCardChips(){
+  const wrap = document.getElementById("cardChips");
+  wrap.innerHTML = "";
+  data.cardsList.forEach((c, idx) => {
+    const chip = document.createElement("span");
+    chip.className = "card-chip";
+    const label = document.createElement("span"); label.textContent = c;
+    const tarifInput = document.createElement("input");
+    tarifInput.type = "number"; tarifInput.step = "0.01"; tarifInput.placeholder = "€/kWh";
+    tarifInput.value = data.cardTarife[c] || "";
+    tarifInput.title = "Optionaler Tarif in €/kWh für automatische Preisvorschläge";
+    tarifInput.addEventListener("change", e => { data.cardTarife[c] = e.target.value; save(); });
+    const del = document.createElement("button");
+    del.textContent = "✕"; del.title = "Karte entfernen";
+    del.addEventListener("click", () => {
+      data.cardsList.splice(idx,1);
+      delete data.cardTarife[c];
+      save(); renderCardChips(); renderTable();
+    });
+    chip.append(label, tarifInput, del);
+    wrap.appendChild(chip);
+  });
+}
+
+document.getElementById("addCard").addEventListener("click", () => {
+  const inp = document.getElementById("newCardName");
+  const name = inp.value.trim();
+  if(!name) return;
+  if(!data.cardsList.includes(name)) data.cardsList.push(name);
+  inp.value = "";
+  save(); renderCardChips(); renderTable();
+});
+
+function renderRecurring(){
+  const body = document.getElementById("recurringBody");
+  body.innerHTML = "";
+  data.recurringCosts.forEach((rec, idx) => {
+    const tr = document.createElement("tr");
+
+    const tdB = document.createElement("td");
+    const inpB = document.createElement("input"); inpB.type="text"; inpB.value = rec.beschreibung; inpB.placeholder="z.B. Stromtarif Grundgebühr";
+    inpB.addEventListener("change", e => { rec.beschreibung = e.target.value; save(); });
+    tdB.appendChild(inpB);
+
+    const tdF = document.createElement("td");
+    const sel = document.createElement("select");
+    [["", "Haushalt"], ["b10","B10"], ["t03","T03"]].forEach(([val,lbl]) => {
+      const o = document.createElement("option"); o.value=val; o.textContent=lbl;
+      if(rec.fahrzeug===val) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", e => { rec.fahrzeug = e.target.value; save(); renderTco(); });
+    tdF.appendChild(sel);
+
+    const tdBetrag = document.createElement("td");
+    const inpBetrag = document.createElement("input"); inpBetrag.type="number"; inpBetrag.step="0.01"; inpBetrag.value = rec.betrag;
+    inpBetrag.addEventListener("change", e => { rec.betrag = e.target.value; save(); renderTco(); });
+    tdBetrag.appendChild(inpBetrag);
+
+    const tdStart = document.createElement("td");
+    const inpStart = document.createElement("input"); inpStart.type="date"; inpStart.value = rec.start;
+    inpStart.addEventListener("change", e => { rec.start = e.target.value; save(); renderTco(); });
+    tdStart.appendChild(inpStart);
+
+    const tdDel = document.createElement("td");
+    const del = document.createElement("button"); del.className="mini-del"; del.textContent="✕";
+    del.addEventListener("click", () => {
+      data.recurringCosts.splice(idx,1);
+      if(data.recurringCosts.length===0) data.recurringCosts.push(emptyRecurring());
+      save(); renderRecurring(); renderTco();
+    });
+    tdDel.appendChild(del);
+
+    tr.append(tdB, tdF, tdBetrag, tdStart, tdDel);
+    body.appendChild(tr);
+  });
+}
+document.getElementById("addRecurring").addEventListener("click", () => { data.recurringCosts.push(emptyRecurring()); save(); renderRecurring(); });
+
+function renderFixedCosts(){
+  document.getElementById("b10_leasing").value = data.vehicles.b10.leasing;
+  document.getElementById("b10_versicherung").value = data.vehicles.b10.versicherung;
+  document.getElementById("b10_start").value = data.vehicles.b10.start;
+  document.getElementById("t03_leasing").value = data.vehicles.t03.leasing;
+  document.getElementById("t03_versicherung").value = data.vehicles.t03.versicherung;
+  document.getElementById("t03_start").value = data.vehicles.t03.start;
+  document.getElementById("erfassungStart").value = data.erfassungStart;
+
+  renderCardChips();
+  renderRecurring();
+
+  const investBody = document.getElementById("investBody");
+  investBody.innerHTML = "";
+  data.investitionen.forEach((inv, idx) => {
+    const tr = document.createElement("tr");
+
+    const tdD = document.createElement("td");
+    const inpD = document.createElement("input"); inpD.type="date"; inpD.value = inv.datum;
+    inpD.addEventListener("change", e => { inv.datum = e.target.value; save(); });
+    tdD.appendChild(inpD);
+
+    const tdF = document.createElement("td");
+    const sel = document.createElement("select");
+    [["", "Haushalt"], ["b10","B10"], ["t03","T03"]].forEach(([val,lbl]) => {
+      const o = document.createElement("option"); o.value=val; o.textContent=lbl;
+      if(inv.fahrzeug===val) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", e => { inv.fahrzeug = e.target.value; save(); renderTco(); });
+    tdF.appendChild(sel);
+
+    const tdB = document.createElement("td");
+    const inpB = document.createElement("input"); inpB.type="text"; inpB.value = inv.beschreibung; inpB.placeholder="z.B. Wallbox-Kauf";
+    inpB.addEventListener("change", e => { inv.beschreibung = e.target.value; save(); });
+    tdB.appendChild(inpB);
+
+    const tdBetrag = document.createElement("td");
+    const inpBetrag = document.createElement("input"); inpBetrag.type="number"; inpBetrag.step="0.01"; inpBetrag.value = inv.betrag;
+    inpBetrag.addEventListener("change", e => { inv.betrag = e.target.value; save(); renderTco(); });
+    tdBetrag.appendChild(inpBetrag);
+
+    const tdDel = document.createElement("td");
+    const del = document.createElement("button"); del.className="mini-del"; del.textContent="✕";
+    del.addEventListener("click", () => {
+      data.investitionen.splice(idx,1);
+      if(data.investitionen.length===0) data.investitionen.push(emptyInvest());
+      save(); renderFixedCosts(); renderTco();
+    });
+    tdDel.appendChild(del);
+
+    tr.append(tdD, tdF, tdB, tdBetrag, tdDel);
+    investBody.appendChild(tr);
+  });
+}
+
+["b10_leasing","b10_versicherung","b10_start"].forEach(id => {
+  document.getElementById(id).addEventListener("change", e => {
+    const field = id.split("_")[1];
+    data.vehicles.b10[field] = e.target.value; save(); renderTco();
+  });
+});
+["t03_leasing","t03_versicherung","t03_start"].forEach(id => {
+  document.getElementById(id).addEventListener("change", e => {
+    const field = id.split("_")[1];
+    data.vehicles.t03[field] = e.target.value; save(); renderTco();
+  });
+});
+document.getElementById("erfassungStart").addEventListener("change", e => { data.erfassungStart = e.target.value; save(); renderTco(); });
+document.getElementById("addInvest").addEventListener("click", () => { data.investitionen.push(emptyInvest()); save(); renderFixedCosts(); });
+
+function monthTotals(key){
+  let rows = data.months[key] || [];
+  let kwh = 0, preis = 0, minutes = 0;
+  rows.forEach(r => { kwh += parseNum(r.kwh); preis += parseNum(r.preis); minutes += durationToMinutes(r.dauer); });
+  return { kwh, preis, minutes };
+}
+
+function renderTabs(){
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = "";
+  MONTHS.forEach(m => {
+    const b = document.createElement("button");
+    b.textContent = m.label;
+    if(m.key === activeMonth) b.classList.add("active");
+    b.addEventListener("click", () => { activeMonth = m.key; renderAll(); });
+    tabs.appendChild(b);
+  });
+}
+
+function renderSummary(){
+  const totals = monthTotals(activeMonth);
+  const allMax = Math.max(1, ...MONTHS.map(m => monthTotals(m.key).kwh));
+  const pct = Math.round((totals.kwh / allMax) * 100);
+  const wrap = document.getElementById("summaryRow");
+  wrap.innerHTML = `
+    <div class="stat"><div class="label">Geladene Energie</div><div class="value">${fmtNum(totals.kwh)} kWh</div></div>
+    <div class="stat"><div class="label">Ladekosten</div><div class="value">${fmtEUR(totals.preis)}</div></div>
+    <div class="stat"><div class="label">Ladezeit gesamt</div><div class="value">${minutesToDuration(totals.minutes)} h</div></div>
+    <div class="bar-wrap">
+      <div class="label">Verhältnis zu den übrigen Monaten (Juli–Dezember)</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="bar-caption">${fmtNum(totals.kwh)} kWh · ${pct}% des bisher stärksten Monats</div>
+    </div>
+  `;
+}
+
+function maybeAutofillPreis(row){
+  const tarif = parseNum(data.cardTarife[row.karte]);
+  if(tarif > 0 && parseNum(row.kwh) > 0 && !parseNum(row.preis)){
+    row.preis = (parseNum(row.kwh) * tarif).toFixed(2);
+  }
+}
+
+function renderTable(){
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  const rows = data.months[activeMonth];
+  let cumKwh = 0, cumPreis = 0;
+
+  rows.forEach((row, idx) => {
+    cumKwh += parseNum(row.kwh);
+    cumPreis += parseNum(row.preis);
+    const tr = document.createElement("tr");
+
+    const tdDatum = document.createElement("td"); tdDatum.setAttribute("data-label","Datum");
+    const inpDatum = document.createElement("input"); inpDatum.type = "date"; inpDatum.value = row.datum;
+    inpDatum.addEventListener("change", e => { row.datum = e.target.value; save(); });
+    tdDatum.appendChild(inpDatum);
+
+    const tdFahrzeug = document.createElement("td"); tdFahrzeug.setAttribute("data-label","Fahrzeug");
+    const selF = document.createElement("select");
+    const oB = document.createElement("option"); oB.value=""; oB.textContent="–"; selF.appendChild(oB);
+    Object.entries(VEHICLES).forEach(([val,lbl]) => {
+      const o = document.createElement("option"); o.value=val; o.textContent=lbl.replace("Leapmotor ","");
+      if(row.fahrzeug===val) o.selected = true;
+      selF.appendChild(o);
+    });
+    selF.addEventListener("change", e => { row.fahrzeug = e.target.value; save(); renderTco(); });
+    tdFahrzeug.appendChild(selF);
+
+    const tdKarte = document.createElement("td"); tdKarte.setAttribute("data-label","Ladekarte");
+    const sel = document.createElement("select");
+    const optBlank = document.createElement("option"); optBlank.value=""; optBlank.textContent="– wählen –"; sel.appendChild(optBlank);
+    const options = data.cardsList.slice();
+    if(row.karte && !options.includes(row.karte)) options.push(row.karte);
+    options.forEach(c => { const o=document.createElement("option"); o.value=c; o.textContent=c; if(row.karte===c) o.selected=true; sel.appendChild(o); });
+    sel.addEventListener("change", e => {
+      row.karte = e.target.value; maybeAutofillPreis(row); save(); renderTable();
+    });
+    tdKarte.appendChild(sel);
+
+    const tdStation = document.createElement("td"); tdStation.setAttribute("data-label","Ladestation");
+    const stationWrap = document.createElement("div"); stationWrap.className = "station-cell";
+    const inpStation = document.createElement("input"); inpStation.type="text"; inpStation.placeholder="Name der Ladestation";
+    inpStation.value = row.ladestation || "";
+    inpStation.addEventListener("change", e => { row.ladestation = e.target.value; save(); });
+    const locBtn = document.createElement("button"); locBtn.type="button"; locBtn.className="locate-btn"; locBtn.title="Standort per GPS abrufen und Ladestation nachschlagen"; locBtn.textContent="📍";
+    locBtn.addEventListener("click", () => locateStation(row, inpStation, locBtn));
+    stationWrap.append(inpStation, locBtn);
+    tdStation.appendChild(stationWrap);
+
+    const tdDauer = document.createElement("td"); tdDauer.setAttribute("data-label","Dauer");
+    const inpDauer = document.createElement("input"); inpDauer.type="text"; inpDauer.placeholder="hh:mm"; inpDauer.value=row.dauer;
+    inpDauer.addEventListener("change", e => { row.dauer = e.target.value; save(); renderSummary(); });
+    tdDauer.appendChild(inpDauer);
+
+    const tdKwh = document.createElement("td"); tdKwh.className="num"; tdKwh.setAttribute("data-label","kWh");
+    const inpKwh = document.createElement("input"); inpKwh.type="number"; inpKwh.step="0.01"; inpKwh.min="0"; inpKwh.value=row.kwh;
+    inpKwh.addEventListener("input", e => { row.kwh = e.target.value; maybeAutofillPreis(row); save(); renderTable(); renderSummary(); });
+    tdKwh.appendChild(inpKwh);
+
+    const tdPreis = document.createElement("td"); tdPreis.className="num"; tdPreis.setAttribute("data-label","Preis €");
+    const inpPreis = document.createElement("input"); inpPreis.type="number"; inpPreis.step="0.01"; inpPreis.min="0"; inpPreis.value=row.preis;
+    inpPreis.addEventListener("input", e => { row.preis = e.target.value; save(); renderTable(); renderSummary(); renderTco(); });
+    tdPreis.appendChild(inpPreis);
+
+    const tdKm = document.createElement("td"); tdKm.className="num"; tdKm.setAttribute("data-label","km-Stand");
+    const inpKm = document.createElement("input"); inpKm.type="number"; inpKm.step="1"; inpKm.min="0"; inpKm.placeholder="km"; inpKm.value=row.km;
+    inpKm.addEventListener("input", e => { row.km = e.target.value; save(); renderTco(); });
+    tdKm.appendChild(inpKm);
+
+    const tdCumKwh = document.createElement("td"); tdCumKwh.className="num"; tdCumKwh.setAttribute("data-label","kWh kum."); tdCumKwh.textContent = fmtNum(cumKwh);
+    const tdCumPreis = document.createElement("td"); tdCumPreis.className="num"; tdCumPreis.setAttribute("data-label","€ kum."); tdCumPreis.textContent = fmtEUR(cumPreis);
+
+    const tdActions = document.createElement("td"); tdActions.className="actions";
+    const del = document.createElement("button"); del.className="del-btn"; del.title="Zeile löschen"; del.innerHTML="✕";
+    del.addEventListener("click", () => {
+      rows.splice(idx, 1);
+      if(rows.length === 0) rows.push(emptyRow());
+      save(); renderAll();
+    });
+    tdActions.appendChild(del);
+
+    tr.append(tdDatum, tdFahrzeug, tdKarte, tdStation, tdDauer, tdKwh, tdPreis, tdKm, tdCumKwh, tdCumPreis, tdActions);
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("sumKwh").textContent = fmtNum(cumKwh);
+  document.getElementById("sumPreis").textContent = fmtEUR(cumPreis);
+}
+
+function locateStation(row, inputEl, btnEl){
+  if(!("geolocation" in navigator)){
+    showToast("Geolocation wird von diesem Browser nicht unterstützt");
+    return;
+  }
+  if(!window.isSecureContext){
+    showToast("GPS braucht HTTPS – diese Seite läuft aktuell nicht über eine sichere Verbindung");
+    return;
+  }
+  btnEl.classList.add("busy"); btnEl.disabled = true;
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    row.lat = lat; row.lon = lon; save();
+    try{
+      const url = `https://api.openchargemap.io/v3/poi/?output=json&latitude=${lat}&longitude=${lon}&maxresults=1&distance=0.6&distanceunit=KM&compact=true&verbose=false`;
+      const res = await fetch(url);
+      const list = await res.json();
+      if(list && list.length > 0){
+        const poi = list[0];
+        const title = poi.AddressInfo ? poi.AddressInfo.Title : null;
+        const op = poi.OperatorInfo ? poi.OperatorInfo.Title : null;
+        const name = title ? (op && !title.includes(op) ? `${title} (${op})` : title) : (op || "Unbenannte Station");
+        row.ladestation = name; inputEl.value = name; save();
+        showToast("Ladestation gefunden: " + name);
+      }else{
+        row.ladestation = `Koordinaten ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        inputEl.value = row.ladestation; save();
+        showToast("Keine Station in der Nähe gefunden (Open Charge Map) – Koordinaten eingetragen");
+      }
+    }catch(err){
+      showToast("Nachschlagen fehlgeschlagen – Koordinaten wurden trotzdem gespeichert");
+      row.ladestation = row.ladestation || `Koordinaten ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      inputEl.value = row.ladestation; save();
+    }finally{
+      btnEl.classList.remove("busy"); btnEl.disabled = false;
+    }
+  }, err => {
+    btnEl.classList.remove("busy"); btnEl.disabled = false;
+    if(err.code === 1) showToast("Standortzugriff wurde abgelehnt");
+    else showToast("Standort konnte nicht ermittelt werden");
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+function renderAll(){
+  renderTabs(); renderSummary(); renderTable(); renderTco(); renderFixedCosts();
+}
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+document.getElementById("addRow").addEventListener("click", () => { data.months[activeMonth].push(emptyRow()); save(); renderTable(); });
+
+document.getElementById("exportCsv").addEventListener("click", () => {
+  const rows = data.months[activeMonth];
+  let lines = ["Datum;Fahrzeug;Ladekarte;Ladestation;Dauer;kWh;Preis;km-Stand"];
+  rows.forEach(r => lines.push([r.datum, r.fahrzeug, r.karte, r.ladestation||"", r.dauer, r.kwh, r.preis, r.km].join(";")));
+  const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const label = MONTHS.find(m => m.key === activeMonth).label;
+  a.href = url; a.download = `Ladeprotokoll_${label}_2026.csv`; a.click();
+  URL.revokeObjectURL(url); showToast("CSV exportiert");
+});
+
+document.getElementById("exportJson").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `eFahrtenbuchTCO_Sicherung_${stamp}.json`; a.click();
+  URL.revokeObjectURL(url); showToast("Sicherung heruntergeladen");
+});
+
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change", e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try{ data = migrate(JSON.parse(evt.target.result)); save(); renderAll(); showToast("Sicherung eingelesen"); }
+    catch(err){ showToast("Datei konnte nicht gelesen werden"); }
+  };
+  reader.readAsText(file); e.target.value = "";
+});
+
+/* ============ Monats-Kontoübersicht: gemeinsame Berechnung für PDF & Excel ============ */
+
+function vehicleKmWindowUpTo(vehicleKey, cutoffDateStr){
+  // latest odometer reading for a vehicle at or before a given date, across ALL months
+  const cutoff = cutoffDateStr ? new Date(cutoffDateStr) : null;
+  let best = null, bestDate = null;
+  allRows().forEach(r => {
+    if(r.fahrzeug !== vehicleKey) return;
+    const km = parseNum(r.km);
+    if(km <= 0 || !r.datum) return;
+    const d = new Date(r.datum);
+    if(cutoff && d > cutoff) return;
+    if(!bestDate || d > bestDate){ bestDate = d; best = km; }
+  });
+  return best;
+}
+
+function computeMonthStatement(monthKey){
+  const meta = MONTHS.find(m => m.key === monthKey);
+  const rows = data.months[monthKey] || [];
+  const [y, m] = monthKey.split("-").map(Number);
+  const lastDayDate = new Date(y, m, 0); // last day of month
+  const lastDay = lastDayDate.toISOString().slice(0,10);
+  const prevLastDay = new Date(y, m-1, 0).toISOString().slice(0,10);
+
+  const kwh = rows.reduce((s,r) => s + parseNum(r.kwh), 0);
+  const ladekosten = rows.reduce((s,r) => s + parseNum(r.preis), 0);
+
+  const kmInfo = {};
+  ["b10","t03"].forEach(v => {
+    const start = vehicleKmWindowUpTo(v, prevLastDay);
+    const end = vehicleKmWindowUpTo(v, lastDay);
+    kmInfo[v] = (start !== null && end !== null && end >= start) ? (end - start) : null;
+  });
+  const kmCombined = (kmInfo.b10 !== null && kmInfo.t03 !== null) ? (kmInfo.b10 + kmInfo.t03) : null;
+
+  let fixcosts = [];
+  ["b10","t03"].forEach(v => {
+    const veh = data.vehicles[v];
+    if(veh.start && veh.start <= lastDay){
+      if(parseNum(veh.leasing) > 0) fixcosts.push({ label: `Leasing ${v.toUpperCase()}`, betrag: parseNum(veh.leasing) });
+      if(parseNum(veh.versicherung) > 0) fixcosts.push({ label: `Versicherung ${v.toUpperCase()}`, betrag: parseNum(veh.versicherung) });
+    }
+  });
+  data.recurringCosts.forEach(r => {
+    const start = r.start || data.erfassungStart;
+    if(start && start <= lastDay && parseNum(r.betrag) > 0){
+      const scope = r.fahrzeug ? r.fahrzeug.toUpperCase() : "Haushalt";
+      fixcosts.push({ label: `${r.beschreibung || "Wiederkehrende Kosten"} (${scope})`, betrag: parseNum(r.betrag) });
+    }
+  });
+
+  const investThisMonth = data.investitionen.filter(i => i.datum && i.datum.slice(0,7) === monthKey)
+    .map(i => ({ label: `${i.beschreibung || "Investition"} (${i.fahrzeug ? i.fahrzeug.toUpperCase() : "Haushalt"})`, betrag: parseNum(i.betrag) }));
+
+  const fixSum = fixcosts.reduce((s,f) => s + f.betrag, 0);
+  const investSum = investThisMonth.reduce((s,f) => s + f.betrag, 0);
+  const gesamtMonat = ladekosten + fixSum + investSum;
+  const eurProKm = (kmCombined && kmCombined > 0) ? (gesamtMonat / kmCombined) : null;
+
+  return {
+    monthKey, label: meta.label, jahr: y,
+    rows, kwh, ladekosten,
+    kmInfo, kmCombined,
+    fixcosts, fixSum,
+    investThisMonth, investSum,
+    gesamtMonat, eurProKm
+  };
+}
+
+/* ============ PDF-Export: Monats-Kontenübersicht ============ */
+document.getElementById("exportPdf").addEventListener("click", () => {
+  if(!window.jspdf){ showToast("PDF-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen)"); return; }
+  const st = computeMonthStatement(activeMonth);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+  doc.text(`Kontenübersicht — ${st.label} ${st.jahr}`, 14, 18);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.text("eFahrtenbuch⚡TCO · Familie Liese-Held", 14, 24);
+
+  doc.autoTable({
+    startY: 30,
+    head: [["Datum","Fahrzeug","Karte","Station","Dauer","kWh","Preis €","km-Stand"]],
+    body: st.rows.map(r => [r.datum||"", (r.fahrzeug||"").toUpperCase(), r.karte||"", r.ladestation||"", r.dauer||"", r.kwh?fmtNum(parseNum(r.kwh)):"", r.preis?fmtEUR(parseNum(r.preis)):"", r.km||""]),
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [53,40,73] }
+  });
+
+  let y = doc.lastAutoTable.finalY + 10;
+  doc.setFont("helvetica","bold"); doc.setFontSize(12);
+  doc.text("Zusammenfassung", 14, y); y += 6;
+  doc.setFont("helvetica","normal"); doc.setFontSize(10);
+
+  const lines = [
+    [`Geladene Energie`, `${fmtNum(st.kwh)} kWh`],
+    [`Ladekosten`, fmtEUR(st.ladekosten)],
+    ...st.fixcosts.map(f => [f.label, fmtEUR(f.betrag)]),
+    ...st.investThisMonth.map(f => [f.label + " (einmalig)", fmtEUR(f.betrag)]),
+    [`Gesamtkosten Monat`, fmtEUR(st.gesamtMonat)],
+    [`km B10 diesen Monat`, st.kmInfo.b10 !== null ? fmtNum(st.kmInfo.b10,0)+" km" : "keine Daten"],
+    [`km T03 diesen Monat`, st.kmInfo.t03 !== null ? fmtNum(st.kmInfo.t03,0)+" km" : "keine Daten"],
+    [`€/km diesen Monat (Haushalt)`, st.eurProKm !== null ? fmtNum(st.eurProKm,3)+" €/km" : "keine Daten"]
+  ];
+  lines.forEach(([l,v]) => {
+    doc.text(l, 14, y); doc.text(v, 150, y, {align:"right"}); y += 6;
+    if(y > 280){ doc.addPage(); y = 20; }
+  });
+
+  doc.setFontSize(8); doc.setTextColor(120);
+  doc.text("Hinweis: Fixkosten werden ab ihrem jeweiligen Startdatum voll für den Monat angesetzt (keine Tages-Proration). km-Berechnung basiert auf den zuletzt erfassten km-Ständen bis Monatsende.", 14, 290, {maxWidth: 180});
+
+  doc.save(`Kontenuebersicht_${st.label}_${st.jahr}.pdf`);
+  showToast("PDF erzeugt");
+});
+
+/* ============ Excel-Export: alle Monate + Übersicht + TCO ============ */
+document.getElementById("exportXlsx").addEventListener("click", () => {
+  if(!window.XLSX){ showToast("Excel-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen)"); return; }
+  const wb = XLSX.utils.book_new();
+
+  MONTHS.forEach(m => {
+    const rows = data.months[m.key] || [];
+    const sheetData = [["Datum","Fahrzeug","Ladekarte","Ladestation","Dauer","kWh","Preis €","km-Stand"]];
+    rows.forEach(r => sheetData.push([r.datum, r.fahrzeug, r.karte, r.ladestation, r.dauer, parseNum(r.kwh), parseNum(r.preis), parseNum(r.km)||""]));
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    XLSX.utils.book_append_sheet(wb, ws, m.label.slice(0,31));
+  });
+
+  const overviewData = [["Monat","kWh","Ladekosten €","Fixkosten €","Investitionen €","Gesamtkosten €","km B10","km T03","€/km Haushalt"]];
+  MONTHS.forEach(m => {
+    const st = computeMonthStatement(m.key);
+    overviewData.push([
+      `${st.label} ${st.jahr}`, st.kwh, st.ladekosten, st.fixSum, st.investSum, st.gesamtMonat,
+      st.kmInfo.b10 !== null ? st.kmInfo.b10 : "", st.kmInfo.t03 !== null ? st.kmInfo.t03 : "",
+      st.eurProKm !== null ? Number(st.eurProKm.toFixed(3)) : ""
+    ]);
+  });
+  const wsOverview = XLSX.utils.aoa_to_sheet(overviewData);
+  XLSX.utils.book_append_sheet(wb, wsOverview, "Kontenübersicht");
+
+  const b10 = vehicleStats("b10"), t03 = vehicleStats("t03"), house = householdStats(b10, t03);
+  const tcoData = [
+    ["Bereich","Ladekosten €","Leasing+Vers. €","Wiederk. Kosten €","Investitionen €","TCO gesamt €","km gefahren","€/km"],
+    ["Leapmotor B10", b10.ladekosten, b10.leasingKosten+b10.versicherungKosten, b10.recurringKosten, b10.investKosten, b10.tco, b10.kmDriven, b10.kmDriven>0?Number((b10.tco/b10.kmDriven).toFixed(3)):""],
+    ["Leapmotor T03", t03.ladekosten, t03.leasingKosten+t03.versicherungKosten, t03.recurringKosten, t03.investKosten, t03.tco, t03.kmDriven, t03.kmDriven>0?Number((t03.tco/t03.kmDriven).toFixed(3)):""],
+    ["Haushalt gesamt", b10.ladekosten+t03.ladekosten, (b10.leasingKosten+b10.versicherungKosten)+(t03.leasingKosten+t03.versicherungKosten), house.recurring, b10.investKosten+t03.investKosten+house.investHaushalt, house.tco, house.kmDriven, house.kmDriven>0?Number((house.tco/house.kmDriven).toFixed(3)):""]
+  ];
+  const wsTco = XLSX.utils.aoa_to_sheet(tcoData);
+  XLSX.utils.book_append_sheet(wb, wsTco, "TCO Gesamt");
+
+  const stamp = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `eFahrtenbuchTCO_Export_${stamp}.xlsx`);
+  showToast("Excel-Datei erzeugt");
+});
+
+renderAll();
+</script>
+</body>
+</html>
