@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { VEHICLES, vehicleShortLabel } from "@/lib/constants";
 import { allRows, durationToMinutes, maybeAutofillPreis, minutesToDuration, parseNum } from "@/lib/data";
-import { locateStation } from "@/lib/gps";
+import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import BatteryIcon from "./BatteryIcon";
 import DurationDial from "./DurationDial";
@@ -16,6 +16,7 @@ export default function EntryFormModal({
   data,
   cardOptions,
   cardTarife,
+  autoLocate = false,
   onSave,
   onDelete,
   onClose,
@@ -26,6 +27,7 @@ export default function EntryFormModal({
   data: AppData;
   cardOptions: string[];
   cardTarife: Record<string, string | number>;
+  autoLocate?: boolean;
   onSave: (row: ChargeRow) => void;
   onDelete?: () => void;
   onClose: () => void;
@@ -33,6 +35,37 @@ export default function EntryFormModal({
 }) {
   const [form, setForm] = useState<ChargeRow>(initial);
   const [locating, setLocating] = useState(false);
+
+  // On opening the add-entry form, silently try GPS — but only if permission
+  // was already granted previously, so no permission prompt pops up unasked.
+  // The manual 📍 button remains the fallback if this doesn't fire or fails.
+  useEffect(() => {
+    if (!autoLocate) return;
+    let cancelled = false;
+    hasGeolocationPermission().then((granted) => {
+      if (!granted || cancelled) return;
+      setLocating(true);
+      locateStation(
+        "",
+        (result) => {
+          if (cancelled) return;
+          setLocating(false);
+          setForm((f) =>
+            f.ladestation ? f : { ...f, lat: result.lat, lon: result.lon, ladestation: result.ladestation }
+          );
+          showToast(result.toast);
+        },
+        () => {
+          if (cancelled) return;
+          setLocating(false);
+        }
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [hintIcon] = useState(() => HINT_ICONS[Math.floor(Math.random() * HINT_ICONS.length)]);
 
   const patch = (fields: Partial<ChargeRow>) => setForm((f) => ({ ...f, ...fields }));

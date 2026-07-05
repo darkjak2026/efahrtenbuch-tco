@@ -50,6 +50,7 @@ export default function AddEntryFab({
           data={data}
           cardOptions={data.cardsList}
           cardTarife={data.cardTarife}
+          autoLocate
           onSave={save}
           onClose={() => setOpen(false)}
           showToast={showToast}

@@ -7,6 +7,18 @@ export interface LocateResult {
   toast: string;
 }
 
+// Checks the Permissions API without ever triggering a browser prompt itself —
+// only reports true if the user already granted geolocation access previously.
+export async function hasGeolocationPermission(): Promise<boolean> {
+  if (!("permissions" in navigator) || !("geolocation" in navigator)) return false;
+  try {
+    const status = await navigator.permissions.query({ name: "geolocation" });
+    return status.state === "granted";
+  } catch {
+    return false;
+  }
+}
+
 export function locateStation(
   currentLadestation: string,
   onDone: (result: LocateResult) => void,
