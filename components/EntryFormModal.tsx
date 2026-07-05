@@ -29,7 +29,12 @@ export default function EntryFormModal({
   const [form, setForm] = useState<ChargeRow>(initial);
   const [locating, setLocating] = useState(false);
 
-  const patch = (fields: Partial<ChargeRow>) =>
+  const patch = (fields: Partial<ChargeRow>) => setForm((f) => ({ ...f, ...fields }));
+
+  // Only run the tariff-based price suggestion on a discrete selection (Ladekarte)
+  // or once the kWh field is left (onBlur) — never on every keystroke, or a
+  // half-typed kWh value (e.g. the "1" in "12.5") would freeze in a wrong price.
+  const patchWithAutofill = (fields: Partial<ChargeRow>) =>
     setForm((f) => {
       const next = { ...f, ...fields };
       maybeAutofillPreis(cardTarife, next);
@@ -60,7 +65,7 @@ export default function EntryFormModal({
         </div>
         <div className="field-row">
           <label>💳 Ladekarte</label>
-          <select value={form.karte} onChange={(e) => patch({ karte: e.target.value })}>
+          <select value={form.karte} onChange={(e) => patchWithAutofill({ karte: e.target.value })}>
             <option value="">– wählen –</option>
             {options.map((c) => (
               <option key={c} value={c}>
@@ -141,7 +146,14 @@ export default function EntryFormModal({
         </div>
         <div className="field-row">
           <label>⚡ kWh</label>
-          <input type="number" step="0.01" min="0" value={form.kwh} onChange={(e) => patch({ kwh: e.target.value })} />
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={form.kwh}
+            onChange={(e) => patch({ kwh: e.target.value })}
+            onBlur={() => patchWithAutofill({})}
+          />
         </div>
         <div className="field-row">
           <label>💶 Preis €</label>
