@@ -290,7 +290,7 @@ details.fixed-costs[open] summary::before {
   gap: 10px;
 }
 .slider-wrap input[type="range"] {
-  flex: 1;
+  flex: 0 1 50%;
   width: auto;
   accent-color: var(--plum);
 }
@@ -301,8 +301,9 @@ details.fixed-costs[open] summary::before {
   font-family: var(--font-jetbrains-mono), monospace;
   font-size: 12px;
   color: var(--plum-deep);
-  flex: 0 0 auto;
-  min-width: 44px;
+  flex: 1 0 auto;
+  min-width: 58px;
+  white-space: nowrap;
 }
 .battery-indicator {
   display: inline-flex;
@@ -327,11 +328,13 @@ details.fixed-costs[open] summary::before {
     opacity: 0.35;
   }
 }
-.field-row input {
+/* Higher specificity than the global input[type=...]/select {width:100%} rule
+   further down, so these actually win regardless of source order. */
+.fab-modal .field-row input {
   width: 120px;
   flex-shrink: 0;
 }
-.field-row > select {
+.fab-modal .field-row > select {
   width: 120px;
   flex-shrink: 0;
 }
@@ -344,7 +347,7 @@ details.fixed-costs[open] summary::before {
   gap: 6px;
   min-width: 0;
 }
-.duration-wheels select {
+.fab-modal .duration-wheels select {
   width: auto;
   flex-shrink: 1;
   min-width: 0;
