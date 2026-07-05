@@ -109,22 +109,7 @@ export default function AppClient() {
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" strategy="afterInteractive" />
 
       <header className="top">
-        <p className="eyebrow">Familie Liese-Held · Halle (Saale)</p>
-        <h1>eFahrtenbuch⚡TCO</h1>
-        <p className="sub" style={{ margin: "4px 0 0", fontSize: 13, opacity: 0.85 }}>
-          Total Cost of Ownership für B10 &amp; T03
-        </p>
-        <div className="fleet">
-          <span>
-            <i className="dot b10"></i> B10 — Dawn Purple
-          </span>
-          <span>
-            <i className="dot t03"></i> T03 — Glacier Blue
-          </span>
-          <span>
-            <i className="dot house"></i> Haushalt gesamt
-          </span>
-        </div>
+        <h1>eFahrtenbuch | TCO</h1>
       </header>
 
       <main>
