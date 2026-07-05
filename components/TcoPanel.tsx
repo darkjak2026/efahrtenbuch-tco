@@ -58,40 +58,42 @@ export default function TcoPanel({ data }: { data: AppData }) {
 
   return (
     <div className="tco-cards">
-      <TcoCard
-        title="Leapmotor B10"
-        dotClass="b10"
-        kmDriven={b10.kmDriven}
-        tco={b10.tco}
-        extraLines={
-          <>
-            Ladekosten: <b>{fmtEUR(b10.ladekosten)}</b>
-            <br />
-            Leasing+Vers.: <b>{fmtEUR(b10.leasingKosten + b10.versicherungKosten)}</b>
-            <br />
-            Wiederk. Kosten: <b>{fmtEUR(b10.recurringKosten)}</b>
-            <br />
-            Investitionen: <b>{fmtEUR(b10.investKosten)}</b>
-          </>
-        }
-      />
-      <TcoCard
-        title="Leapmotor T03"
-        dotClass="t03"
-        kmDriven={t03.kmDriven}
-        tco={t03.tco}
-        extraLines={
-          <>
-            Ladekosten: <b>{fmtEUR(t03.ladekosten)}</b>
-            <br />
-            Leasing+Vers.: <b>{fmtEUR(t03.leasingKosten + t03.versicherungKosten)}</b>
-            <br />
-            Wiederk. Kosten: <b>{fmtEUR(t03.recurringKosten)}</b>
-            <br />
-            Investitionen: <b>{fmtEUR(t03.investKosten)}</b>
-          </>
-        }
-      />
+      <div className="tco-vehicle-row">
+        <TcoCard
+          title="Leapmotor B10"
+          dotClass="b10"
+          kmDriven={b10.kmDriven}
+          tco={b10.tco}
+          extraLines={
+            <>
+              Ladekosten: <b>{fmtEUR(b10.ladekosten)}</b>
+              <br />
+              Leasing+Vers.: <b>{fmtEUR(b10.leasingKosten + b10.versicherungKosten)}</b>
+              <br />
+              Wiederk. Kosten: <b>{fmtEUR(b10.recurringKosten)}</b>
+              <br />
+              Investitionen: <b>{fmtEUR(b10.investKosten)}</b>
+            </>
+          }
+        />
+        <TcoCard
+          title="Leapmotor T03"
+          dotClass="t03"
+          kmDriven={t03.kmDriven}
+          tco={t03.tco}
+          extraLines={
+            <>
+              Ladekosten: <b>{fmtEUR(t03.ladekosten)}</b>
+              <br />
+              Leasing+Vers.: <b>{fmtEUR(t03.leasingKosten + t03.versicherungKosten)}</b>
+              <br />
+              Wiederk. Kosten: <b>{fmtEUR(t03.recurringKosten)}</b>
+              <br />
+              Investitionen: <b>{fmtEUR(t03.investKosten)}</b>
+            </>
+          }
+        />
+      </div>
       <TcoCard
         title="Haushalt gesamt"
         dotClass="house"

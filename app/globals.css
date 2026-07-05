@@ -134,8 +134,13 @@ section.tco {
   margin-bottom: 20px;
 }
 .tco-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.tco-vehicle-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 7px;
 }
 .tco-card {
@@ -643,9 +648,6 @@ tfoot td {
   section.tco,
   section.panel {
     padding: 16px;
-  }
-  .tco-cards {
-    grid-template-columns: 1fr;
   }
   .summary-row {
     grid-template-columns: 1fr 1fr;
