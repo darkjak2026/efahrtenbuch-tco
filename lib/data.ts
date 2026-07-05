@@ -127,6 +127,12 @@ export function monthsElapsed(startStr: string, endRef?: Date): number {
 
 const INVEST_AMORTIZATION_MONTHS = 36;
 
+function monthDiff(fromKey: string, toKey: string): number {
+  const [fy, fm] = fromKey.split("-").map(Number);
+  const [ty, tm] = toKey.split("-").map(Number);
+  return (ty - fy) * 12 + (tm - fm);
+}
+
 // Investments amortize over the 36-month lease term, like a monthly leasing rate,
 // instead of hitting the TCO as a one-time lump sum in the month of purchase.
 export function amortizedInvestment(betrag: number, startDate: string): number {
@@ -290,8 +296,13 @@ export function computeMonthStatement(data: AppData, monthKey: string): MonthSta
   });
 
   const investThisMonth = data.investitionen
-    .filter((i) => i.datum && i.datum.slice(0, 7) === monthKey)
-    .map((i) => ({ label: `${i.beschreibung || "Investition"} (${i.fahrzeug ? i.fahrzeug.toUpperCase() : "Haushalt"})`, betrag: parseNum(i.betrag) }));
+    .filter((i) => i.datum)
+    .map((i) => ({ i, rate: monthDiff(i.datum.slice(0, 7), monthKey) }))
+    .filter(({ rate }) => rate >= 0 && rate < INVEST_AMORTIZATION_MONTHS)
+    .map(({ i, rate }) => ({
+      label: `${i.beschreibung || "Investition"} (${i.fahrzeug ? i.fahrzeug.toUpperCase() : "Haushalt"}, Rate ${rate + 1}/${INVEST_AMORTIZATION_MONTHS})`,
+      betrag: parseNum(i.betrag) / INVEST_AMORTIZATION_MONTHS,
+    }));
 
   const fixSum = fixcosts.reduce((s, f) => s + f.betrag, 0);
   const investSum = investThisMonth.reduce((s, f) => s + f.betrag, 0);

@@ -98,7 +98,7 @@ export function exportPdf(data: AppData, activeMonth: string): boolean {
     [`Geladene Energie`, `${fmtNum(st.kwh)} kWh`],
     [`Ladekosten`, fmtEUR(st.ladekosten)],
     ...st.fixcosts.map((f) => [f.label, fmtEUR(f.betrag)] as [string, string]),
-    ...st.investThisMonth.map((f) => [f.label + " (einmalig)", fmtEUR(f.betrag)] as [string, string]),
+    ...st.investThisMonth.map((f) => [f.label, fmtEUR(f.betrag)] as [string, string]),
     [`Gesamtkosten Monat`, fmtEUR(st.gesamtMonat)],
     [`km B10 diesen Monat`, st.kmInfo.b10 !== null ? fmtNum(st.kmInfo.b10, 0) + " km" : "keine Daten"],
     [`km T03 diesen Monat`, st.kmInfo.t03 !== null ? fmtNum(st.kmInfo.t03, 0) + " km" : "keine Daten"],
@@ -117,7 +117,7 @@ export function exportPdf(data: AppData, activeMonth: string): boolean {
   doc.setFontSize(8);
   doc.setTextColor(120);
   doc.text(
-    "Hinweis: Fixkosten werden ab ihrem jeweiligen Startdatum voll für den Monat angesetzt (keine Tages-Proration). km-Berechnung basiert auf den zuletzt erfassten km-Ständen bis Monatsende.",
+    "Hinweis: Fixkosten werden ab ihrem jeweiligen Startdatum voll für den Monat angesetzt (keine Tages-Proration). Investitionen werden über 36 Monate abgeschrieben (Betrag/36 pro Monat). km-Berechnung basiert auf den zuletzt erfassten km-Ständen bis Monatsende.",
     14,
     290,
     { maxWidth: 180 }
