@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { fmtEUR, fmtNum, householdStats, vehicleStats } from "@/lib/data";
 import type { AppData } from "@/lib/types";
 
@@ -16,6 +17,7 @@ function TcoCard({
   tco: number;
   extraLines: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
   const kmPreis = kmDriven > 0 ? tco / kmDriven : null;
   return (
     <div className={"tco-card" + (dotClass === "house" ? " house" : "")}>
@@ -26,17 +28,24 @@ function TcoCard({
       <div className="kmpreis">
         {kmPreis !== null ? fmtNum(kmPreis, 3) : "–"} <small>€/km</small>
       </div>
-      <div className="sub">
-        TCO gesamt: <b>{fmtEUR(tco)}</b>
-        <br />
-        {extraLines}
-      </div>
-      {kmDriven === 0 ? (
-        <div className="warn">Noch keine zwei km-Stände erfasst — €/km folgt automatisch.</div>
-      ) : (
-        <div className="sub" style={{ marginTop: 4 }}>
-          gefahren: <b>{fmtNum(kmDriven, 0)} km</b>
-        </div>
+      <button type="button" className="tco-toggle" onClick={() => setOpen((v) => !v)}>
+        {open ? "Details ausblenden ▾" : "Details anzeigen ▸"}
+      </button>
+      {open && (
+        <>
+          <div className="sub">
+            TCO gesamt: <b>{fmtEUR(tco)}</b>
+            <br />
+            {extraLines}
+          </div>
+          {kmDriven === 0 ? (
+            <div className="warn">Noch keine zwei km-Stände erfasst — €/km folgt automatisch.</div>
+          ) : (
+            <div className="sub" style={{ marginTop: 4 }}>
+              gefahren: <b>{fmtNum(kmDriven, 0)} km</b>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

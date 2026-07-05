@@ -143,10 +143,24 @@ section.tco {
   padding: 16px 16px 14px;
   position: relative;
   overflow: hidden;
-  background: var(--lav);
+  background: rgba(240, 237, 245, 0.7);
 }
 .tco-card.house {
-  background: linear-gradient(150deg, #fbf3e3, #f3e6c8);
+  background: linear-gradient(150deg, rgba(251, 243, 227, 0.7), rgba(243, 230, 200, 0.7));
+}
+.tco-toggle {
+  display: block;
+  margin-top: 8px;
+  border: none;
+  background: none;
+  color: var(--plum);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.tco-toggle:hover {
+  text-decoration: underline;
 }
 .tco-card .name {
   display: flex;
