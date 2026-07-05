@@ -127,7 +127,7 @@ main {
 
 /* ---- TCO panel ---- */
 section.tco {
-  background: var(--panel);
+  background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 22px clamp(14px, 3vw, 28px);
@@ -239,7 +239,7 @@ details.fixed-costs[open] summary::before {
   gap: 18px;
 }
 .fixed-box {
-  background: #fafafb;
+  background: rgba(250, 250, 251, 0.7);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 14px;
@@ -267,6 +267,39 @@ details.fixed-costs[open] summary::before {
 .field-row label {
   flex: 1;
   color: var(--ink-soft);
+}
+.slider-row {
+  align-items: flex-start;
+}
+.slider-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.slider-wrap input[type="range"] {
+  flex: 1;
+  width: auto;
+  accent-color: var(--plum);
+}
+.slider-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 12px;
+  color: var(--plum-deep);
+  flex: 0 0 auto;
+  min-width: 44px;
+}
+.entry-battery {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.battery-icon {
+  color: var(--plum-deep);
+  flex: 0 0 auto;
 }
 .field-row input {
   width: 120px;
@@ -351,7 +384,7 @@ nav.tabs {
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  background: var(--panel);
+  background: rgba(255, 255, 255, 0.7);
   border-radius: var(--radius) var(--radius) 0 0;
   padding: 10px 10px 0;
   border: 1px solid var(--line);
@@ -390,7 +423,7 @@ nav.tabs button.active::after {
 }
 
 section.panel {
-  background: var(--panel);
+  background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--line);
   border-radius: 0 0 var(--radius) var(--radius);
   padding: 22px clamp(14px, 3vw, 28px) 28px;
@@ -403,7 +436,7 @@ section.panel {
   margin-bottom: 22px;
 }
 .stat {
-  background: var(--lav);
+  background: rgba(240, 237, 245, 0.7);
   border-radius: 6px;
   padding: 7px 8px;
 }
@@ -423,7 +456,7 @@ section.panel {
 }
 .bar-wrap {
   grid-column: 1 / -1;
-  background: var(--lav);
+  background: rgba(240, 237, 245, 0.7);
   border-radius: 10px;
   padding: 14px 16px;
 }
@@ -650,7 +683,7 @@ tfoot td {
   gap: 3px;
   width: 100%;
   text-align: left;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 10px;
@@ -659,7 +692,7 @@ tfoot td {
 }
 .entry-card:hover {
   border-color: var(--plum);
-  background: var(--lav);
+  background: rgba(240, 237, 245, 0.7);
 }
 .entry-card-top {
   display: flex;

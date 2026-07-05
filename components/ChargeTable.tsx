@@ -6,6 +6,7 @@ import { fmtEUR, fmtNum, isEmptyRow, maybeAutofillPreis, minutesToDuration, mont
 import { exportCsv, exportJson, exportPdf, exportXlsx, importJson } from "@/lib/exports";
 import type { AppData, ChargeRow } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
+import BatteryIcon from "./BatteryIcon";
 
 export default function ChargeTable({
   data,
@@ -87,7 +88,6 @@ export default function ChargeTable({
         {visibleRows.length === 0 && <div className="entry-list-empty">Keine Ladevorgänge in diesem Monat.</div>}
         {visibleRows.map(({ row, idx }) => {
           const vehicleLabel = row.fahrzeug ? VEHICLES[row.fahrzeug].replace("Leapmotor ", "") : "–";
-          const akku = row.akkuVorher || row.akkuNachher ? `${row.akkuVorher || "?"}→${row.akkuNachher || "?"}%` : null;
           return (
             <button type="button" key={idx} className="entry-card" onClick={() => setEditingIdx(idx)}>
               <div className="entry-card-top">
@@ -97,7 +97,16 @@ export default function ChargeTable({
               </div>
               <div className="entry-card-bottom">
                 {row.ladestation && <span className="entry-station">{row.ladestation}</span>}
-                {akku && <span>{akku}</span>}
+                {row.akkuVorher && (
+                  <span className="entry-battery">
+                    <BatteryIcon percent={parseNum(row.akkuVorher)} /> {row.akkuVorher}%
+                  </span>
+                )}
+                {row.akkuNachher && (
+                  <span className="entry-battery">
+                    <BatteryIcon percent={parseNum(row.akkuNachher)} /> {row.akkuNachher}%
+                  </span>
+                )}
                 {row.kwh && <span>{row.kwh} kWh</span>}
                 {row.dauer && <span>{row.dauer} h</span>}
               </div>

@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { VEHICLES } from "@/lib/constants";
+import { parseNum } from "@/lib/data";
 import { locateStation } from "@/lib/gps";
 import type { ChargeRow, VehicleKey } from "@/lib/types";
+import BatteryIcon from "./BatteryIcon";
 
 export default function EntryFormModal({
   title,
@@ -35,11 +37,11 @@ export default function EntryFormModal({
         <h3>{title}</h3>
 
         <div className="field-row">
-          <label>Datum</label>
+          <label>📅 Datum</label>
           <input type="date" value={form.datum} onChange={(e) => patch({ datum: e.target.value })} />
         </div>
         <div className="field-row">
-          <label>Fahrzeug</label>
+          <label>🚗 Fahrzeug</label>
           <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
             <option value="">–</option>
             {Object.entries(VEHICLES).map(([val, lbl]) => (
@@ -50,7 +52,7 @@ export default function EntryFormModal({
           </select>
         </div>
         <div className="field-row">
-          <label>Ladekarte</label>
+          <label>💳 Ladekarte</label>
           <select value={form.karte} onChange={(e) => patch({ karte: e.target.value })}>
             <option value="">– wählen –</option>
             {options.map((c) => (
@@ -61,7 +63,7 @@ export default function EntryFormModal({
           </select>
         </div>
         <div className="field-row">
-          <label>Ladestation</label>
+          <label>🔌 Ladestation</label>
           <div className="station-cell">
             <input
               type="text"
@@ -94,44 +96,52 @@ export default function EntryFormModal({
             </button>
           </div>
         </div>
-        <div className="field-row">
-          <label>Akku % vorher</label>
-          <input
-            type="number"
-            step="1"
-            min="0"
-            max="100"
-            placeholder="%"
-            value={form.akkuVorher}
-            onChange={(e) => patch({ akkuVorher: e.target.value })}
-          />
+        <div className="field-row slider-row">
+          <label>🔋 Akku vorher</label>
+          <div className="slider-wrap">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={form.akkuVorher || 0}
+              onChange={(e) => patch({ akkuVorher: e.target.value })}
+            />
+            <span className="slider-value">
+              <BatteryIcon percent={parseNum(form.akkuVorher)} /> {form.akkuVorher || 0}%
+            </span>
+          </div>
+        </div>
+        <div className="field-row slider-row">
+          <label>🔋 Akku nachher</label>
+          <div className="slider-wrap">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={form.akkuNachher || 0}
+              onChange={(e) => patch({ akkuNachher: e.target.value })}
+            />
+            <span className="slider-value">
+              <BatteryIcon percent={parseNum(form.akkuNachher)} /> {form.akkuNachher || 0}%
+            </span>
+          </div>
         </div>
         <div className="field-row">
-          <label>Akku % nachher</label>
-          <input
-            type="number"
-            step="1"
-            min="0"
-            max="100"
-            placeholder="%"
-            value={form.akkuNachher}
-            onChange={(e) => patch({ akkuNachher: e.target.value })}
-          />
-        </div>
-        <div className="field-row">
-          <label>Dauer (hh:mm)</label>
+          <label>⏱️ Dauer (hh:mm)</label>
           <input type="text" placeholder="hh:mm" value={form.dauer} onChange={(e) => patch({ dauer: e.target.value })} />
         </div>
         <div className="field-row">
-          <label>kWh</label>
+          <label>⚡ kWh</label>
           <input type="number" step="0.01" min="0" value={form.kwh} onChange={(e) => patch({ kwh: e.target.value })} />
         </div>
         <div className="field-row">
-          <label>Preis €</label>
+          <label>💶 Preis €</label>
           <input type="number" step="0.01" min="0" value={form.preis} onChange={(e) => patch({ preis: e.target.value })} />
         </div>
         <div className="field-row">
-          <label>km-Stand</label>
+          <label>🛣️ km-Stand</label>
           <input type="number" step="1" min="0" placeholder="km" value={form.km} onChange={(e) => patch({ km: e.target.value })} />
         </div>
 
