@@ -32,7 +32,7 @@ export function emptyInvest(): Investition {
   return { datum: "", fahrzeug: "", beschreibung: "", betrag: "" };
 }
 export function emptyRecurring(): RecurringCost {
-  return { beschreibung: "", fahrzeug: "", betrag: "", start: "" };
+  return { anbieter: "", zweck: "", fahrzeug: "", betrag: "", start: "" };
 }
 
 export function defaultData(): AppData {
@@ -71,7 +71,7 @@ export function migrate(raw: unknown): AppData {
     if (d.abos) {
       Object.entries(d.abos).forEach(([karte, fee]) => {
         if (parseFloat(String(fee).replace(",", ".")) > 0) {
-          (d.recurringCosts as RecurringCost[]).push({ beschreibung: karte + " (Abo)", fahrzeug: "", betrag: String(fee), start: d.erfassungStart as string });
+          (d.recurringCosts as RecurringCost[]).push({ anbieter: karte, zweck: "Abo", fahrzeug: "", betrag: String(fee), start: d.erfassungStart as string });
         }
       });
     }
@@ -292,7 +292,8 @@ export function computeMonthStatement(data: AppData, monthKey: string): MonthSta
     const start = r.start || data.erfassungStart;
     if (start && start <= lastDay && parseNum(r.betrag) > 0) {
       const scope = r.fahrzeug ? r.fahrzeug.toUpperCase() : "Haushalt";
-      fixcosts.push({ label: `${r.beschreibung || "Wiederkehrende Kosten"} (${scope})`, betrag: parseNum(r.betrag) });
+      const desc = [r.anbieter, r.zweck].filter(Boolean).join(" – ") || "Wiederkehrende Kosten";
+      fixcosts.push({ label: `${desc} (${scope})`, betrag: parseNum(r.betrag) });
     }
   });
 

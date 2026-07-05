@@ -24,7 +24,8 @@ export interface Investition {
 }
 
 export interface RecurringCost {
-  beschreibung: string;
+  anbieter: string;
+  zweck: string;
   fahrzeug: "" | VehicleKey;
   betrag: string;
   start: string;

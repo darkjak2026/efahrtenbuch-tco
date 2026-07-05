@@ -11,6 +11,7 @@ import FixedCostsPanel from "./FixedCostsPanel";
 import MonthTabs from "./MonthTabs";
 import ChargeTable from "./ChargeTable";
 import AddEntryFab from "./AddEntryFab";
+import ExportPanel from "./ExportPanel";
 import Footer from "./Footer";
 import { currentMonthKey } from "@/lib/constants";
 
@@ -120,7 +121,6 @@ export default function AppClient() {
       <main>
         <section className="tco">
           <TcoPanel data={data} />
-          <FixedCostsPanel data={data} updateData={updateData} />
         </section>
 
         <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
@@ -132,6 +132,16 @@ export default function AppClient() {
             setActiveMonth={setActiveMonth}
             showToast={showToast}
           />
+        </section>
+
+        <section className="tco fixed-panel-card">
+          <h2 className="section-title">🧾 Fixkosten, Ladekarten &amp; Investitionen</h2>
+          <FixedCostsPanel data={data} updateData={updateData} />
+        </section>
+
+        <section className="tco export-panel-card">
+          <h2 className="section-title">📦 Exportieren</h2>
+          <ExportPanel data={data} activeMonth={activeMonth} updateData={updateData} showToast={showToast} />
         </section>
       </main>
 
