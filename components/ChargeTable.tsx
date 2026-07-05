@@ -244,10 +244,7 @@ export default function ChargeTable({
         </table>
       </div>
 
-      <div className="toolbar">
-        <button className="btn btn-primary" onClick={() => updateData((d) => { d.months[activeMonth].push(emptyRow()); })}>
-          + Zeile hinzufügen
-        </button>
+      <div className="toolbar" style={{ justifyContent: "flex-end" }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button
             className="btn btn-ghost"

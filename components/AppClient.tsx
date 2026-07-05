@@ -10,6 +10,7 @@ import TcoPanel from "./TcoPanel";
 import FixedCostsPanel from "./FixedCostsPanel";
 import MonthTabs from "./MonthTabs";
 import ChargeTable from "./ChargeTable";
+import AddEntryFab from "./AddEntryFab";
 import { MONTHS } from "@/lib/constants";
 
 type Status = "gate" | "loading" | "ready";
@@ -123,6 +124,14 @@ export default function AppClient() {
           <ChargeTable data={data} activeMonth={activeMonth} updateData={updateData} showToast={showToast} />
         </section>
       </main>
+
+      <AddEntryFab
+        data={data}
+        activeMonth={activeMonth}
+        updateData={updateData}
+        setActiveMonth={setActiveMonth}
+        showToast={showToast}
+      />
 
       <div className={"toast" + (toast ? " show" : "")}>{toast}</div>
     </>

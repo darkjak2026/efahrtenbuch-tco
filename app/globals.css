@@ -766,3 +766,59 @@ tfoot td {
   color: var(--ink-soft);
   font-family: var(--font-jetbrains-mono), monospace;
 }
+
+/* ---- Floating "add entry" button + modal ---- */
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--plum);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(53, 40, 73, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fab:hover {
+  background: var(--plum-deep);
+}
+.fab-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 32, 39, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1001;
+}
+.fab-modal {
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 22px;
+  width: 100%;
+  max-width: 380px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+.fab-modal h3 {
+  font-family: var(--font-space-grotesk), sans-serif;
+  color: var(--plum-deep);
+  font-size: 16px;
+  margin: 0 0 14px;
+}
+.fab-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
