@@ -130,35 +130,29 @@ export default function EntryFormModal({
         </div>
         <div className="field-row slider-row">
           <label>🔋 Akku vorher</label>
-          <div className="slider-wrap">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              value={form.akkuVorher || 0}
-              onChange={(e) => patch({ akkuVorher: e.target.value })}
-            />
-            <span className="slider-value">
-              <BatteryIcon percent={parseNum(form.akkuVorher)} />
-            </span>
-          </div>
+          <BatteryIcon percent={parseNum(form.akkuVorher)} />
+          <input
+            type="range"
+            className="battery-slider"
+            min="0"
+            max="100"
+            step="1"
+            value={form.akkuVorher || 0}
+            onChange={(e) => patch({ akkuVorher: e.target.value })}
+          />
         </div>
         <div className="field-row slider-row">
           <label>🔋 Akku nachher</label>
-          <div className="slider-wrap">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              value={form.akkuNachher || 0}
-              onChange={(e) => patch({ akkuNachher: e.target.value })}
-            />
-            <span className="slider-value">
-              <BatteryIcon percent={parseNum(form.akkuNachher)} />
-            </span>
-          </div>
+          <BatteryIcon percent={parseNum(form.akkuNachher)} />
+          <input
+            type="range"
+            className="battery-slider"
+            min="0"
+            max="100"
+            step="1"
+            value={form.akkuNachher || 0}
+            onChange={(e) => patch({ akkuNachher: e.target.value })}
+          />
         </div>
         <div className="field-row">
           <label>⏱️ Dauer</label>
