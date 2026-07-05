@@ -135,12 +135,12 @@ section.tco {
 }
 .tco-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+  gap: 7px;
 }
 .tco-card {
-  border-radius: 10px;
-  padding: 16px 16px 14px;
+  border-radius: 6px;
+  padding: 8px 8px 6px;
   position: relative;
   overflow: hidden;
   background: rgba(240, 237, 245, 0.7);
@@ -150,11 +150,11 @@ section.tco {
 }
 .tco-toggle {
   display: block;
-  margin-top: 8px;
+  margin-top: 4px;
   border: none;
   background: none;
   color: var(--plum);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -165,29 +165,29 @@ section.tco {
 .tco-card .name {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   font-weight: 600;
-  font-size: 13px;
-  margin-bottom: 10px;
+  font-size: 10px;
+  margin-bottom: 5px;
   color: var(--plum-deep);
 }
 .tco-card .kmpreis {
   font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 26px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--plum-deep);
   line-height: 1.1;
 }
 .tco-card .kmpreis small {
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 500;
   color: var(--ink-soft);
 }
 .tco-card .sub {
-  font-size: 11.5px;
+  font-size: 10px;
   color: var(--ink-soft);
-  margin-top: 10px;
-  line-height: 1.6;
+  margin-top: 5px;
+  line-height: 1.5;
 }
 .tco-card .sub b {
   color: var(--ink);
@@ -195,9 +195,9 @@ section.tco {
   font-weight: 600;
 }
 .tco-card .warn {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--danger);
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 /* ---- collapsible fixed-cost section (deliberately quieter) ---- */
