@@ -128,19 +128,18 @@ section.tco {
 }
 .tco-card {
   border-radius: 12px;
-  padding: 20px 18px 18px;
+  padding: 14px 14px 12px;
   position: relative;
   overflow: hidden;
   background: rgba(44, 39, 64, 0.85);
-  min-height: 40vh;
 }
 .tco-toggle {
   display: block;
-  margin-top: 10px;
+  margin-top: 6px;
   border: none;
   background: none;
   color: var(--plum);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -151,33 +150,34 @@ section.tco {
 .tco-card .name {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 5px;
+  margin-bottom: 6px;
   color: var(--accent);
 }
 .tco-card .name .dot {
   margin-top: 8px;
 }
 .vehicle-nickname {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 800;
   white-space: nowrap;
 }
 .vehicle-official {
   display: block;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 400;
   color: var(--ink-soft);
 }
 .tco-card .kmpreis {
   font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 34px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--accent);
   line-height: 1.1;
+  white-space: nowrap;
 }
 .tco-card .kmpreis small {
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 500;
   color: var(--ink-soft);
 }
