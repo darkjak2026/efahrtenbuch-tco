@@ -376,59 +376,6 @@ details.fixed-costs[open] summary::before {
 .field-row .station-cell {
   min-width: 0;
 }
-.duration-section {
-  margin-bottom: 14px;
-  text-align: center;
-}
-.duration-section label {
-  display: block;
-  font-size: 13px;
-  color: var(--ink-soft);
-  margin-bottom: 6px;
-}
-.duration-dial-wrap {
-  display: flex;
-  justify-content: center;
-}
-.duration-dial {
-  touch-action: none;
-  cursor: pointer;
-}
-.duration-dial-value {
-  font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 11px;
-  font-weight: 700;
-  fill: var(--plum-deep);
-}
-.duration-dial-block {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.duration-dial-legend {
-  display: flex;
-  gap: 12px;
-  font-size: 11px;
-  color: var(--ink-soft);
-}
-.duration-dial-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.legend-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-.legend-dot.hours {
-  background: var(--plum);
-}
-.legend-dot.minutes {
-  background: var(--glacier-deep);
-}
 .small-table {
   width: 100%;
   font-size: 12.5px;

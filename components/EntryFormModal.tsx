@@ -6,7 +6,6 @@ import { allRows, durationToMinutes, maybeAutofillPreis, minutesToDuration, pars
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import BatteryIcon from "./BatteryIcon";
-import DurationDial from "./DurationDial";
 
 const HINT_ICONS = ["⚡", "🔌", "🚗", "🔋", "🛣️"];
 
@@ -92,17 +91,15 @@ export default function EntryFormModal({
     return candidates.length ? parseNum(candidates[0].km) : null;
   })();
 
-  // The dial keeps its own raw (hours, minutes) pair — minutes can transiently
-  // exceed 59 while dragging the outer ring — decoupled from the normalized
-  // "H:MM" string stored in form.dauer, so it never snaps back mid-drag.
-  const initialTotalMinutes = durationToMinutes(initial.dauer);
-  const [dialHours, setDialHours] = useState(() => Math.min(Math.floor(initialTotalMinutes / 60), 14));
-  const [dialMinutes, setDialMinutes] = useState(() => initialTotalMinutes % 60);
-  const setDuration = (hours: number, minutes: number) => {
-    setDialHours(hours);
-    setDialMinutes(minutes);
-    patch({ dauer: minutesToDuration(hours * 60 + minutes) });
-  };
+  // Fast direct entry: type the total number of minutes (1 to 3 digits), no
+  // dragging. The formatted readout below switches from "N min" to "H:MM"
+  // once the value reaches an hour, purely for display — the input itself
+  // always just takes a plain minute count.
+  const totalDurationMinutes = durationToMinutes(form.dauer);
+  const durationDisplay =
+    totalDurationMinutes >= 60
+      ? `${Math.floor(totalDurationMinutes / 60)}:${String(totalDurationMinutes % 60).padStart(2, "0")} h`
+      : `${totalDurationMinutes} min`;
 
   return (
     <div className="fab-overlay" onClick={onClose}>
@@ -195,12 +192,20 @@ export default function EntryFormModal({
             onChange={(e) => patch({ akkuNachher: e.target.value })}
           />
         </div>
-        <div className="duration-section">
-          <label>⏱️ Ladedauer</label>
-          <div className="duration-dial-wrap">
-            <DurationDial hours={dialHours} minutes={dialMinutes} onChange={setDuration} />
-          </div>
+        <div className="field-row">
+          <label>⏱️ Dauer (Minuten)</label>
+          <input
+            type="number"
+            inputMode="numeric"
+            step="1"
+            min="0"
+            max="999"
+            placeholder="min"
+            value={totalDurationMinutes || ""}
+            onChange={(e) => patch({ dauer: minutesToDuration(Number(e.target.value) || 0) })}
+          />
         </div>
+        {totalDurationMinutes > 0 && <div className="field-hint">= {durationDisplay}</div>}
         <div className="field-row">
           <label>⚡ kWh</label>
           <input
