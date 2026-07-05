@@ -1,38 +1,61 @@
 "use client";
 
-import { useRef } from "react";
-import { VEHICLES } from "@/lib/constants";
-import { emptyRow, fmtEUR, fmtNum, maybeAutofillPreis, minutesToDuration, monthTotals, parseNum } from "@/lib/data";
+import { useRef, useState } from "react";
+import { VEHICLES, MONTHS } from "@/lib/constants";
+import { fmtEUR, fmtNum, isEmptyRow, maybeAutofillPreis, minutesToDuration, monthKeyFromDate, monthTotals, parseNum } from "@/lib/data";
 import { exportCsv, exportJson, exportPdf, exportXlsx, importJson } from "@/lib/exports";
-import { locateStation } from "@/lib/gps";
-import type { AppData, VehicleKey } from "@/lib/types";
-import { MONTHS } from "@/lib/constants";
+import type { AppData, ChargeRow } from "@/lib/types";
+import EntryFormModal from "./EntryFormModal";
 
 export default function ChargeTable({
   data,
   activeMonth,
   updateData,
+  setActiveMonth,
   showToast,
 }: {
   data: AppData;
   activeMonth: string;
   updateData: (fn: (d: AppData) => void) => void;
+  setActiveMonth: (key: string) => void;
   showToast: (msg: string) => void;
 }) {
   const importFileRef = useRef<HTMLInputElement>(null);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
 
   const rows = data.months[activeMonth] || [];
   const totals = monthTotals(data, activeMonth);
   const allMax = Math.max(1, ...MONTHS.map((m) => monthTotals(data, m.key).kwh));
   const pct = Math.round((totals.kwh / allMax) * 100);
 
-  const cumulative = rows.reduce<{ kwh: number; preis: number }[]>((acc, row) => {
-    const prevKwh = acc.length ? acc[acc.length - 1].kwh : 0;
-    const prevPreis = acc.length ? acc[acc.length - 1].preis : 0;
-    acc.push({ kwh: prevKwh + parseNum(row.kwh), preis: prevPreis + parseNum(row.preis) });
-    return acc;
-  }, []);
-  const grandTotal = cumulative.length ? cumulative[cumulative.length - 1] : { kwh: 0, preis: 0 };
+  const visibleRows = rows
+    .map((row, idx) => ({ row, idx }))
+    .filter(({ row }) => !isEmptyRow(row))
+    .sort((a, b) => (b.row.datum || "").localeCompare(a.row.datum || ""));
+
+  const commitEdit = (updated: ChargeRow, sourceIdx: number) => {
+    const targetMonth = monthKeyFromDate(updated.datum) ?? activeMonth;
+    updateData((d) => {
+      d.months[activeMonth].splice(sourceIdx, 1);
+      const targetRows = d.months[targetMonth];
+      const emptyIdx = targetRows.findIndex(isEmptyRow);
+      if (emptyIdx !== -1) targetRows[emptyIdx] = updated;
+      else targetRows.push(updated);
+    });
+    if (targetMonth !== activeMonth) setActiveMonth(targetMonth);
+    showToast("Ladevorgang aktualisiert");
+    setEditingIdx(null);
+  };
+
+  const deleteEntry = (idx: number) => {
+    updateData((d) => {
+      d.months[activeMonth].splice(idx, 1);
+    });
+    showToast("Ladevorgang gelöscht");
+    setEditingIdx(null);
+  };
+
+  const editingRow = editingIdx !== null ? rows[editingIdx] : null;
 
   return (
     <>
@@ -60,189 +83,44 @@ export default function ChargeTable({
         </div>
       </div>
 
-      <div className="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th style={{ width: 120 }}>Datum</th>
-              <th style={{ width: 90 }}>Fahrzeug</th>
-              <th>Ladekarte</th>
-              <th style={{ width: 170 }}>Ladestation</th>
-              <th style={{ width: 105 }}>Dauer</th>
-              <th style={{ width: 80 }}>kWh</th>
-              <th style={{ width: 100 }}>Preis €</th>
-              <th style={{ width: 100 }}>km-Stand</th>
-              <th style={{ width: 90 }}>kWh kum.</th>
-              <th style={{ width: 110 }}>€ kum.</th>
-              <th className="actions"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, idx) => {
-              const cardOptions = data.cardsList.slice();
-              if (row.karte && !cardOptions.includes(row.karte)) cardOptions.push(row.karte);
-
-              return (
-                <tr key={idx}>
-                  <td data-label="Datum">
-                    <input
-                      type="date"
-                      value={row.datum}
-                      onChange={(e) => updateData((d) => { d.months[activeMonth][idx].datum = e.target.value; })}
-                    />
-                  </td>
-                  <td data-label="Fahrzeug">
-                    <select
-                      value={row.fahrzeug}
-                      onChange={(e) => updateData((d) => { d.months[activeMonth][idx].fahrzeug = e.target.value as "" | VehicleKey; })}
-                    >
-                      <option value="">–</option>
-                      {Object.entries(VEHICLES).map(([val, lbl]) => (
-                        <option key={val} value={val}>
-                          {lbl.replace("Leapmotor ", "")}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td data-label="Ladekarte">
-                    <select
-                      value={row.karte}
-                      onChange={(e) =>
-                        updateData((d) => {
-                          const r = d.months[activeMonth][idx];
-                          r.karte = e.target.value;
-                          maybeAutofillPreis(d, r);
-                        })
-                      }
-                    >
-                      <option value="">– wählen –</option>
-                      {cardOptions.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td data-label="Ladestation">
-                    <div className="station-cell">
-                      <input
-                        type="text"
-                        placeholder="Name der Ladestation"
-                        value={row.ladestation || ""}
-                        onChange={(e) => updateData((d) => { d.months[activeMonth][idx].ladestation = e.target.value; })}
-                      />
-                      <button
-                        type="button"
-                        className="locate-btn"
-                        title="Standort per GPS abrufen und Ladestation nachschlagen"
-                        onClick={(e) => {
-                          const btn = e.currentTarget;
-                          btn.classList.add("busy");
-                          btn.disabled = true;
-                          locateStation(
-                            row.ladestation || "",
-                            (result) => {
-                              btn.classList.remove("busy");
-                              btn.disabled = false;
-                              updateData((d) => {
-                                const r = d.months[activeMonth][idx];
-                                r.lat = result.lat;
-                                r.lon = result.lon;
-                                r.ladestation = result.ladestation;
-                              });
-                              showToast(result.toast);
-                            },
-                            (msg) => {
-                              btn.classList.remove("busy");
-                              btn.disabled = false;
-                              showToast(msg);
-                            }
-                          );
-                        }}
-                      >
-                        📍
-                      </button>
-                    </div>
-                  </td>
-                  <td data-label="Dauer">
-                    <input
-                      type="text"
-                      placeholder="hh:mm"
-                      value={row.dauer}
-                      onChange={(e) => updateData((d) => { d.months[activeMonth][idx].dauer = e.target.value; })}
-                    />
-                  </td>
-                  <td className="num" data-label="kWh">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={row.kwh}
-                      onChange={(e) =>
-                        updateData((d) => {
-                          const r = d.months[activeMonth][idx];
-                          r.kwh = e.target.value;
-                          maybeAutofillPreis(d, r);
-                        })
-                      }
-                    />
-                  </td>
-                  <td className="num" data-label="Preis €">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={row.preis}
-                      onChange={(e) => updateData((d) => { d.months[activeMonth][idx].preis = e.target.value; })}
-                    />
-                  </td>
-                  <td className="num" data-label="km-Stand">
-                    <input
-                      type="number"
-                      step="1"
-                      min="0"
-                      placeholder="km"
-                      value={row.km}
-                      onChange={(e) => updateData((d) => { d.months[activeMonth][idx].km = e.target.value; })}
-                    />
-                  </td>
-                  <td className="num" data-label="kWh kum.">
-                    {fmtNum(cumulative[idx].kwh)}
-                  </td>
-                  <td className="num" data-label="€ kum.">
-                    {fmtEUR(cumulative[idx].preis)}
-                  </td>
-                  <td className="actions">
-                    <button
-                      className="del-btn"
-                      title="Zeile löschen"
-                      onClick={() =>
-                        updateData((d) => {
-                          const list = d.months[activeMonth];
-                          list.splice(idx, 1);
-                          if (list.length === 0) list.push(emptyRow());
-                        })
-                      }
-                    >
-                      ✕
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colSpan={5} style={{ textAlign: "right" }}>
-                Summe
-              </td>
-              <td>{fmtNum(grandTotal.kwh)}</td>
-              <td>{fmtEUR(grandTotal.preis)}</td>
-              <td colSpan={3}></td>
-            </tr>
-          </tfoot>
-        </table>
+      <div className="entry-list">
+        {visibleRows.length === 0 && <div className="entry-list-empty">Keine Ladevorgänge in diesem Monat.</div>}
+        {visibleRows.map(({ row, idx }) => {
+          const vehicleLabel = row.fahrzeug ? VEHICLES[row.fahrzeug].replace("Leapmotor ", "") : "–";
+          const akku = row.akkuVorher || row.akkuNachher ? `${row.akkuVorher || "?"}→${row.akkuNachher || "?"}%` : null;
+          return (
+            <button type="button" key={idx} className="entry-card" onClick={() => setEditingIdx(idx)}>
+              <div className="entry-card-top">
+                <span className="entry-date">{row.datum || "ohne Datum"}</span>
+                <span className={"entry-vehicle-badge" + (row.fahrzeug ? " " + row.fahrzeug : "")}>{vehicleLabel}</span>
+                <span className="entry-price">{row.preis ? fmtEUR(parseNum(row.preis)) : "–"}</span>
+              </div>
+              <div className="entry-card-bottom">
+                {row.ladestation && <span className="entry-station">{row.ladestation}</span>}
+                {akku && <span>{akku}</span>}
+                {row.kwh && <span>{row.kwh} kWh</span>}
+                {row.dauer && <span>{row.dauer} h</span>}
+              </div>
+            </button>
+          );
+        })}
       </div>
+
+      {editingRow && (
+        <EntryFormModal
+          title="Ladevorgang bearbeiten"
+          initial={editingRow}
+          cardOptions={data.cardsList}
+          onSave={(updated) => {
+            const row = { ...updated };
+            maybeAutofillPreis(data, row);
+            commitEdit(row, editingIdx!);
+          }}
+          onDelete={() => deleteEntry(editingIdx!)}
+          onClose={() => setEditingIdx(null)}
+          showToast={showToast}
+        />
+      )}
 
       <div className="toolbar" style={{ justifyContent: "flex-end" }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>

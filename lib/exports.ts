@@ -23,8 +23,14 @@ function downloadBlob(content: BlobPart, filename: string, type: string) {
 
 export function exportCsv(data: AppData, activeMonth: string) {
   const rows = data.months[activeMonth];
-  const lines = ["Datum;Fahrzeug;Ladekarte;Ladestation;Dauer;kWh;Preis;km-Stand"];
-  rows.forEach((r) => lines.push([r.datum, r.fahrzeug, r.karte, r.ladestation || "", r.dauer, r.kwh, r.preis, r.km].join(";")));
+  const lines = ["Datum;Fahrzeug;Ladekarte;Ladestation;Akku vorher %;Akku nachher %;Dauer;kWh;Preis;km-Stand"];
+  rows.forEach((r) =>
+    lines.push(
+      [r.datum, r.fahrzeug, r.karte, r.ladestation || "", r.akkuVorher || "", r.akkuNachher || "", r.dauer, r.kwh, r.preis, r.km].join(
+        ";"
+      )
+    )
+  );
   const label = MONTHS.find((m) => m.key === activeMonth)!.label;
   downloadBlob(lines.join("\n"), `Ladeprotokoll_${label}_2026.csv`, "text/csv;charset=utf-8");
 }
@@ -64,12 +70,13 @@ export function exportPdf(data: AppData, activeMonth: string): boolean {
 
   doc.autoTable({
     startY: 30,
-    head: [["Datum", "Fahrzeug", "Karte", "Station", "Dauer", "kWh", "Preis €", "km-Stand"]],
+    head: [["Datum", "Fahrzeug", "Karte", "Station", "Akku %", "Dauer", "kWh", "Preis €", "km-Stand"]],
     body: st.rows.map((r) => [
       r.datum || "",
       (r.fahrzeug || "").toUpperCase(),
       r.karte || "",
       r.ladestation || "",
+      r.akkuVorher || r.akkuNachher ? `${r.akkuVorher || "?"}→${r.akkuNachher || "?"}` : "",
       r.dauer || "",
       r.kwh ? fmtNum(parseNum(r.kwh)) : "",
       r.preis ? fmtEUR(parseNum(r.preis)) : "",
@@ -127,8 +134,23 @@ export function exportXlsx(data: AppData): boolean {
 
   MONTHS.forEach((m) => {
     const rows = data.months[m.key] || [];
-    const sheetData = [["Datum", "Fahrzeug", "Ladekarte", "Ladestation", "Dauer", "kWh", "Preis €", "km-Stand"]];
-    rows.forEach((r) => sheetData.push([r.datum, r.fahrzeug, r.karte, r.ladestation, r.dauer, String(parseNum(r.kwh)), String(parseNum(r.preis)), r.km ? String(parseNum(r.km)) : ""]));
+    const sheetData = [
+      ["Datum", "Fahrzeug", "Ladekarte", "Ladestation", "Akku vorher %", "Akku nachher %", "Dauer", "kWh", "Preis €", "km-Stand"],
+    ];
+    rows.forEach((r) =>
+      sheetData.push([
+        r.datum,
+        r.fahrzeug,
+        r.karte,
+        r.ladestation,
+        r.akkuVorher ? String(parseNum(r.akkuVorher)) : "",
+        r.akkuNachher ? String(parseNum(r.akkuNachher)) : "",
+        r.dauer,
+        String(parseNum(r.kwh)),
+        String(parseNum(r.preis)),
+        r.km ? String(parseNum(r.km)) : "",
+      ])
+    );
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
     XLSX.utils.book_append_sheet(wb, ws, m.label.slice(0, 31));
   });

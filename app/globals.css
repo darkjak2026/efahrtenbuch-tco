@@ -632,6 +632,84 @@ tfoot td {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ---- Compact charge-log list (tap a card to edit) ---- */
+.entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.entry-list-empty {
+  color: var(--ink-soft);
+  font-size: 13px;
+  padding: 16px 4px;
+  text-align: center;
+}
+.entry-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.entry-card:hover {
+  border-color: var(--plum);
+  background: var(--lav);
+}
+.entry-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.entry-date {
+  font-family: var(--font-jetbrains-mono), monospace;
+  color: var(--ink-soft);
+  flex: 0 0 auto;
+}
+.entry-vehicle-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--lav);
+  color: var(--plum-deep);
+  flex: 0 0 auto;
+}
+.entry-vehicle-badge.b10 {
+  background: rgba(185, 143, 203, 0.25);
+}
+.entry-vehicle-badge.t03 {
+  background: rgba(143, 198, 224, 0.25);
+}
+.entry-price {
+  margin-left: auto;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-weight: 700;
+  color: var(--plum-deep);
+}
+.entry-card-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.entry-station {
+  font-weight: 600;
+  color: var(--ink);
+}
+.fab-delete {
+  color: var(--danger);
+  margin-right: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bar-fill,
   html {

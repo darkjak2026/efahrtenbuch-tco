@@ -121,7 +121,13 @@ export default function AppClient() {
 
         <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
         <section className="panel">
-          <ChargeTable data={data} activeMonth={activeMonth} updateData={updateData} showToast={showToast} />
+          <ChargeTable
+            data={data}
+            activeMonth={activeMonth}
+            updateData={updateData}
+            setActiveMonth={setActiveMonth}
+            showToast={showToast}
+          />
         </section>
       </main>
 

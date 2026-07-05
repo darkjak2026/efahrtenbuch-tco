@@ -2,7 +2,30 @@ import { MONTHS, DEFAULT_CARDS } from "./constants";
 import type { AppData, ChargeRow, Investition, RecurringCost, VehicleKey } from "./types";
 
 export function emptyRow(): ChargeRow {
-  return { datum: "", fahrzeug: "", karte: "", ladestation: "", lat: "", lon: "", dauer: "", kwh: "", preis: "", km: "" };
+  return {
+    datum: "",
+    fahrzeug: "",
+    karte: "",
+    ladestation: "",
+    lat: "",
+    lon: "",
+    akkuVorher: "",
+    akkuNachher: "",
+    dauer: "",
+    kwh: "",
+    preis: "",
+    km: "",
+  };
+}
+
+export function isEmptyRow(r: ChargeRow): boolean {
+  return !r.datum && !r.fahrzeug && !r.karte && !r.ladestation && !r.kwh && !r.preis && !r.km;
+}
+
+export function monthKeyFromDate(datum: string): string | null {
+  if (!datum) return null;
+  const key = datum.slice(0, 7);
+  return MONTHS.some((m) => m.key === key) ? key : null;
 }
 export function emptyInvest(): Investition {
   return { datum: "", fahrzeug: "", beschreibung: "", betrag: "" };
