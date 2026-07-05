@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { fmtEUR, fmtNum, householdStats, vehicleStats } from "@/lib/data";
+import { fmtEUR, fmtNum, vehicleStats } from "@/lib/data";
 import type { AppData } from "@/lib/types";
 
 function TcoCard({
@@ -54,7 +54,6 @@ function TcoCard({
 export default function TcoPanel({ data }: { data: AppData }) {
   const b10 = vehicleStats(data, "b10");
   const t03 = vehicleStats(data, "t03");
-  const house = householdStats(data, b10, t03);
 
   return (
     <div className="tco-cards">
@@ -94,19 +93,6 @@ export default function TcoPanel({ data }: { data: AppData }) {
           }
         />
       </div>
-      <TcoCard
-        title="Haushalt gesamt"
-        dotClass="house"
-        kmDriven={house.kmDriven}
-        tco={house.tco}
-        extraLines={
-          <>
-            Wiederk. Kosten (Haushalt): <b>{fmtEUR(house.recurring)}</b>
-            <br />
-            Sonst. Investitionen: <b>{fmtEUR(house.investHaushalt)}</b>
-          </>
-        }
-      />
     </div>
   );
 }
