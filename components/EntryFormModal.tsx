@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { VEHICLES } from "@/lib/constants";
-import { maybeAutofillPreis, parseNum } from "@/lib/data";
+import { allRows, durationToMinutes, maybeAutofillPreis, minutesToDuration, parseNum } from "@/lib/data";
 import { locateStation } from "@/lib/gps";
-import type { ChargeRow, VehicleKey } from "@/lib/types";
+import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import BatteryIcon from "./BatteryIcon";
 
 export default function EntryFormModal({
   title,
   initial,
+  data,
   cardOptions,
   cardTarife,
   onSave,
@@ -19,6 +20,7 @@ export default function EntryFormModal({
 }: {
   title: string;
   initial: ChargeRow;
+  data: AppData;
   cardOptions: string[];
   cardTarife: Record<string, string | number>;
   onSave: (row: ChargeRow) => void;
@@ -43,6 +45,34 @@ export default function EntryFormModal({
 
   const options = cardOptions.includes(form.karte) || !form.karte ? cardOptions : [...cardOptions, form.karte];
 
+  // Last known odometer reading for the selected vehicle, excluding this very entry
+  // (relevant when editing — `initial` is the actual row object from `data`).
+  const lastKnownKm = (() => {
+    if (!form.fahrzeug) return null;
+    const candidates = allRows(data)
+      .filter((r) => r.fahrzeug === form.fahrzeug && r !== initial && r.datum && parseNum(r.km) > 0)
+      .sort((a, b) => b.datum.localeCompare(a.datum));
+    return candidates.length ? parseNum(candidates[0].km) : null;
+  })();
+
+  const setFahrzeug = (fahrzeug: "" | VehicleKey) => {
+    setForm((f) => {
+      const next = { ...f, fahrzeug };
+      if (!next.km && fahrzeug) {
+        const candidates = allRows(data)
+          .filter((r) => r.fahrzeug === fahrzeug && r !== initial && r.datum && parseNum(r.km) > 0)
+          .sort((a, b) => b.datum.localeCompare(a.datum));
+        if (candidates.length) next.km = String(parseNum(candidates[0].km));
+      }
+      return next;
+    });
+  };
+
+  const totalMinutes = durationToMinutes(form.dauer);
+  const durHours = Math.floor(totalMinutes / 60);
+  const durMinutes = totalMinutes % 60;
+  const setDuration = (hours: number, minutes: number) => patch({ dauer: minutesToDuration(hours * 60 + minutes) });
+
   return (
     <div className="fab-overlay" onClick={onClose}>
       <div className="fab-modal" onClick={(e) => e.stopPropagation()}>
@@ -54,7 +84,7 @@ export default function EntryFormModal({
         </div>
         <div className="field-row">
           <label>🚗 Fahrzeug</label>
-          <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
+          <select value={form.fahrzeug} onChange={(e) => setFahrzeug(e.target.value as "" | VehicleKey)}>
             <option value="">–</option>
             {Object.entries(VEHICLES).map(([val, lbl]) => (
               <option key={val} value={val}>
@@ -141,8 +171,23 @@ export default function EntryFormModal({
           </div>
         </div>
         <div className="field-row">
-          <label>⏱️ Dauer (hh:mm)</label>
-          <input type="text" placeholder="hh:mm" value={form.dauer} onChange={(e) => patch({ dauer: e.target.value })} />
+          <label>⏱️ Dauer</label>
+          <div className="duration-wheels">
+            <select value={durHours} onChange={(e) => setDuration(Number(e.target.value), durMinutes)}>
+              {Array.from({ length: 100 }, (_, i) => (
+                <option key={i} value={i}>
+                  {i} h
+                </option>
+              ))}
+            </select>
+            <select value={durMinutes} onChange={(e) => setDuration(durHours, Number(e.target.value))}>
+              {Array.from({ length: 60 }, (_, i) => (
+                <option key={i} value={i}>
+                  {i} min
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="field-row">
           <label>⚡ kWh</label>
@@ -162,6 +207,17 @@ export default function EntryFormModal({
         <div className="field-row">
           <label>🛣️ km-Stand</label>
           <input type="number" step="1" min="0" placeholder="km" value={form.km} onChange={(e) => patch({ km: e.target.value })} />
+        </div>
+        {lastKnownKm !== null && <div className="field-hint">letztes Laden bei {lastKnownKm} km</div>}
+        <div className="field-row">
+          <label>📝 Notiz</label>
+          <input
+            type="text"
+            maxLength={500}
+            placeholder="Optionale Notiz"
+            value={form.notiz}
+            onChange={(e) => patch({ notiz: e.target.value })}
+          />
         </div>
 
         <div className="fab-modal-actions">

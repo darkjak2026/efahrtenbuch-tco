@@ -47,6 +47,7 @@ export default function AddEntryFab({
         <EntryFormModal
           title="Ladevorgang eintragen"
           initial={emptyRow()}
+          data={data}
           cardOptions={data.cardsList}
           cardTarife={data.cardTarife}
           onSave={save}

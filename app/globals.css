@@ -260,6 +260,7 @@ details.fixed-costs[open] summary::before {
 }
 .field-row {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
@@ -267,6 +268,16 @@ details.fixed-costs[open] summary::before {
 }
 .field-row label {
   flex: 1;
+  min-width: 0;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.field-hint {
+  margin: -4px 0 8px;
+  padding-left: calc(1em + 8px);
+  font-size: 11px;
   color: var(--ink-soft);
 }
 .slider-row {
@@ -318,6 +329,21 @@ details.fixed-costs[open] summary::before {
 }
 .field-row input {
   width: 120px;
+  flex-shrink: 0;
+}
+.field-row .station-cell,
+.field-row .slider-wrap {
+  min-width: 0;
+}
+.duration-wheels {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+.duration-wheels select {
+  width: auto;
+  flex-shrink: 1;
+  min-width: 0;
 }
 .small-table {
   width: 100%;

@@ -111,6 +111,7 @@ export default function ChargeTable({
         <EntryFormModal
           title="Ladevorgang bearbeiten"
           initial={editingRow}
+          data={data}
           cardOptions={data.cardsList}
           cardTarife={data.cardTarife}
           onSave={(updated) => {

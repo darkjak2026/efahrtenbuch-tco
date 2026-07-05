@@ -15,6 +15,7 @@ export function emptyRow(): ChargeRow {
     kwh: "",
     preis: "",
     km: "",
+    notiz: "",
   };
 }
 

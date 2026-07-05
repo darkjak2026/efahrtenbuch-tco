@@ -13,6 +13,7 @@ export interface ChargeRow {
   kwh: string;
   preis: string;
   km: string;
+  notiz: string;
 }
 
 export interface Investition {
