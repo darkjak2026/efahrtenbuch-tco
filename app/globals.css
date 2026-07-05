@@ -776,6 +776,11 @@ tfoot td {
 .entry-vehicle-badge.t03 {
   background: rgba(143, 198, 224, 0.25);
 }
+.entry-notiz-hint {
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
 .entry-price {
   margin-left: auto;
   font-family: var(--font-jetbrains-mono), monospace;

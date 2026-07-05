@@ -93,6 +93,7 @@ export default function ChargeTable({
               <div className="entry-card-top">
                 <span className="entry-date">{row.datum || "ohne Datum"}</span>
                 <span className={"entry-vehicle-badge" + (row.fahrzeug ? " " + row.fahrzeug : "")}>{vehicleLabel}</span>
+                {row.notiz && <span className="entry-notiz-hint">Notiz</span>}
                 <span className="entry-price">{row.preis ? fmtEUR(parseNum(row.preis)) : "–"}</span>
               </div>
               <div className="entry-card-bottom">
