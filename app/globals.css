@@ -398,26 +398,26 @@ section.panel {
 
 .summary-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
   margin-bottom: 22px;
 }
 .stat {
   background: var(--lav);
-  border-radius: 10px;
-  padding: 14px 16px;
+  border-radius: 6px;
+  padding: 7px 8px;
 }
 .stat .label {
-  font-size: 11px;
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--ink-soft);
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 .stat .value {
   font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 22px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--plum-deep);
 }
@@ -649,10 +649,6 @@ tfoot td {
   section.panel {
     padding: 16px;
   }
-  .summary-row {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .table-scroll {
     overflow: visible;
     border: none;
