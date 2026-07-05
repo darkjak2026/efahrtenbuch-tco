@@ -309,7 +309,7 @@ details.fixed-costs[open] summary::before {
   gap: 10px;
 }
 .slider-wrap input[type="range"] {
-  flex: 0 1 50%;
+  flex: 0 1 35%;
   width: auto;
   accent-color: var(--plum);
 }
@@ -321,7 +321,7 @@ details.fixed-costs[open] summary::before {
   font-size: 12px;
   color: var(--plum-deep);
   flex: 1 0 auto;
-  min-width: 58px;
+  min-width: 66px;
   white-space: nowrap;
 }
 .battery-indicator {
