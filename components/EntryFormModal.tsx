@@ -55,19 +55,6 @@ export default function EntryFormModal({
     return candidates.length ? parseNum(candidates[0].km) : null;
   })();
 
-  const setFahrzeug = (fahrzeug: "" | VehicleKey) => {
-    setForm((f) => {
-      const next = { ...f, fahrzeug };
-      if (!next.km && fahrzeug) {
-        const candidates = allRows(data)
-          .filter((r) => r.fahrzeug === fahrzeug && r !== initial && r.datum && parseNum(r.km) > 0)
-          .sort((a, b) => b.datum.localeCompare(a.datum));
-        if (candidates.length) next.km = String(parseNum(candidates[0].km));
-      }
-      return next;
-    });
-  };
-
   const totalMinutes = durationToMinutes(form.dauer);
   const durHours = Math.floor(totalMinutes / 60);
   const durMinutes = totalMinutes % 60;
@@ -84,7 +71,7 @@ export default function EntryFormModal({
         </div>
         <div className="field-row">
           <label>🚗 Fahrzeug</label>
-          <select value={form.fahrzeug} onChange={(e) => setFahrzeug(e.target.value as "" | VehicleKey)}>
+          <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
             <option value="">–</option>
             {Object.entries(VEHICLES).map(([val, lbl]) => (
               <option key={val} value={val}>
