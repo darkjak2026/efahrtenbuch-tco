@@ -7,6 +7,8 @@ import { locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import BatteryIcon from "./BatteryIcon";
 
+const HINT_ICONS = ["⚡", "🔌", "🚗", "🔋", "🛣️"];
+
 export default function EntryFormModal({
   title,
   initial,
@@ -30,6 +32,7 @@ export default function EntryFormModal({
 }) {
   const [form, setForm] = useState<ChargeRow>(initial);
   const [locating, setLocating] = useState(false);
+  const [hintIcon] = useState(() => HINT_ICONS[Math.floor(Math.random() * HINT_ICONS.length)]);
 
   const patch = (fields: Partial<ChargeRow>) => setForm((f) => ({ ...f, ...fields }));
 
@@ -195,7 +198,12 @@ export default function EntryFormModal({
           <label>🛣️ km-Stand</label>
           <input type="number" step="1" min="0" placeholder="km" value={form.km} onChange={(e) => patch({ km: e.target.value })} />
         </div>
-        {lastKnownKm !== null && <div className="field-hint">letztes Laden bei {lastKnownKm} km</div>}
+        {lastKnownKm !== null && (
+          <div className="field-hint">
+            <span className="field-hint-text">...letztes Laden bei {lastKnownKm} km</span>
+            <span className="field-hint-icon">{hintIcon}</span>
+          </div>
+        )}
         <div className="field-row">
           <label>📝 Notiz</label>
           <input
