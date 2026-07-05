@@ -347,9 +347,13 @@ section.tco {
 .slider-row {
   align-items: center;
 }
+.slider-row label {
+  flex: 0 0 auto;
+}
 .battery-slider {
   flex: 1 1 auto;
   min-width: 40px;
+  max-width: 100px;
   width: auto;
   accent-color: var(--plum);
 }
