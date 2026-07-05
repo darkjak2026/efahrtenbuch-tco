@@ -78,7 +78,7 @@ export default function EntryFormModal({
             <option value="">–</option>
             {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
               <option key={val} value={val}>
-                {vehicleShortLabel(val)}
+                {vehicleShortLabel(val)} ({val.toUpperCase()})
               </option>
             ))}
           </select>
