@@ -353,6 +353,10 @@ details.fixed-costs[open] summary::before {
   width: 120px;
   flex-shrink: 0;
 }
+.fab-modal .field-row input.notiz-input {
+  width: 220px;
+  font-family: var(--font-jetbrains-mono), monospace;
+}
 .fab-modal .field-row > select {
   width: 120px;
   flex-shrink: 0;

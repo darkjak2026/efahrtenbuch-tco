@@ -208,6 +208,7 @@ export default function EntryFormModal({
           <label>📝 Notiz</label>
           <input
             type="text"
+            className="notiz-input"
             maxLength={500}
             placeholder="Optionale Notiz"
             value={form.notiz}
