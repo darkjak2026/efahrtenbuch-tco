@@ -195,8 +195,8 @@ export function monthTotals(data: AppData, key: string) {
   return { kwh, preis, minutes };
 }
 
-export function maybeAutofillPreis(data: AppData, row: ChargeRow): void {
-  const tarif = parseNum(data.cardTarife[row.karte]);
+export function maybeAutofillPreis(cardTarife: Record<string, string | number>, row: ChargeRow): void {
+  const tarif = parseNum(cardTarife[row.karte]);
   if (tarif > 0 && parseNum(row.kwh) > 0 && !parseNum(row.preis)) {
     row.preis = (parseNum(row.kwh) * tarif).toFixed(2);
   }

@@ -120,9 +120,10 @@ export default function ChargeTable({
           title="Ladevorgang bearbeiten"
           initial={editingRow}
           cardOptions={data.cardsList}
+          cardTarife={data.cardTarife}
           onSave={(updated) => {
             const row = { ...updated };
-            maybeAutofillPreis(data, row);
+            maybeAutofillPreis(data.cardTarife, row);
             commitEdit(row, editingIdx!);
           }}
           onDelete={() => deleteEntry(editingIdx!)}

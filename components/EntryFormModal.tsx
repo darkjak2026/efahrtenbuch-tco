@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { VEHICLES } from "@/lib/constants";
-import { parseNum } from "@/lib/data";
+import { maybeAutofillPreis, parseNum } from "@/lib/data";
 import { locateStation } from "@/lib/gps";
 import type { ChargeRow, VehicleKey } from "@/lib/types";
 import BatteryIcon from "./BatteryIcon";
@@ -11,6 +11,7 @@ export default function EntryFormModal({
   title,
   initial,
   cardOptions,
+  cardTarife,
   onSave,
   onDelete,
   onClose,
@@ -19,6 +20,7 @@ export default function EntryFormModal({
   title: string;
   initial: ChargeRow;
   cardOptions: string[];
+  cardTarife: Record<string, string | number>;
   onSave: (row: ChargeRow) => void;
   onDelete?: () => void;
   onClose: () => void;
@@ -27,7 +29,12 @@ export default function EntryFormModal({
   const [form, setForm] = useState<ChargeRow>(initial);
   const [locating, setLocating] = useState(false);
 
-  const patch = (fields: Partial<ChargeRow>) => setForm((f) => ({ ...f, ...fields }));
+  const patch = (fields: Partial<ChargeRow>) =>
+    setForm((f) => {
+      const next = { ...f, ...fields };
+      maybeAutofillPreis(cardTarife, next);
+      return next;
+    });
 
   const options = cardOptions.includes(form.karte) || !form.karte ? cardOptions : [...cardOptions, form.karte];
 

@@ -22,7 +22,7 @@ export default function AddEntryFab({
 
   const save = (form: ChargeRow) => {
     const row: ChargeRow = { ...form };
-    maybeAutofillPreis(data, row);
+    maybeAutofillPreis(data.cardTarife, row);
     const targetMonth = monthKeyFromDate(row.datum) ?? activeMonth;
 
     updateData((d) => {
@@ -48,6 +48,7 @@ export default function AddEntryFab({
           title="Ladevorgang eintragen"
           initial={emptyRow()}
           cardOptions={data.cardsList}
+          cardTarife={data.cardTarife}
           onSave={save}
           onClose={() => setOpen(false)}
           showToast={showToast}
