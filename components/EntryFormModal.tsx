@@ -91,15 +91,12 @@ export default function EntryFormModal({
     return candidates.length ? parseNum(candidates[0].km) : null;
   })();
 
-  // Fast direct entry: type the total number of minutes (1 to 3 digits), no
-  // dragging. The formatted readout below switches from "N min" to "H:MM"
-  // once the value reaches an hour, purely for display — the input itself
-  // always just takes a plain minute count.
+  // Separate Std/Min fields — fast to type either one or both without ever
+  // having to convert "6h 37min" into a total-minutes figure by hand.
   const totalDurationMinutes = durationToMinutes(form.dauer);
-  const durationDisplay =
-    totalDurationMinutes >= 60
-      ? `${Math.floor(totalDurationMinutes / 60)}:${String(totalDurationMinutes % 60).padStart(2, "0")} h`
-      : `${totalDurationMinutes} min`;
+  const durHours = Math.floor(totalDurationMinutes / 60);
+  const durMinutes = totalDurationMinutes % 60;
+  const setDuration = (hours: number, minutes: number) => patch({ dauer: minutesToDuration(hours * 60 + minutes) });
 
   return (
     <div className="fab-overlay" onClick={onClose}>
@@ -193,19 +190,31 @@ export default function EntryFormModal({
           />
         </div>
         <div className="field-row">
-          <label>⏱️ Dauer (Minuten)</label>
-          <input
-            type="number"
-            inputMode="numeric"
-            step="1"
-            min="0"
-            max="999"
-            placeholder="min"
-            value={totalDurationMinutes || ""}
-            onChange={(e) => patch({ dauer: minutesToDuration(Number(e.target.value) || 0) })}
-          />
+          <label>⏱️ Dauer (Std : Min)</label>
+          <div className="duration-inputs">
+            <input
+              type="number"
+              inputMode="numeric"
+              step="1"
+              min="0"
+              max="999"
+              placeholder="Std"
+              value={durHours || ""}
+              onChange={(e) => setDuration(Number(e.target.value) || 0, durMinutes)}
+            />
+            <span>:</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              step="1"
+              min="0"
+              max="59"
+              placeholder="Min"
+              value={durMinutes || ""}
+              onChange={(e) => setDuration(durHours, Number(e.target.value) || 0)}
+            />
+          </div>
         </div>
-        {totalDurationMinutes > 0 && <div className="field-hint">= {durationDisplay}</div>}
         <div className="field-row">
           <label>⚡ kWh</label>
           <input

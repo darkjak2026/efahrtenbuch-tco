@@ -369,6 +369,20 @@ details.fixed-costs[open] summary::before {
   width: 220px;
   font-family: var(--font-jetbrains-mono), monospace;
 }
+.duration-inputs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.duration-inputs span {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.fab-modal .duration-inputs input {
+  width: 52px;
+  text-align: center;
+}
 .fab-modal .field-row > select {
   width: 120px;
   flex-shrink: 0;
