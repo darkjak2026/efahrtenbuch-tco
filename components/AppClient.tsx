@@ -111,7 +111,10 @@ export default function AppClient() {
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" strategy="afterInteractive" />
 
       <header className="top">
-        <h1>eFahrtenbuch | TCO</h1>
+        <h1>
+          <img src="/header-icon.ico" alt="" className="header-icon" />
+          TCO - Leapmotor
+        </h1>
       </header>
 
       <main>
