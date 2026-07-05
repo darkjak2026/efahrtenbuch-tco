@@ -200,7 +200,10 @@ export default function EntryFormModal({
         </div>
         {lastKnownKm !== null && (
           <div className="field-hint">
-            <span className="field-hint-text">...letztes Laden bei {lastKnownKm} km</span>
+            <span className="field-hint-text">
+              der {VEHICLES[form.fahrzeug as VehicleKey].replace("Leapmotor ", "")} wurde zuletzt bei einem ODO von{" "}
+              {lastKnownKm} geladen
+            </span>
             <span className="field-hint-icon">{hintIcon}</span>
           </div>
         )}
