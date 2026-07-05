@@ -86,6 +86,9 @@ h2.section-title {
   font-weight: 600;
   color: var(--accent);
   margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .dot {
   width: 9px;

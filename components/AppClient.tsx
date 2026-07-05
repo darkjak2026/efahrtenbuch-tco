@@ -16,6 +16,7 @@ import AddEntryFab from "./AddEntryFab";
 import ExportPanel from "./ExportPanel";
 import Footer from "./Footer";
 import Collapsible from "./Collapsible";
+import { PlugIcon, CardIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon } from "./Icons";
 import { currentMonthKey } from "@/lib/constants";
 
 type Status = "gate" | "loading" | "ready";
@@ -127,7 +128,14 @@ export default function AppClient() {
         </section>
 
         <div className="tco history-toggle-wrap">
-          <Collapsible title="🔌 Lade-Historie" defaultOpen={false}>
+          <Collapsible
+            title={
+              <>
+                <PlugIcon /> Lade-Historie
+              </>
+            }
+            defaultOpen={false}
+          >
             <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
             <section className="panel">
               <ChargeTable
@@ -142,25 +150,48 @@ export default function AppClient() {
         </div>
 
         <section className="tco fixed-panel-card">
-          <Collapsible title="💳 Ladekarten" defaultOpen={false}>
+          <Collapsible
+            title={
+              <>
+                <CardIcon /> Ladekarten
+              </>
+            }
+            defaultOpen={false}
+          >
             <CardsPanel data={data} updateData={updateData} />
           </Collapsible>
         </section>
 
         <section className="tco fixed-panel-card">
-          <Collapsible title="🧰 Investitionen" defaultOpen={false}>
+          <Collapsible
+            title={
+              <>
+                <ToolboxIcon /> Investitionen
+              </>
+            }
+            defaultOpen={false}
+          >
             <InvestmentsPanel data={data} updateData={updateData} />
           </Collapsible>
         </section>
 
         <section className="tco fixed-panel-card">
-          <Collapsible title="🧾 Fixkosten" defaultOpen={false}>
+          <Collapsible
+            title={
+              <>
+                <ReceiptIcon /> Fixkosten
+              </>
+            }
+            defaultOpen={false}
+          >
             <FixedCostsPanel data={data} updateData={updateData} />
           </Collapsible>
         </section>
 
         <section className="tco export-panel-card">
-          <h2 className="section-title">📦 Exportieren</h2>
+          <h2 className="section-title">
+            <ExportBoxIcon /> Exportieren
+          </h2>
           <ExportPanel data={data} activeMonth={activeMonth} updateData={updateData} showToast={showToast} />
         </section>
       </main>
