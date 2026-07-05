@@ -20,6 +20,7 @@ export default function ExportPanel({
   return (
     <>
       <div className="toolbar" style={{ justifyContent: "flex-end" }}>
+        <span className="export-label">Ausgabeformat wählen</span>
         <div className="export-btn-row">
           <button
             className="btn btn-ghost"

@@ -740,6 +740,10 @@ select {
   flex-wrap: wrap;
   gap: 10px;
 }
+.export-label {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
 .export-btn-row {
   display: flex;
   gap: 8px;
