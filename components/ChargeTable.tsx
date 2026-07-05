@@ -36,6 +36,7 @@ export default function ChargeTable({
   const totals = monthTotals(data, activeMonth);
   const allMax = Math.max(1, ...MONTHS.map((m) => monthTotals(data, m.key).kwh));
   const pct = Math.round((totals.kwh / allMax) * 100);
+  const activeMonthLabel = MONTHS.find((m) => m.key === activeMonth)?.label ?? activeMonth;
 
   const visibleRows = rows
     .map((row, idx) => ({ row, idx }))
@@ -82,7 +83,7 @@ export default function ChargeTable({
           <div className="value">{minutesToDuration(totals.minutes)} h</div>
         </div>
         <div className="bar-wrap">
-          <div className="label">Verhältnis zu den übrigen Monaten (Juli–Dezember)</div>
+          <div className="label">{activeMonthLabel} im Verhältnis zu den anderen Monaten</div>
           <div className="bar-track">
             <div className="bar-fill" style={{ width: `${pct}%` }} />
           </div>
@@ -104,8 +105,12 @@ export default function ChargeTable({
                 {row.notiz && <span className="entry-notiz-hint">Notiz</span>}
                 <span className="entry-price">{row.preis ? fmtEUR(parseNum(row.preis)) : "–"}</span>
               </div>
+              {row.ladestation && (
+                <div className="entry-card-station">
+                  <span className="entry-station">{row.ladestation}</span>
+                </div>
+              )}
               <div className="entry-card-bottom">
-                {row.ladestation && <span className="entry-station">{row.ladestation}</span>}
                 {row.akkuVorher && <BatteryIcon percent={parseNum(row.akkuVorher)} />}
                 {row.akkuVorher && row.akkuNachher && <span className="entry-battery-arrow">→</span>}
                 {row.akkuNachher && <BatteryIcon percent={parseNum(row.akkuNachher)} />}

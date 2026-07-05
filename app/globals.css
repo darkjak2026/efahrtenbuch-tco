@@ -72,9 +72,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 8px 16px;
-  border-radius: 6px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 14px rgba(0, 0, 0, 0.6);
 }
 .header-icon {
   width: 1.1em;
@@ -125,22 +124,23 @@ section.tco {
 .tco-vehicle-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 7px;
+  gap: 14px;
 }
 .tco-card {
-  border-radius: 6px;
-  padding: 8px 8px 6px;
+  border-radius: 12px;
+  padding: 20px 18px 18px;
   position: relative;
   overflow: hidden;
   background: rgba(44, 39, 64, 0.85);
+  min-height: 40vh;
 }
 .tco-toggle {
   display: block;
-  margin-top: 4px;
+  margin-top: 10px;
   border: none;
   background: none;
   color: var(--plum);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -151,41 +151,41 @@ section.tco {
 .tco-card .name {
   display: flex;
   align-items: flex-start;
-  gap: 4px;
-  margin-bottom: 5px;
+  gap: 6px;
+  margin-bottom: 12px;
   color: var(--accent);
 }
 .tco-card .name .dot {
-  margin-top: 4px;
+  margin-top: 8px;
 }
 .vehicle-nickname {
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 800;
   white-space: nowrap;
 }
 .vehicle-official {
   display: block;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--ink-soft);
 }
 .tco-card .kmpreis {
   font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 14px;
+  font-size: 34px;
   font-weight: 700;
   color: var(--accent);
   line-height: 1.1;
 }
 .tco-card .kmpreis small {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--ink-soft);
 }
 .tco-card .sub {
-  font-size: 10px;
+  font-size: 13px;
   color: var(--ink-soft);
-  margin-top: 5px;
-  line-height: 1.5;
+  margin-top: 12px;
+  line-height: 1.8;
 }
 .tco-card .sub b {
   color: var(--ink);
@@ -193,9 +193,50 @@ section.tco {
   font-weight: 600;
 }
 .tco-card .warn {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--danger);
-  margin-top: 4px;
+  margin-top: 8px;
+}
+
+/* ---- generic collapsible section ---- */
+.collapsible-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.collapsible-chevron {
+  display: inline-block;
+  transition: transform 0.15s;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+.collapsible-chevron.open {
+  transform: rotate(90deg);
+}
+.collapsible-body {
+  padding-top: 4px;
+}
+.fixed-box .collapsible-toggle {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+.fixed-box .collapsible-toggle .vehicle-nickname {
+  font-size: 15px;
+  color: var(--accent);
 }
 
 /* ---- fixed costs / recurring / investments ---- */
@@ -230,6 +271,15 @@ section.tco {
   color: var(--ink-soft);
   margin: 6px 0 0;
   line-height: 1.5;
+}
+.fixed-box .field-row input,
+.fixed-box .field-row select {
+  width: auto;
+  flex: 0 0 50%;
+  text-align: right;
+}
+.fixed-box .field-row select {
+  text-align: left;
 }
 .field-row {
   display: flex;
@@ -390,11 +440,12 @@ section.tco {
   gap: 3px;
 }
 .tarif-input-wrap input {
-  width: 52px;
+  width: 34px;
   font-size: 11px;
   padding: 2px 4px;
   border: 1px solid var(--line);
   border-radius: 4px;
+  text-align: right;
 }
 .unit-suffix {
   font-size: 10px;
@@ -441,12 +492,13 @@ section.tco {
   margin-bottom: 8px;
 }
 .recurring-row label {
-  flex: 0 0 110px;
+  flex: 1;
   color: var(--ink-soft);
 }
 .recurring-row input {
-  flex: 1;
+  flex: 0 0 50%;
   min-width: 0;
+  text-align: right;
 }
 .recurring-row-combo {
   display: flex;
@@ -796,7 +848,12 @@ select {
 }
 .entry-battery-arrow {
   color: var(--ink-soft);
+  font-size: 10px;
+  margin: 0 -5px;
+}
+.entry-card-station {
   font-size: 11px;
+  margin: 1px 0;
 }
 .app-footer {
   max-width: 1180px;

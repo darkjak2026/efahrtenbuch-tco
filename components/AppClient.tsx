@@ -13,6 +13,7 @@ import ChargeTable from "./ChargeTable";
 import AddEntryFab from "./AddEntryFab";
 import ExportPanel from "./ExportPanel";
 import Footer from "./Footer";
+import Collapsible from "./Collapsible";
 import { currentMonthKey } from "@/lib/constants";
 
 type Status = "gate" | "loading" | "ready";
@@ -123,20 +124,25 @@ export default function AppClient() {
           <TcoPanel data={data} />
         </section>
 
-        <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
-        <section className="panel">
-          <ChargeTable
-            data={data}
-            activeMonth={activeMonth}
-            updateData={updateData}
-            setActiveMonth={setActiveMonth}
-            showToast={showToast}
-          />
-        </section>
+        <div className="tco history-toggle-wrap">
+          <Collapsible title="📜 Historie" defaultOpen={false}>
+            <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
+            <section className="panel">
+              <ChargeTable
+                data={data}
+                activeMonth={activeMonth}
+                updateData={updateData}
+                setActiveMonth={setActiveMonth}
+                showToast={showToast}
+              />
+            </section>
+          </Collapsible>
+        </div>
 
         <section className="tco fixed-panel-card">
-          <h2 className="section-title">🧾 Fixkosten, Ladekarten &amp; Investitionen</h2>
-          <FixedCostsPanel data={data} updateData={updateData} />
+          <Collapsible title="🧾 Fixkosten, Ladekarten & Investitionen" defaultOpen={false}>
+            <FixedCostsPanel data={data} updateData={updateData} />
+          </Collapsible>
         </section>
 
         <section className="tco export-panel-card">

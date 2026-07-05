@@ -172,8 +172,11 @@ export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
     .filter((i) => i.fahrzeug === key)
     .reduce((s, i) => s + amortizedInvestment(parseNum(i.betrag), i.datum || v.start || data.erfassungStart), 0);
   const recurringKosten = data.recurringCosts
-    .filter((r) => r.fahrzeug === key)
-    .reduce((s, r) => s + parseNum(r.betrag) * monthsElapsed(r.start || v.start || data.erfassungStart), 0);
+    .filter((r) => r.fahrzeug === key || r.fahrzeug === "beide")
+    .reduce((s, r) => {
+      const weight = r.fahrzeug === "beide" ? 0.5 : 1;
+      return s + parseNum(r.betrag) * weight * monthsElapsed(r.start || v.start || data.erfassungStart);
+    }, 0);
   const tco = ladekosten + leasingKosten + versicherungKosten + investKosten + recurringKosten;
   return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmDriven, kmCount: kms.length };
 }
@@ -291,7 +294,7 @@ export function computeMonthStatement(data: AppData, monthKey: string): MonthSta
   data.recurringCosts.forEach((r) => {
     const start = r.start || data.erfassungStart;
     if (start && start <= lastDay && parseNum(r.betrag) > 0) {
-      const scope = r.fahrzeug ? r.fahrzeug.toUpperCase() : "Haushalt";
+      const scope = r.fahrzeug === "beide" ? "Beide, 50/50" : r.fahrzeug ? r.fahrzeug.toUpperCase() : "Haushalt";
       const desc = [r.anbieter, r.zweck].filter(Boolean).join(" – ") || "Wiederkehrende Kosten";
       fixcosts.push({ label: `${desc} (${scope})`, betrag: parseNum(r.betrag) });
     }

@@ -28,7 +28,7 @@ function TcoCard({
   tco: number;
   extraLines: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const kmPreis = kmDriven > 0 ? tco / kmDriven : null;
   return (
     <div className={"tco-card" + (dotClass === "house" ? " house" : "")}>
