@@ -125,6 +125,16 @@ export function monthsElapsed(startStr: string, endRef?: Date): number {
   return days / 30.44;
 }
 
+const INVEST_AMORTIZATION_MONTHS = 36;
+
+// Investments amortize over the 36-month lease term, like a monthly leasing rate,
+// instead of hitting the TCO as a one-time lump sum in the month of purchase.
+export function amortizedInvestment(betrag: number, startDate: string): number {
+  const monthly = betrag / INVEST_AMORTIZATION_MONTHS;
+  const months = Math.min(INVEST_AMORTIZATION_MONTHS, monthsElapsed(startDate));
+  return monthly * months;
+}
+
 export function allRows(data: AppData): ChargeRow[] {
   const out: ChargeRow[] = [];
   MONTHS.forEach((m) => (data.months[m.key] || []).forEach((r) => out.push(r)));
@@ -151,7 +161,9 @@ export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
   const months = monthsElapsed(v.start);
   const leasingKosten = parseNum(v.leasing) * months;
   const versicherungKosten = parseNum(v.versicherung) * months;
-  const investKosten = data.investitionen.filter((i) => i.fahrzeug === key).reduce((s, i) => s + parseNum(i.betrag), 0);
+  const investKosten = data.investitionen
+    .filter((i) => i.fahrzeug === key)
+    .reduce((s, i) => s + amortizedInvestment(parseNum(i.betrag), i.datum || v.start || data.erfassungStart), 0);
   const recurringKosten = data.recurringCosts
     .filter((r) => r.fahrzeug === key)
     .reduce((s, r) => s + parseNum(r.betrag) * monthsElapsed(r.start || v.start || data.erfassungStart), 0);
@@ -175,7 +187,7 @@ export interface HouseholdStats {
 export function householdStats(data: AppData, b10: VehicleStats, t03: VehicleStats): HouseholdStats {
   const investHaushalt = data.investitionen
     .filter((i) => i.fahrzeug !== "b10" && i.fahrzeug !== "t03")
-    .reduce((s, i) => s + parseNum(i.betrag), 0);
+    .reduce((s, i) => s + amortizedInvestment(parseNum(i.betrag), i.datum || data.erfassungStart), 0);
   const recurring = householdRecurring(data);
   const tco = b10.tco + t03.tco + recurring + investHaushalt;
   const kmDriven = b10.kmDriven + t03.kmDriven;
