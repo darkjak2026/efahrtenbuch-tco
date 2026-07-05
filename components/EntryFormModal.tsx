@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { VEHICLES } from "@/lib/constants";
+import { VEHICLES, vehicleShortLabel } from "@/lib/constants";
 import { allRows, durationToMinutes, maybeAutofillPreis, minutesToDuration, parseNum } from "@/lib/data";
 import { locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
@@ -76,9 +76,9 @@ export default function EntryFormModal({
           <label>🚗 Fahrzeug</label>
           <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
             <option value="">–</option>
-            {Object.entries(VEHICLES).map(([val, lbl]) => (
+            {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
               <option key={val} value={val}>
-                {lbl.replace("Leapmotor ", "")}
+                {vehicleShortLabel(val)}
               </option>
             ))}
           </select>
@@ -195,8 +195,7 @@ export default function EntryFormModal({
         {lastKnownKm !== null && (
           <div className="field-hint">
             <span className="field-hint-text">
-              der {VEHICLES[form.fahrzeug as VehicleKey].replace("Leapmotor ", "")} wurde zuletzt bei einem ODO von{" "}
-              {lastKnownKm} geladen
+              der {vehicleShortLabel(form.fahrzeug as VehicleKey)} wurde zuletzt bei einem ODO von {lastKnownKm} geladen
             </span>
             <span className="field-hint-icon">{hintIcon}</span>
           </div>

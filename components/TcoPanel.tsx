@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { fmtEUR, fmtNum, vehicleStats } from "@/lib/data";
+import { vehicleFullLabel } from "@/lib/constants";
 import type { AppData } from "@/lib/types";
 
 function TcoCard({
@@ -59,7 +60,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
     <div className="tco-cards">
       <div className="tco-vehicle-row">
         <TcoCard
-          title="Leapmotor B10"
+          title={vehicleFullLabel("b10")}
           dotClass="b10"
           kmDriven={b10.kmDriven}
           tco={b10.tco}
@@ -76,7 +77,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           }
         />
         <TcoCard
-          title="Leapmotor T03"
+          title={vehicleFullLabel("t03")}
           dotClass="t03"
           kmDriven={t03.kmDriven}
           tco={t03.tco}

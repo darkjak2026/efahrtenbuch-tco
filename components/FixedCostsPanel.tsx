@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { emptyInvest, emptyRecurring } from "@/lib/data";
+import { vehicleFullLabel, vehicleShortLabel } from "@/lib/constants";
 import type { AppData, VehicleKey } from "@/lib/types";
 
 const FAHRZEUG_OPTIONS: Array<["" | VehicleKey, string]> = [
   ["", "Haushalt"],
-  ["b10", "B10"],
-  ["t03", "T03"],
+  ["b10", vehicleShortLabel("b10")],
+  ["t03", vehicleShortLabel("t03")],
 ];
 
 export default function FixedCostsPanel({
@@ -24,7 +25,7 @@ export default function FixedCostsPanel({
       <summary>Fixkosten, Ladekarten &amp; Investitionen erfassen</summary>
       <div className="fixed-grid">
         <div className="fixed-box">
-          <h3>Leapmotor B10 — Fixkosten</h3>
+          <h3>{vehicleFullLabel("b10")} — Fixkosten</h3>
           <div className="field-row">
             <label htmlFor="b10_leasing">Leasingrate € / Monat</label>
             <input
@@ -57,7 +58,7 @@ export default function FixedCostsPanel({
         </div>
 
         <div className="fixed-box">
-          <h3>Leapmotor T03 — Fixkosten</h3>
+          <h3>{vehicleFullLabel("t03")} — Fixkosten</h3>
           <div className="field-row">
             <label htmlFor="t03_leasing">Leasingrate € / Monat</label>
             <input

@@ -1,8 +1,18 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { VEHICLES, MONTHS } from "@/lib/constants";
-import { fmtEUR, fmtNum, isEmptyRow, maybeAutofillPreis, minutesToDuration, monthKeyFromDate, monthTotals, parseNum } from "@/lib/data";
+import { MONTHS, vehicleShortLabel } from "@/lib/constants";
+import {
+  durationToMinutes,
+  fmtEUR,
+  fmtNum,
+  isEmptyRow,
+  maybeAutofillPreis,
+  minutesToDuration,
+  monthKeyFromDate,
+  monthTotals,
+  parseNum,
+} from "@/lib/data";
 import { exportCsv, exportJson, exportPdf, exportXlsx, importJson } from "@/lib/exports";
 import type { AppData, ChargeRow } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
@@ -87,7 +97,7 @@ export default function ChargeTable({
       <div className="entry-list">
         {visibleRows.length === 0 && <div className="entry-list-empty">Keine Ladevorgänge in diesem Monat.</div>}
         {visibleRows.map(({ row, idx }) => {
-          const vehicleLabel = row.fahrzeug ? VEHICLES[row.fahrzeug].replace("Leapmotor ", "") : "–";
+          const vehicleLabel = row.fahrzeug ? vehicleShortLabel(row.fahrzeug) : "–";
           return (
             <button type="button" key={idx} className="entry-card" onClick={() => setEditingIdx(idx)}>
               <div className="entry-card-top">
@@ -99,9 +109,14 @@ export default function ChargeTable({
               <div className="entry-card-bottom">
                 {row.ladestation && <span className="entry-station">{row.ladestation}</span>}
                 {row.akkuVorher && <BatteryIcon percent={parseNum(row.akkuVorher)} />}
+                {row.akkuVorher && row.akkuNachher && <span className="entry-battery-arrow">→</span>}
                 {row.akkuNachher && <BatteryIcon percent={parseNum(row.akkuNachher)} />}
                 {row.kwh && <span>{row.kwh} kWh</span>}
-                {row.dauer && <span>{row.dauer} h</span>}
+                {row.dauer && (
+                  <span>
+                    ⏳ {durationToMinutes(row.dauer)} min
+                  </span>
+                )}
               </div>
             </button>
           );
@@ -127,33 +142,36 @@ export default function ChargeTable({
       )}
 
       <div className="toolbar" style={{ justifyContent: "flex-end" }}>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div className="export-btn-row">
           <button
             className="btn btn-ghost"
+            title="Ladeprotokoll des aktuellen Monats als CSV-Datei herunterladen"
             onClick={() => {
               exportCsv(data, activeMonth);
               showToast("CSV exportiert");
             }}
           >
-            CSV (Monat)
+            📑 CSV
           </button>
           <button
             className="btn btn-ghost"
+            title="Kontenübersicht des aktuellen Monats als PDF herunterladen"
             onClick={() => {
               const ok = exportPdf(data, activeMonth);
               showToast(ok ? "PDF erzeugt" : "PDF-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen)");
             }}
           >
-            📄 Kontenübersicht (PDF)
+            📄 PDF
           </button>
           <button
             className="btn btn-ghost"
+            title="Alle Monate, Kontenübersicht und TCO als Excel-Datei herunterladen"
             onClick={() => {
               const ok = exportXlsx(data);
               showToast(ok ? "Excel-Datei erzeugt" : "Excel-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen)");
             }}
           >
-            📊 Gesamtexport (Excel)
+            📊 Excel
           </button>
         </div>
       </div>

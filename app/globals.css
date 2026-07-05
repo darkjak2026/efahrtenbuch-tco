@@ -660,6 +660,12 @@ tfoot td {
   flex-wrap: wrap;
   gap: 10px;
 }
+.export-btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
 .btn {
   border: none;
   border-radius: 8px;
@@ -786,6 +792,18 @@ tfoot td {
 }
 .entry-notiz-hint {
   font-style: italic;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.entry-battery-arrow {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.app-footer {
+  max-width: 1180px;
+  margin: 18px auto 0;
+  padding: 14px clamp(16px, 4vw, 48px) 0;
+  text-align: center;
   font-size: 11px;
   color: var(--ink-soft);
 }

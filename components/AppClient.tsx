@@ -11,7 +11,8 @@ import FixedCostsPanel from "./FixedCostsPanel";
 import MonthTabs from "./MonthTabs";
 import ChargeTable from "./ChargeTable";
 import AddEntryFab from "./AddEntryFab";
-import { MONTHS } from "@/lib/constants";
+import Footer from "./Footer";
+import { currentMonthKey } from "@/lib/constants";
 
 type Status = "gate" | "loading" | "ready";
 
@@ -21,7 +22,7 @@ export default function AppClient() {
   const [pinError, setPinError] = useState<string | null>(null);
   const [pinBusy, setPinBusy] = useState(false);
   const [data, setData] = useState<AppData>(defaultData());
-  const [activeMonth, setActiveMonth] = useState(MONTHS[0].key);
+  const [activeMonth, setActiveMonth] = useState(() => currentMonthKey());
   const [toast, setToast] = useState<string | null>(null);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -130,6 +131,8 @@ export default function AppClient() {
           />
         </section>
       </main>
+
+      <Footer />
 
       <AddEntryFab
         data={data}

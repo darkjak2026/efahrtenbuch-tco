@@ -1,6 +1,6 @@
 "use client";
 
-import { MONTHS } from "./constants";
+import { MONTHS, vehicleFullLabel } from "./constants";
 import { computeMonthStatement, fmtEUR, fmtNum, householdStats, parseNum, vehicleStats, migrate } from "./data";
 import type { AppData } from "./types";
 
@@ -181,7 +181,7 @@ export function exportXlsx(data: AppData): boolean {
   const tcoData = [
     ["Bereich", "Ladekosten €", "Leasing+Vers. €", "Wiederk. Kosten €", "Investitionen €", "TCO gesamt €", "km gefahren", "€/km"],
     [
-      "Leapmotor B10",
+      vehicleFullLabel("b10"),
       b10.ladekosten,
       b10.leasingKosten + b10.versicherungKosten,
       b10.recurringKosten,
@@ -191,7 +191,7 @@ export function exportXlsx(data: AppData): boolean {
       b10.kmDriven > 0 ? Number((b10.tco / b10.kmDriven).toFixed(3)) : "",
     ],
     [
-      "Leapmotor T03",
+      vehicleFullLabel("t03"),
       t03.ladekosten,
       t03.leasingKosten + t03.versicherungKosten,
       t03.recurringKosten,
