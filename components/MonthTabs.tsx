@@ -17,7 +17,7 @@ export default function MonthTabs({
           className={m.key === activeMonth ? "active" : ""}
           onClick={() => onChange(m.key)}
         >
-          {m.label}
+          {m.label} &apos;{m.key.slice(2, 4)}
         </button>
       ))}
     </nav>
