@@ -6,6 +6,19 @@ import { allRows, durationToMinutes, maybeAutofillPreis, minutesToDuration, pars
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import BatteryIcon from "./BatteryIcon";
+import {
+  BatteryOutlineIcon,
+  BoltIcon,
+  CalendarIcon,
+  CardIcon,
+  CarIcon,
+  ClockIcon,
+  EuroIcon,
+  LocationPinIcon,
+  NoteIcon,
+  PlugIcon,
+  RoadIcon,
+} from "./Icons";
 
 const HINT_ICONS = ["⚡", "🔌", "🚗", "🔋", "🛣️"];
 
@@ -37,7 +50,7 @@ export default function EntryFormModal({
 
   // On opening the add-entry form, silently try GPS — but only if permission
   // was already granted previously, so no permission prompt pops up unasked.
-  // The manual 📍 button remains the fallback if this doesn't fire or fails.
+  // The manual locate button remains the fallback if this doesn't fire or fails.
   useEffect(() => {
     if (!autoLocate) return;
     let cancelled = false;
@@ -104,11 +117,15 @@ export default function EntryFormModal({
         <h3>{title}</h3>
 
         <div className="field-row">
-          <label>📅 Datum</label>
+          <label>
+            <CalendarIcon /> Datum
+          </label>
           <input type="date" value={form.datum} onChange={(e) => patch({ datum: e.target.value })} />
         </div>
         <div className="field-row">
-          <label>🚗 Fahrzeug</label>
+          <label>
+            <CarIcon /> Fahrzeug
+          </label>
           <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
             <option value="">–</option>
             {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
@@ -119,7 +136,9 @@ export default function EntryFormModal({
           </select>
         </div>
         <div className="field-row">
-          <label>💳 Ladekarte</label>
+          <label>
+            <CardIcon /> Ladekarte
+          </label>
           <select value={form.karte} onChange={(e) => patchWithAutofill({ karte: e.target.value })}>
             <option value="">– wählen –</option>
             {options.map((c) => (
@@ -130,7 +149,9 @@ export default function EntryFormModal({
           </select>
         </div>
         <div className="field-row">
-          <label>🔌 Ladestation</label>
+          <label>
+            <PlugIcon /> Ladestation
+          </label>
           <div className="station-cell">
             <input
               type="text"
@@ -159,12 +180,14 @@ export default function EntryFormModal({
                 );
               }}
             >
-              📍
+              <LocationPinIcon size={14} />
             </button>
           </div>
         </div>
         <div className="field-row slider-row">
-          <label>🔋 Akku vorher</label>
+          <label>
+            <BatteryOutlineIcon /> Akku vorher
+          </label>
           <BatteryIcon percent={parseNum(form.akkuVorher)} />
           <input
             type="range"
@@ -177,7 +200,9 @@ export default function EntryFormModal({
           />
         </div>
         <div className="field-row slider-row">
-          <label>🔋 Akku nachher</label>
+          <label>
+            <BatteryOutlineIcon /> Akku nachher
+          </label>
           <BatteryIcon percent={parseNum(form.akkuNachher)} />
           <input
             type="range"
@@ -190,7 +215,9 @@ export default function EntryFormModal({
           />
         </div>
         <div className="field-row">
-          <label>⏱️ Dauer (Std : Min)</label>
+          <label>
+            <ClockIcon /> Dauer (Std : Min)
+          </label>
           <div className="duration-inputs">
             <input
               type="number"
@@ -216,7 +243,9 @@ export default function EntryFormModal({
           </div>
         </div>
         <div className="field-row">
-          <label>⚡ kWh</label>
+          <label>
+            <BoltIcon /> kWh
+          </label>
           <input
             type="number"
             step="0.01"
@@ -227,11 +256,15 @@ export default function EntryFormModal({
           />
         </div>
         <div className="field-row">
-          <label>💶 Preis €</label>
+          <label>
+            <EuroIcon /> Preis €
+          </label>
           <input type="number" step="0.01" min="0" value={form.preis} onChange={(e) => patch({ preis: e.target.value })} />
         </div>
         <div className="field-row">
-          <label>🛣️ km-Stand</label>
+          <label>
+            <RoadIcon /> km-Stand
+          </label>
           <input type="number" step="1" min="0" placeholder="km" value={form.km} onChange={(e) => patch({ km: e.target.value })} />
         </div>
         {lastKnownKm !== null && (
@@ -243,7 +276,9 @@ export default function EntryFormModal({
           </div>
         )}
         <div className="field-row">
-          <label>📝 Notiz</label>
+          <label>
+            <NoteIcon /> Notiz
+          </label>
           <input
             type="text"
             className="notiz-input"

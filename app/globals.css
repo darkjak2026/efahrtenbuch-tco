@@ -269,11 +269,23 @@ section.tco {
 .fixed-box h3 .vehicle-official {
   display: inline;
 }
-.fixed-box p.hint {
-  font-size: 11px;
-  color: var(--ink-soft);
+.hint {
+  font-size: 12px;
+  color: var(--danger);
   margin: 6px 0 0;
   line-height: 1.5;
+}
+.about-text {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 8px 0 0;
+  line-height: 1.6;
+}
+.about-list {
+  padding-left: 18px;
+}
+.about-list li {
+  margin-bottom: 3px;
 }
 .fixed-box .field-row input,
 .fixed-box .field-row select {
@@ -295,10 +307,17 @@ section.tco {
 .field-row label {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: var(--ink-soft);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.field-row label svg {
+  flex-shrink: 0;
+  color: var(--glacier);
 }
 .field-hint {
   margin: -4px 0 8px;
@@ -668,6 +687,9 @@ section.panel {
   font-size: 13px;
   flex: 0 0 auto;
   color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .locate-btn:hover {
   border-color: var(--plum);
@@ -1002,6 +1024,7 @@ select {
 }
 .fab-modal {
   background: var(--panel);
+  border: 2px solid #fff;
   border-radius: var(--radius);
   padding: 22px;
   width: 100%;

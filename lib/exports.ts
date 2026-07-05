@@ -21,20 +21,6 @@ function downloadBlob(content: BlobPart, filename: string, type: string) {
   URL.revokeObjectURL(url);
 }
 
-export function exportCsv(data: AppData, activeMonth: string) {
-  const rows = data.months[activeMonth];
-  const lines = ["Datum;Fahrzeug;Ladekarte;Ladestation;Akku vorher %;Akku nachher %;Dauer;kWh;Preis;km-Stand"];
-  rows.forEach((r) =>
-    lines.push(
-      [r.datum, r.fahrzeug, r.karte, r.ladestation || "", r.akkuVorher || "", r.akkuNachher || "", r.dauer, r.kwh, r.preis, r.km].join(
-        ";"
-      )
-    )
-  );
-  const label = MONTHS.find((m) => m.key === activeMonth)!.label;
-  downloadBlob(lines.join("\n"), `Ladeprotokoll_${label}_2026.csv`, "text/csv;charset=utf-8");
-}
-
 export function exportJson(data: AppData) {
   const stamp = new Date().toISOString().slice(0, 10);
   downloadBlob(JSON.stringify(data, null, 2), `eFahrtenbuchTCO_Sicherung_${stamp}.json`, "application/json");

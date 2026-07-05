@@ -37,7 +37,7 @@ function TcoCard({
         {title}
       </div>
       <div className="kmpreis">
-        {kmPreis !== null ? fmtNum(kmPreis, 3) : "–"} <small>€/km</small>
+        {kmPreis !== null ? fmtNum(kmPreis, 3) : "–"} <small>€/km TCO</small>
       </div>
       <button type="button" className="tco-toggle" onClick={() => setOpen((v) => !v)}>
         {open ? "Details ausblenden ▾" : "Details anzeigen ▸"}

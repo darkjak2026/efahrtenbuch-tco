@@ -16,7 +16,7 @@ import AddEntryFab from "./AddEntryFab";
 import ExportPanel from "./ExportPanel";
 import Footer from "./Footer";
 import Collapsible from "./Collapsible";
-import { PlugIcon, CardIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon } from "./Icons";
+import { PlugIcon, CardIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon, InfoIcon } from "./Icons";
 import { currentMonthKey } from "@/lib/constants";
 
 type Status = "gate" | "loading" | "ready";
@@ -127,7 +127,35 @@ export default function AppClient() {
           <TcoPanel data={data} />
         </section>
 
-        <div className="tco history-toggle-wrap">
+        <section className="tco about-card">
+          <Collapsible
+            title={
+              <>
+                <InfoIcon /> Über diese App
+              </>
+            }
+            defaultOpen={false}
+          >
+            <p className="about-text" style={{ marginTop: 0 }}>
+              Diese App erfasst eure Ladevorgänge für BIO-Leapy (Leapmotor B10) und Leapy (Leapmotor T03) und
+              berechnet daraus laufend die tatsächlichen Kosten pro gefahrenem Kilometer (TCO = Total Cost of
+              Ownership).
+            </p>
+            <p className="about-text">In den TCO-Preis je Fahrzeug fließen ein:</p>
+            <ul className="about-text about-list">
+              <li>Ladekosten aus den erfassten Ladevorgängen</li>
+              <li>Leasingrate + Versicherung, anteilig seit dem Übergabedatum</li>
+              <li>Wiederkehrende Kosten (Abos, Grundgebühren, …) — bei „Beide (50/50)“ je zur Hälfte</li>
+              <li>Investitionen, abgeschrieben über 36 Monate Leasingdauer</li>
+            </ul>
+            <p className="about-text">
+              Die Summe wird geteilt durch die gefahrenen Kilometer (Differenz aus höchstem und niedrigstem
+              erfassten km-Stand) — daraus ergibt sich der €/km-TCO-Wert oben in den Kacheln.
+            </p>
+          </Collapsible>
+        </section>
+
+        <section className="tco history-toggle-wrap">
           <Collapsible
             title={
               <>
@@ -147,31 +175,18 @@ export default function AppClient() {
               />
             </section>
           </Collapsible>
-        </div>
-
-        <section className="tco fixed-panel-card">
-          <Collapsible
-            title={
-              <>
-                <CardIcon /> Ladekarten
-              </>
-            }
-            defaultOpen={false}
-          >
-            <CardsPanel data={data} updateData={updateData} />
-          </Collapsible>
         </section>
 
         <section className="tco fixed-panel-card">
           <Collapsible
             title={
               <>
-                <ToolboxIcon /> Investitionen
+                <CardIcon /> Ladekarten verwalten
               </>
             }
             defaultOpen={false}
           >
-            <InvestmentsPanel data={data} updateData={updateData} />
+            <CardsPanel data={data} updateData={updateData} />
           </Collapsible>
         </section>
 
@@ -188,11 +203,30 @@ export default function AppClient() {
           </Collapsible>
         </section>
 
+        <section className="tco fixed-panel-card">
+          <Collapsible
+            title={
+              <>
+                <ToolboxIcon /> Investitionen
+              </>
+            }
+            defaultOpen={false}
+          >
+            <InvestmentsPanel data={data} updateData={updateData} />
+          </Collapsible>
+        </section>
+
         <section className="tco export-panel-card">
-          <h2 className="section-title">
-            <ExportBoxIcon /> Exportieren
-          </h2>
-          <ExportPanel data={data} activeMonth={activeMonth} updateData={updateData} showToast={showToast} />
+          <Collapsible
+            title={
+              <>
+                <ExportBoxIcon /> Exportieren aller Daten
+              </>
+            }
+            defaultOpen={false}
+          >
+            <ExportPanel data={data} activeMonth={activeMonth} updateData={updateData} showToast={showToast} />
+          </Collapsible>
         </section>
       </main>
 

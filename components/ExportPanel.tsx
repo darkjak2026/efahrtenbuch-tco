@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { exportCsv, exportJson, exportPdf, exportXlsx, importJson } from "@/lib/exports";
+import { exportJson, exportPdf, exportXlsx, importJson } from "@/lib/exports";
 import type { AppData } from "@/lib/types";
 
 export default function ExportPanel({
@@ -21,16 +21,6 @@ export default function ExportPanel({
     <>
       <div className="toolbar" style={{ justifyContent: "flex-end" }}>
         <div className="export-btn-row">
-          <button
-            className="btn btn-ghost"
-            title="Ladeprotokoll des aktuellen Monats als CSV-Datei herunterladen"
-            onClick={() => {
-              exportCsv(data, activeMonth);
-              showToast("CSV exportiert");
-            }}
-          >
-            📑 CSV
-          </button>
           <button
             className="btn btn-ghost"
             title="Kontenübersicht des aktuellen Monats als PDF herunterladen"

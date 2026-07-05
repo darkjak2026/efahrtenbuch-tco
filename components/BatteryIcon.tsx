@@ -2,8 +2,8 @@ function batteryColor(pct: number): { color: string; pulse: boolean } {
   if (pct <= 5) return { color: "#7a1f1f", pulse: true };
   if (pct <= 10) return { color: "#d32f2f", pulse: false };
   if (pct <= 19) return { color: "#e8862e", pulse: false };
-  if (pct <= 30) return { color: "#8bc34a", pulse: false };
-  return { color: "#1b5e20", pulse: false };
+  if (pct <= 29) return { color: "#8bc34a", pulse: false };
+  return { color: "#f0d84a", pulse: false };
 }
 
 const FULL_CHARGE_BORDER = "#ffc107";
