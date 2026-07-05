@@ -380,14 +380,11 @@ section.tco {
 }
 /* Higher specificity than the global input[type=...]/select {width:100%} rule
    further down, so these actually win regardless of source order. */
-.fab-modal input,
-.fab-modal select {
-  border-width: 2px;
-  border-color: var(--ink-soft);
-}
 .fab-modal .field-row input {
   width: 120px;
   flex-shrink: 0;
+  border-width: 2px;
+  border-color: var(--ink-soft);
 }
 .fab-modal .field-row input.notiz-input {
   width: 220px;
@@ -410,6 +407,8 @@ section.tco {
 .fab-modal .field-row > select {
   width: 120px;
   flex-shrink: 0;
+  border-width: 2px;
+  border-color: var(--ink-soft);
 }
 .field-row .station-cell {
   min-width: 0;
@@ -723,8 +722,8 @@ select {
   background: var(--panel);
   color: var(--ink);
 }
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) brightness(1.6);
+input[type="date"] {
+  color-scheme: dark;
 }
 input[type="number"] {
   font-family: var(--font-jetbrains-mono), monospace;

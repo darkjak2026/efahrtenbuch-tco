@@ -127,34 +127,6 @@ export default function AppClient() {
           <TcoPanel data={data} />
         </section>
 
-        <section className="tco about-card">
-          <Collapsible
-            title={
-              <>
-                <InfoIcon /> Über diese App
-              </>
-            }
-            defaultOpen={false}
-          >
-            <p className="about-text" style={{ marginTop: 0 }}>
-              Diese App erfasst eure Ladevorgänge für BIO-Leapy (Leapmotor B10) und Leapy (Leapmotor T03) und
-              berechnet daraus laufend die tatsächlichen Kosten pro gefahrenem Kilometer (TCO = Total Cost of
-              Ownership).
-            </p>
-            <p className="about-text">In den TCO-Preis je Fahrzeug fließen ein:</p>
-            <ul className="about-text about-list">
-              <li>Ladekosten aus den erfassten Ladevorgängen</li>
-              <li>Leasingrate + Versicherung, anteilig seit dem Übergabedatum</li>
-              <li>Wiederkehrende Kosten (Abos, Grundgebühren, …) — bei „Beide (50/50)“ je zur Hälfte</li>
-              <li>Investitionen, abgeschrieben über 36 Monate Leasingdauer</li>
-            </ul>
-            <p className="about-text">
-              Die Summe wird geteilt durch die gefahrenen Kilometer (Differenz aus höchstem und niedrigstem
-              erfassten km-Stand) — daraus ergibt sich der €/km-TCO-Wert oben in den Kacheln.
-            </p>
-          </Collapsible>
-        </section>
-
         <section className="tco history-toggle-wrap">
           <Collapsible
             title={
@@ -213,6 +185,34 @@ export default function AppClient() {
             defaultOpen={false}
           >
             <InvestmentsPanel data={data} updateData={updateData} />
+          </Collapsible>
+        </section>
+
+        <section className="tco about-card">
+          <Collapsible
+            title={
+              <>
+                <InfoIcon /> Anleitung
+              </>
+            }
+            defaultOpen={false}
+          >
+            <p className="about-text" style={{ marginTop: 0 }}>
+              Diese App erfasst eure Ladevorgänge für BIO-Leapy (Leapmotor B10) und Leapy (Leapmotor T03) und
+              berechnet daraus laufend die tatsächlichen Kosten pro gefahrenem Kilometer (TCO = Total Cost of
+              Ownership).
+            </p>
+            <p className="about-text">In den TCO-Preis je Fahrzeug fließen ein:</p>
+            <ul className="about-text about-list">
+              <li>Ladekosten aus den erfassten Ladevorgängen</li>
+              <li>Leasingrate + Versicherung, anteilig seit dem Übergabedatum</li>
+              <li>Wiederkehrende Kosten (Abos, Grundgebühren, …) — bei „Beide (50/50)“ je zur Hälfte</li>
+              <li>Investitionen, abgeschrieben über 36 Monate Leasingdauer</li>
+            </ul>
+            <p className="about-text">
+              Die Summe wird geteilt durch die gefahrenen Kilometer (Differenz aus höchstem und niedrigstem
+              erfassten km-Stand) — daraus ergibt sich der €/km-TCO-Wert oben in den Kacheln.
+            </p>
           </Collapsible>
         </section>
 
