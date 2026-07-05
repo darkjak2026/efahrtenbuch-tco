@@ -6,6 +6,7 @@ import { allRows, durationToMinutes, maybeAutofillPreis, minutesToDuration, pars
 import { locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import BatteryIcon from "./BatteryIcon";
+import DurationDial from "./DurationDial";
 
 const HINT_ICONS = ["⚡", "🔌", "🚗", "🔋", "🛣️"];
 
@@ -58,10 +59,17 @@ export default function EntryFormModal({
     return candidates.length ? parseNum(candidates[0].km) : null;
   })();
 
-  const totalMinutes = durationToMinutes(form.dauer);
-  const durHours = Math.floor(totalMinutes / 60);
-  const durMinutes = totalMinutes % 60;
-  const setDuration = (hours: number, minutes: number) => patch({ dauer: minutesToDuration(hours * 60 + minutes) });
+  // The dial keeps its own raw (hours, minutes) pair — minutes can transiently
+  // exceed 59 while dragging the outer ring — decoupled from the normalized
+  // "H:MM" string stored in form.dauer, so it never snaps back mid-drag.
+  const initialTotalMinutes = durationToMinutes(initial.dauer);
+  const [dialHours, setDialHours] = useState(() => Math.min(Math.floor(initialTotalMinutes / 60), 14));
+  const [dialMinutes, setDialMinutes] = useState(() => initialTotalMinutes % 60);
+  const setDuration = (hours: number, minutes: number) => {
+    setDialHours(hours);
+    setDialMinutes(minutes);
+    patch({ dauer: minutesToDuration(hours * 60 + minutes) });
+  };
 
   return (
     <div className="fab-overlay" onClick={onClose}>
@@ -154,23 +162,10 @@ export default function EntryFormModal({
             onChange={(e) => patch({ akkuNachher: e.target.value })}
           />
         </div>
-        <div className="field-row">
-          <label>⏱️ Dauer</label>
-          <div className="duration-wheels">
-            <select value={durHours} onChange={(e) => setDuration(Number(e.target.value), durMinutes)}>
-              {Array.from({ length: 100 }, (_, i) => (
-                <option key={i} value={i}>
-                  {i} h
-                </option>
-              ))}
-            </select>
-            <select value={durMinutes} onChange={(e) => setDuration(durHours, Number(e.target.value))}>
-              {Array.from({ length: 60 }, (_, i) => (
-                <option key={i} value={i}>
-                  {i} min
-                </option>
-              ))}
-            </select>
+        <div className="duration-section">
+          <label>⏱️ Ladedauer</label>
+          <div className="duration-dial-wrap">
+            <DurationDial hours={dialHours} minutes={dialMinutes} onChange={setDuration} />
           </div>
         </div>
         <div className="field-row">

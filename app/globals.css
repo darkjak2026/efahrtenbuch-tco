@@ -376,15 +376,33 @@ details.fixed-costs[open] summary::before {
 .field-row .station-cell {
   min-width: 0;
 }
-.duration-wheels {
-  display: flex;
-  gap: 6px;
-  min-width: 0;
+.duration-section {
+  margin-bottom: 14px;
+  text-align: center;
 }
-.fab-modal .duration-wheels select {
-  width: auto;
-  flex-shrink: 1;
-  min-width: 0;
+.duration-section label {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.duration-dial-wrap {
+  display: flex;
+  justify-content: center;
+}
+.duration-dial {
+  touch-action: none;
+  cursor: pointer;
+}
+.duration-dial-value {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 20px;
+  font-weight: 700;
+  fill: var(--plum-deep);
+}
+.duration-dial-caption {
+  font-size: 11px;
+  fill: var(--ink-soft);
 }
 .small-table {
   width: 100%;
