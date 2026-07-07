@@ -159,7 +159,7 @@ export interface VehicleStats {
   investKosten: number;
   recurringKosten: number;
   tco: number;
-  kmDriven: number;
+  kmStand: number;
   kmCount: number;
   months: number;
 }
@@ -171,7 +171,9 @@ export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
   const kms = rows.map((r) => parseNum(r.km)).filter((n) => n > 0);
   const stichtagKm = parseNum(v.stichtagKm);
   if (stichtagKm > 0) kms.push(stichtagKm);
-  const kmDriven = kms.length >= 2 ? Math.max(...kms) - Math.min(...kms) : 0;
+  // Gesamt-km-Stand = höchster bekannter Wert (Baseline oder geloggt). Ein einziger
+  // bekannter Wert genügt bereits, um €/km anzuzeigen — keine Differenzbildung mehr.
+  const kmStand = kms.length > 0 ? Math.max(...kms) : 0;
   const months = monthsElapsed(v.start);
   const leasingKosten = parseNum(v.leasing) * months;
   const versicherungKosten = parseNum(v.versicherung) * months;
@@ -185,7 +187,7 @@ export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
       return s + parseNum(r.betrag) * weight * monthsElapsed(r.start || v.start || data.erfassungStart);
     }, 0);
   const tco = ladekosten + leasingKosten + versicherungKosten + investKosten + recurringKosten;
-  return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmDriven, kmCount: kms.length, months };
+  return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmStand, kmCount: kms.length, months };
 }
 
 export function householdRecurring(data: AppData): number {
@@ -196,7 +198,7 @@ export function householdRecurring(data: AppData): number {
 
 export interface HouseholdStats {
   tco: number;
-  kmDriven: number;
+  kmStand: number;
   recurring: number;
   investHaushalt: number;
 }
@@ -207,8 +209,8 @@ export function householdStats(data: AppData, b10: VehicleStats, t03: VehicleSta
     .reduce((s, i) => s + amortizedInvestment(parseNum(i.betrag), i.datum || data.erfassungStart), 0);
   const recurring = householdRecurring(data);
   const tco = b10.tco + t03.tco + recurring + investHaushalt;
-  const kmDriven = b10.kmDriven + t03.kmDriven;
-  return { tco, kmDriven, recurring, investHaushalt };
+  const kmStand = b10.kmStand + t03.kmStand;
+  return { tco, kmStand, recurring, investHaushalt };
 }
 
 export function monthTotals(data: AppData, key: string) {
@@ -235,17 +237,22 @@ export function vehicleKmWindowUpTo(data: AppData, vehicleKey: VehicleKey, cutof
   const cutoff = cutoffDateStr ? new Date(cutoffDateStr) : null;
   let best: number | null = null;
   let bestDate: Date | null = null;
-  allRows(data).forEach((r) => {
-    if (r.fahrzeug !== vehicleKey) return;
-    const km = parseNum(r.km);
-    if (km <= 0 || !r.datum) return;
-    const d = new Date(r.datum);
+  const consider = (km: number, dateStr: string) => {
+    if (km <= 0 || !dateStr) return;
+    const d = new Date(dateStr);
     if (cutoff && d > cutoff) return;
     if (!bestDate || d > bestDate) {
       bestDate = d;
       best = km;
     }
+  };
+  allRows(data).forEach((r) => {
+    if (r.fahrzeug !== vehicleKey) return;
+    consider(parseNum(r.km), r.datum);
   });
+  // Die Baseline (Stichtag) zählt als zusätzlicher gültiger Messpunkt zum Stichtag-Datum.
+  const veh = data.vehicles[vehicleKey];
+  consider(parseNum(veh.stichtagKm), typeof veh.stichtag === "string" ? veh.stichtag : "");
   return best;
 }
 

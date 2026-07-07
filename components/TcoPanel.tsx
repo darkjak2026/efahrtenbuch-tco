@@ -18,20 +18,20 @@ function VehicleName({ vehicleKey }: { vehicleKey: VehicleKey }) {
 function TcoCard({
   title,
   dotClass,
-  kmDriven,
+  kmStand,
   tco,
   months,
   extraLines,
 }: {
   title: React.ReactNode;
   dotClass: string;
-  kmDriven: number;
+  kmStand: number;
   tco: number;
   months: number;
   extraLines: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const kmPreis = kmDriven > 0 ? tco / kmDriven : null;
+  const kmPreis = kmStand > 0 ? tco / kmStand : null;
   const tcoProMonat = months > 0 ? tco / months : null;
   return (
     <div className={"tco-card" + (dotClass === "house" ? " house" : "")}>
@@ -54,11 +54,11 @@ function TcoCard({
             <br />
             {extraLines}
           </div>
-          {kmDriven === 0 ? (
-            <div className="warn">Noch keine zwei km-Stände erfasst — €/km folgt automatisch.</div>
+          {kmStand === 0 ? (
+            <div className="warn">Noch kein km-Stand erfasst — €/km folgt automatisch.</div>
           ) : (
             <div className="sub" style={{ marginTop: 4 }}>
-              gefahren: <b>{fmtNum(kmDriven, 0)} km</b>
+              km-Stand: <b>{fmtNum(kmStand, 0)} km</b>
             </div>
           )}
         </>
@@ -77,7 +77,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
         <TcoCard
           title={<VehicleName vehicleKey="b10" />}
           dotClass="b10"
-          kmDriven={b10.kmDriven}
+          kmStand={b10.kmStand}
           tco={b10.tco}
           months={b10.months}
           extraLines={
@@ -95,7 +95,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
         <TcoCard
           title={<VehicleName vehicleKey="t03" />}
           dotClass="t03"
-          kmDriven={t03.kmDriven}
+          kmStand={t03.kmStand}
           tco={t03.tco}
           months={t03.months}
           extraLines={

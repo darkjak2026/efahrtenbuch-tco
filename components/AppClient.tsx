@@ -210,8 +210,8 @@ export default function AppClient() {
               <li>Investitionen, abgeschrieben über 36 Monate Leasingdauer</li>
             </ul>
             <p className="about-text">
-              Die Summe wird geteilt durch die gefahrenen Kilometer (Differenz aus höchstem und niedrigstem
-              erfassten km-Stand) — daraus ergibt sich der €/km-TCO-Wert oben in den Kacheln.
+              Die Summe wird geteilt durch den Gesamt-km-Stand (höchster bekannter Wert aus Stichtag-km
+              und erfassten km-Ständen) — daraus ergibt sich der €/km-TCO-Wert oben in den Kacheln.
             </p>
           </Collapsible>
         </section>
