@@ -2,7 +2,14 @@
 
 import { MONTHS, vehicleFullLabel } from "./constants";
 import { computeMonthStatement, fmtEUR, fmtNum, householdStats, parseNum, vehicleStats, migrate } from "./data";
-import type { AppData } from "./types";
+import type { AppData, MonthMeta } from "./types";
+
+// Excel worksheet names must be unique and are truncated at 31 chars. The month range
+// spans multiple years, so the bare label ("Juli") repeats — qualify it with the year
+// from the month key so every sheet name is distinct.
+export function monthSheetName(m: MonthMeta): string {
+  return `${m.label} ${m.key.slice(0, 4)}`.slice(0, 31);
+}
 
 declare global {
   interface Window {
@@ -138,9 +145,7 @@ export function exportXlsx(data: AppData): boolean {
       ])
     );
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
-    // Sheet names must be unique: the month range spans multiple years, so the bare
-    // month label ("Juli") repeats — qualify it with the year from the month key.
-    XLSX.utils.book_append_sheet(wb, ws, `${m.label} ${m.key.slice(0, 4)}`.slice(0, 31));
+    XLSX.utils.book_append_sheet(wb, ws, monthSheetName(m));
   });
 
   const overviewData: (string | number)[][] = [
