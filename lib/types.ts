@@ -35,6 +35,9 @@ export interface VehicleFixedCosts {
   leasing: string | number;
   versicherung: string | number;
   start: string;
+  stichtag: string;
+  stichtagKm: string | number;
+  stichtagLadekosten: string | number;
 }
 
 export interface AppData {

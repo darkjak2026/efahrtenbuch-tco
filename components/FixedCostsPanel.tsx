@@ -66,6 +66,35 @@ export default function FixedCostsPanel({
               onChange={(e) => updateData((d) => { d.vehicles.b10.start = e.target.value; })}
             />
           </div>
+          <div className="field-row">
+            <label htmlFor="b10_stichtag">🏁 Stichtag (Startwerte)</label>
+            <input
+              type="date"
+              id="b10_stichtag"
+              value={data.vehicles.b10.stichtag}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.stichtag = e.target.value; })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="b10_stichtagKm">📟 km-Stand am Stichtag</label>
+            <input
+              type="number"
+              step="1"
+              id="b10_stichtagKm"
+              value={data.vehicles.b10.stichtagKm}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.stichtagKm = e.target.value; })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="b10_stichtagLadekosten">⚡ Ladekosten bis Stichtag €</label>
+            <input
+              type="number"
+              step="0.01"
+              id="b10_stichtagLadekosten"
+              value={data.vehicles.b10.stichtagLadekosten}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.stichtagLadekosten = e.target.value; })}
+            />
+          </div>
         </Collapsible>
       </div>
 
@@ -98,6 +127,35 @@ export default function FixedCostsPanel({
               id="t03_start"
               value={data.vehicles.t03.start}
               onChange={(e) => updateData((d) => { d.vehicles.t03.start = e.target.value; })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_stichtag">🏁 Stichtag (Startwerte)</label>
+            <input
+              type="date"
+              id="t03_stichtag"
+              value={data.vehicles.t03.stichtag}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.stichtag = e.target.value; })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_stichtagKm">📟 km-Stand am Stichtag</label>
+            <input
+              type="number"
+              step="1"
+              id="t03_stichtagKm"
+              value={data.vehicles.t03.stichtagKm}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.stichtagKm = e.target.value; })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_stichtagLadekosten">⚡ Ladekosten bis Stichtag €</label>
+            <input
+              type="number"
+              step="0.01"
+              id="t03_stichtagLadekosten"
+              value={data.vehicles.t03.stichtagLadekosten}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.stichtagLadekosten = e.target.value; })}
             />
           </div>
         </Collapsible>

@@ -20,16 +20,19 @@ function TcoCard({
   dotClass,
   kmDriven,
   tco,
+  months,
   extraLines,
 }: {
   title: React.ReactNode;
   dotClass: string;
   kmDriven: number;
   tco: number;
+  months: number;
   extraLines: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const kmPreis = kmDriven > 0 ? tco / kmDriven : null;
+  const tcoProMonat = months > 0 ? tco / months : null;
   return (
     <div className={"tco-card" + (dotClass === "house" ? " house" : "")}>
       <div className="name">
@@ -45,6 +48,8 @@ function TcoCard({
       {open && (
         <>
           <div className="sub">
+            TCO / Monat: <b>{tcoProMonat !== null ? fmtEUR(tcoProMonat) : "–"}</b>
+            <br />
             TCO gesamt: <b>{fmtEUR(tco)}</b>
             <br />
             {extraLines}
@@ -74,6 +79,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           dotClass="b10"
           kmDriven={b10.kmDriven}
           tco={b10.tco}
+          months={b10.months}
           extraLines={
             <>
               Ladekosten: <b>{fmtEUR(b10.ladekosten)}</b>
@@ -91,6 +97,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           dotClass="t03"
           kmDriven={t03.kmDriven}
           tco={t03.tco}
+          months={t03.months}
           extraLines={
             <>
               Ladekosten: <b>{fmtEUR(t03.ladekosten)}</b>

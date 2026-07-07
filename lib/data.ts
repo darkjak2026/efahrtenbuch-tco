@@ -44,8 +44,8 @@ export function defaultData(): AppData {
     cardsList: DEFAULT_CARDS.slice(),
     cardTarife: {},
     vehicles: {
-      b10: { leasing: 331.51, versicherung: "", start: "" },
-      t03: { leasing: 149.0, versicherung: "", start: "" },
+      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "" },
+      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696 },
     },
     recurringCosts: [emptyRecurring()],
     erfassungStart: "2026-07-01",
@@ -62,6 +62,10 @@ export function migrate(raw: unknown): AppData {
   if (!d.cardsList || !(d.cardsList as string[]).length) d.cardsList = def.cardsList;
   if (!d.cardTarife) d.cardTarife = {};
   if (!d.vehicles) d.vehicles = def.vehicles;
+  d.vehicles = {
+    b10: Object.assign({}, def.vehicles.b10, d.vehicles.b10),
+    t03: Object.assign({}, def.vehicles.t03, d.vehicles.t03),
+  };
   if (!d.erfassungStart) d.erfassungStart = def.erfassungStart;
   if (!d.investitionen) d.investitionen = def.investitionen;
   if (!d.months) d.months = def.months;
@@ -157,14 +161,17 @@ export interface VehicleStats {
   tco: number;
   kmDriven: number;
   kmCount: number;
+  months: number;
 }
 
 export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
   const rows = allRows(data).filter((r) => r.fahrzeug === key);
-  const ladekosten = rows.reduce((s, r) => s + parseNum(r.preis), 0);
-  const kms = rows.map((r) => parseNum(r.km)).filter((v) => v > 0);
-  const kmDriven = kms.length >= 2 ? Math.max(...kms) - Math.min(...kms) : 0;
   const v = data.vehicles[key];
+  const ladekosten = rows.reduce((s, r) => s + parseNum(r.preis), 0) + parseNum(v.stichtagLadekosten);
+  const kms = rows.map((r) => parseNum(r.km)).filter((n) => n > 0);
+  const stichtagKm = parseNum(v.stichtagKm);
+  if (stichtagKm > 0) kms.push(stichtagKm);
+  const kmDriven = kms.length >= 2 ? Math.max(...kms) - Math.min(...kms) : 0;
   const months = monthsElapsed(v.start);
   const leasingKosten = parseNum(v.leasing) * months;
   const versicherungKosten = parseNum(v.versicherung) * months;
@@ -178,7 +185,7 @@ export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
       return s + parseNum(r.betrag) * weight * monthsElapsed(r.start || v.start || data.erfassungStart);
     }, 0);
   const tco = ladekosten + leasingKosten + versicherungKosten + investKosten + recurringKosten;
-  return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmDriven, kmCount: kms.length };
+  return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmDriven, kmCount: kms.length, months };
 }
 
 export function householdRecurring(data: AppData): number {
