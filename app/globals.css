@@ -353,7 +353,8 @@ section.tco {
 }
 .fab-modal-sentence {
   font-size: 14px;
-  line-height: 2.3;
+  line-height: 1.7;
+  text-align: justify;
   color: var(--ink-soft);
   margin: 2px 0 6px;
 }
