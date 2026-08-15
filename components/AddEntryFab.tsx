@@ -51,28 +51,30 @@ export default function AddEntryFab({
   return (
     <>
       <div className="fab-group">
-        {(Object.keys(VEHICLES) as VehicleKey[]).map((key) => (
-          <div className="fab-vehicle-block" key={key}>
-            <button
-              type="button"
-              className="fab"
-              title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
-              onClick={() => setExpandedVehicle(expandedVehicle === key ? null : key)}
-            >
-              + {key.toUpperCase()}
-            </button>
-            {expandedVehicle === key && (
-              <div className="fab-vehicle-row">
-                <button type="button" className="fab fab-section" onClick={() => openFor(key, "vor")}>
-                  Vor dem Laden
-                </button>
-                <button type="button" className="fab fab-section" onClick={() => openFor(key, "nach")}>
-                  Nach dem Laden
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+        {(Object.keys(VEHICLES) as VehicleKey[])
+          .filter((key) => expandedVehicle === null || expandedVehicle === key)
+          .map((key) => (
+            <div className="fab-vehicle-block" key={key}>
+              <button
+                type="button"
+                className="fab"
+                title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
+                onClick={() => setExpandedVehicle(expandedVehicle === key ? null : key)}
+              >
+                + {key.toUpperCase()}
+              </button>
+              {expandedVehicle === key && (
+                <div className="fab-vehicle-row">
+                  <button type="button" className="fab fab-section fab-section-vor" onClick={() => openFor(key, "vor")}>
+                    Vor dem Laden
+                  </button>
+                  <button type="button" className="fab fab-section fab-section-nach" onClick={() => openFor(key, "nach")}>
+                    Nach dem Laden
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
       </div>
 
       {openRequest && (

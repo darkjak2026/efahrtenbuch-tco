@@ -1128,6 +1128,21 @@ select {
   height: 42px;
   white-space: nowrap;
 }
+.fab-section-vor {
+  background: var(--glacier);
+  color: #14232f;
+  border-color: rgba(0, 0, 0, 0.25);
+}
+.fab-section-vor:hover {
+  background: var(--glacier-deep);
+}
+.fab-section-nach {
+  background: #1d3f66;
+  color: #fff;
+}
+.fab-section-nach:hover {
+  background: #16314f;
+}
 .fab:hover {
   background: var(--plum-deep);
 }
