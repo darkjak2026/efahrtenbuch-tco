@@ -178,7 +178,7 @@ export default function EntryFormModal({
         onClick={() => setActiveSection("vor")}
       >
         <span className="fab-modal-subheading-chevron">{activeSection === "vor" ? "▾" : "▸"}</span>
-        Vor dem Laden
+        Vor
       </button>
       {activeSection === "vor" && (
         <>
@@ -388,7 +388,7 @@ export default function EntryFormModal({
         onClick={() => setActiveSection("nach")}
       >
         <span className="fab-modal-subheading-chevron">{activeSection === "nach" ? "▾" : "▸"}</span>
-        Nach dem Laden
+        Nach
         {activeSection === "nach" && isNewEntry && (
           <span className="fab-modal-subheading-hint">
             Start ca. {chargeStartLabel} Uhr{computedDauer ? ` · Dauer ${computedDauer} h` : ""}

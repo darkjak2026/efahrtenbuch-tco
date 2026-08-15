@@ -66,10 +66,10 @@ export default function AddEntryFab({
               {expandedVehicle === key && (
                 <div className="fab-vehicle-row">
                   <button type="button" className="fab fab-section fab-section-vor" onClick={() => openFor(key, "vor")}>
-                    Vor dem Laden
+                    Vor
                   </button>
                   <button type="button" className="fab fab-section fab-section-nach" onClick={() => openFor(key, "nach")}>
-                    Nach dem Laden
+                    Nach
                   </button>
                 </div>
               )}
