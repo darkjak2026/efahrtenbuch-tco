@@ -359,22 +359,22 @@ section.tco {
 }
 .fab-modal-sentence .sentence-field,
 .fab-modal-sentence .sentence-value {
-  font-family: var(--font-jetbrains-mono), monospace;
-  font-weight: 700;
-  color: var(--accent);
+  color: var(--plum);
 }
 .fab-modal-sentence input.sentence-field,
 .fab-modal-sentence select.sentence-field {
   display: inline-block;
   width: auto;
   max-width: 100%;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
   border: none;
-  border-bottom: 2px dotted var(--plum);
-  border-radius: 2px 2px 0 0;
-  padding: 1px 4px;
-  margin: 0 1px;
-  font-size: 13.5px;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  color: var(--plum);
 }
 .fab-modal-sentence input.sentence-field[type="date"] {
   width: 128px;
