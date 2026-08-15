@@ -238,10 +238,16 @@ export function monthTotals(data: AppData, key: string) {
   return { kwh, preis, minutes };
 }
 
+// Rows from before this rule existed were often left without Nach-Werte for
+// reasons unrelated to "charge still running" — only entries from here on get
+// flagged, so the household isn't retroactively swamped with old warnings.
+const INCOMPLETE_FLAG_START = "2026-09-15";
+
 // A row saved from the "Vor"-section alone (no reichweiteNachher/kwh yet) is a
 // charge that's still running — surfaced in the Lade-Historie as "unvollständig"
 // since Vor and Nach can be minutes or days apart in real use.
 export function isChargeIncomplete(row: ChargeRow): boolean {
+  if (!row.datum || row.datum < INCOMPLETE_FLAG_START) return false;
   return !isEmptyRow(row) && (!row.reichweiteNachher || !row.kwh);
 }
 
