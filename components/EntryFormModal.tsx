@@ -180,6 +180,34 @@ export default function EntryFormModal({
         </button>
         {activeSection === "vor" && (
           <>
+            <div className="field-row-pair">
+              <div className="field-col">
+                <label>
+                  <CardIcon /> Ladekarte
+                </label>
+                <select value={form.karte} onChange={(e) => patchWithAutofill({ karte: e.target.value })}>
+                  <option value="">– wählen –</option>
+                  {options.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field-col">
+                <label>
+                  <RoadIcon /> Reichweite vorher
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  placeholder="km"
+                  value={form.reichweiteVorher}
+                  onChange={(e) => patch({ reichweiteVorher: e.target.value })}
+                />
+              </div>
+            </div>
             <div className="field-row">
               <label>
                 <CalendarIcon /> Datum
@@ -224,34 +252,6 @@ export default function EntryFormModal({
                 <span className="field-hint-icon">{hintIcon}</span>
               </div>
             )}
-            <div className="field-row-pair">
-              <div className="field-col">
-                <label>
-                  <CardIcon /> Ladekarte
-                </label>
-                <select value={form.karte} onChange={(e) => patchWithAutofill({ karte: e.target.value })}>
-                  <option value="">– wählen –</option>
-                  {options.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="field-col">
-                <label>
-                  <RoadIcon /> Reichweite vorher
-                </label>
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  placeholder="km"
-                  value={form.reichweiteVorher}
-                  onChange={(e) => patch({ reichweiteVorher: e.target.value })}
-                />
-              </div>
-            </div>
             <div className="field-row">
               <label>
                 <PlugIcon /> Ladestation
