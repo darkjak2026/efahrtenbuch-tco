@@ -188,7 +188,7 @@ export default function EntryFormModal({
               </div>
               <div className="field-col">
                 <label>
-                  <RoadIcon /> Reichweite vorher
+                  <RoadIcon /> Restreichweite
                 </label>
                 <input
                   type="number"
