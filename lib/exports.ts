@@ -63,13 +63,13 @@ export function exportPdf(data: AppData, activeMonth: string): boolean {
 
   doc.autoTable({
     startY: 30,
-    head: [["Datum", "Fahrzeug", "Karte", "Station", "Akku %", "Dauer", "kWh", "Preis €", "km-Stand"]],
+    head: [["Datum", "Fahrzeug", "Karte", "Station", "Reichweite km", "Dauer", "kWh", "Preis €", "km-Stand"]],
     body: st.rows.map((r) => [
       r.datum || "",
       (r.fahrzeug || "").toUpperCase(),
       r.karte || "",
       r.ladestation || "",
-      r.akkuVorher || r.akkuNachher ? `${r.akkuVorher || "?"}→${r.akkuNachher || "?"}` : "",
+      r.reichweiteVorher || r.reichweiteNachher ? `${r.reichweiteVorher || "?"}→${r.reichweiteNachher || "?"}` : "",
       r.dauer || "",
       r.kwh ? fmtNum(parseNum(r.kwh)) : "",
       r.preis ? fmtEUR(parseNum(r.preis)) : "",
@@ -128,7 +128,7 @@ export function exportXlsx(data: AppData): boolean {
   MONTHS.forEach((m) => {
     const rows = data.months[m.key] || [];
     const sheetData = [
-      ["Datum", "Fahrzeug", "Ladekarte", "Ladestation", "Akku vorher %", "Akku nachher %", "Dauer", "kWh", "Preis €", "km-Stand"],
+      ["Datum", "Fahrzeug", "Ladekarte", "Ladestation", "Reichweite vorher km", "Reichweite nachher km", "Dauer", "kWh", "Preis €", "km-Stand"],
     ];
     rows.forEach((r) =>
       sheetData.push([
@@ -136,8 +136,8 @@ export function exportXlsx(data: AppData): boolean {
         r.fahrzeug,
         r.karte,
         r.ladestation,
-        r.akkuVorher ? String(parseNum(r.akkuVorher)) : "",
-        r.akkuNachher ? String(parseNum(r.akkuNachher)) : "",
+        r.reichweiteVorher ? String(parseNum(r.reichweiteVorher)) : "",
+        r.reichweiteNachher ? String(parseNum(r.reichweiteNachher)) : "",
         r.dauer,
         String(parseNum(r.kwh)),
         String(parseNum(r.preis)),

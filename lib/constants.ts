@@ -42,6 +42,12 @@ export function currentMonthKey(): string {
   return key;
 }
 
+// Today as an ISO date string in local time (not UTC, unlike Date#toISOString).
+export function todayStr(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
 export const DEFAULT_CARDS = ["EWE Go", "InCharge", "Aral pulse", "EnBW HyperNetz", "Chargemap", "Zuhause"];
 
 export const VEHICLES: Record<VehicleKey, { nickname: string; official: string }> = {

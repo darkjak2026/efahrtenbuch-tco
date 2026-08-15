@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { VEHICLES, vehicleShortLabel } from "@/lib/constants";
 import { allRows, durationToMinutes, maybeAutofillPreis, minutesToDuration, parseNum } from "@/lib/data";
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
-import BatteryIcon from "./BatteryIcon";
 import {
-  BatteryOutlineIcon,
   BoltIcon,
   CalendarIcon,
   CardIcon,
@@ -94,15 +92,48 @@ export default function EntryFormModal({
 
   const options = cardOptions.includes(form.karte) || !form.karte ? cardOptions : [...cardOptions, form.karte];
 
-  // Last known odometer reading for the selected vehicle, excluding this very entry
+  // Last known odometer reading for a given vehicle, excluding this very entry
   // (relevant when editing — `initial` is the actual row object from `data`).
-  const lastKnownKm = (() => {
-    if (!form.fahrzeug) return null;
+  const lastKnownKmFor = (vehicle: "" | VehicleKey): number | null => {
+    if (!vehicle) return null;
     const candidates = allRows(data)
-      .filter((r) => r.fahrzeug === form.fahrzeug && r !== initial && r.datum && parseNum(r.km) > 0)
+      .filter((r) => r.fahrzeug === vehicle && r !== initial && r.datum && parseNum(r.km) > 0)
       .sort((a, b) => b.datum.localeCompare(a.datum));
     return candidates.length ? parseNum(candidates[0].km) : null;
-  })();
+  };
+  const lastKnownKm = lastKnownKmFor(form.fahrzeug);
+
+  // Tracks the km-Stand guess we last wrote ourselves, so we can tell "still our
+  // guess, safe to refresh" apart from "the user typed something, hands off".
+  const lastAutofilledKm = useRef<string | null>(null);
+
+  // Once a vehicle is known, silently pre-fill km-Stand with its last known odometer
+  // reading — only the last few digits then need retyping. Never touches a value the
+  // user actually entered (editing an existing row keeps its real km-Stand untouched).
+  useEffect(() => {
+    if (lastKnownKm === null) return;
+    if (form.km !== "" && form.km !== lastAutofilledKm.current) return;
+    const guess = String(lastKnownKm);
+    lastAutofilledKm.current = guess;
+    patch({ km: guess });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.fahrzeug, lastKnownKm]);
+
+  // Quick-select: pick the vehicle and immediately take over its last known km-Stand
+  // in one step, bypassing the dropdown entirely.
+  const selectVehicle = (vehicle: VehicleKey) => {
+    const guess = lastKnownKmFor(vehicle);
+    lastAutofilledKm.current = guess !== null ? String(guess) : null;
+    patch({ fahrzeug: vehicle, km: guess !== null ? String(guess) : form.km });
+  };
+
+  // The km-Stand field arrives pre-filled with a guess — select just the trailing
+  // digits on focus so typing the real reading only takes the last few keystrokes.
+  const selectTrailingDigits = (e: React.FocusEvent<HTMLInputElement>) => {
+    const len = e.target.value.length;
+    if (len > 3) e.target.setSelectionRange(len - 3, len);
+    else e.target.select();
+  };
 
   // Separate Std/Min fields — fast to type either one or both without ever
   // having to convert "6h 37min" into a total-minutes figure by hand.
@@ -116,6 +147,7 @@ export default function EntryFormModal({
       <div className="fab-modal" onClick={(e) => e.stopPropagation()}>
         <h3>{title}</h3>
 
+        <div className="fab-modal-subheading">Vor dem Laden</div>
         <div className="field-row">
           <label>
             <CalendarIcon /> Datum
@@ -135,6 +167,44 @@ export default function EntryFormModal({
             ))}
           </select>
         </div>
+        <div className="quick-vehicle-btns">
+          {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
+            <button
+              type="button"
+              key={val}
+              className={"quick-vehicle-btn" + (form.fahrzeug === val ? " active" : "")}
+              title={`${vehicleShortLabel(val)} (${val.toUpperCase()}) + zuletzt bekannten km-Stand übernehmen`}
+              onClick={() => selectVehicle(val)}
+            >
+              + {val.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <div className="field-row">
+          <label>
+            <RoadIcon /> km-Stand
+          </label>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="km"
+            value={form.km}
+            onFocus={selectTrailingDigits}
+            onChange={(e) => {
+              lastAutofilledKm.current = null;
+              patch({ km: e.target.value.replace(/\D/g, "") });
+            }}
+          />
+        </div>
+        {lastKnownKm !== null && (
+          <div className="field-hint">
+            <span className="field-hint-text">
+              der {vehicleShortLabel(form.fahrzeug as VehicleKey)} wurde zuletzt bei einem ODO von {lastKnownKm} geladen
+            </span>
+            <span className="field-hint-icon">{hintIcon}</span>
+          </div>
+        )}
         <div className="field-row">
           <label>
             <CardIcon /> Ladekarte
@@ -184,34 +254,32 @@ export default function EntryFormModal({
             </button>
           </div>
         </div>
-        <div className="field-row slider-row">
+        <div className="field-row">
           <label>
-            <BatteryOutlineIcon /> Akku vorher
+            <RoadIcon /> Reichweite vorher
           </label>
-          <BatteryIcon percent={parseNum(form.akkuVorher)} />
           <input
-            type="range"
-            className="battery-slider"
-            min="0"
-            max="100"
+            type="number"
             step="1"
-            value={form.akkuVorher || 0}
-            onChange={(e) => patch({ akkuVorher: e.target.value })}
+            min="0"
+            placeholder="km"
+            value={form.reichweiteVorher}
+            onChange={(e) => patch({ reichweiteVorher: e.target.value })}
           />
         </div>
-        <div className="field-row slider-row">
+
+        <div className="fab-modal-subheading">Nach dem Laden</div>
+        <div className="field-row">
           <label>
-            <BatteryOutlineIcon /> Akku nachher
+            <RoadIcon /> Reichweite nachher
           </label>
-          <BatteryIcon percent={parseNum(form.akkuNachher)} />
           <input
-            type="range"
-            className="battery-slider"
-            min="0"
-            max="100"
+            type="number"
             step="1"
-            value={form.akkuNachher || 0}
-            onChange={(e) => patch({ akkuNachher: e.target.value })}
+            min="0"
+            placeholder="km"
+            value={form.reichweiteNachher}
+            onChange={(e) => patch({ reichweiteNachher: e.target.value })}
           />
         </div>
         <div className="field-row">
@@ -261,20 +329,6 @@ export default function EntryFormModal({
           </label>
           <input type="number" step="0.01" min="0" value={form.preis} onChange={(e) => patch({ preis: e.target.value })} />
         </div>
-        <div className="field-row">
-          <label>
-            <RoadIcon /> km-Stand
-          </label>
-          <input type="number" step="1" min="0" placeholder="km" value={form.km} onChange={(e) => patch({ km: e.target.value })} />
-        </div>
-        {lastKnownKm !== null && (
-          <div className="field-hint">
-            <span className="field-hint-text">
-              der {vehicleShortLabel(form.fahrzeug as VehicleKey)} wurde zuletzt bei einem ODO von {lastKnownKm} geladen
-            </span>
-            <span className="field-hint-icon">{hintIcon}</span>
-          </div>
-        )}
         <div className="field-row">
           <label>
             <NoteIcon /> Notiz

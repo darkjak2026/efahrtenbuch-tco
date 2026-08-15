@@ -344,44 +344,6 @@ section.tco {
     transform: translateY(-2px);
   }
 }
-.slider-row {
-  align-items: center;
-}
-.slider-row label {
-  flex: 0 0 auto;
-}
-.battery-slider {
-  flex: 1 1 auto;
-  min-width: 40px;
-  max-width: 100px;
-  width: auto;
-  accent-color: var(--plum);
-}
-.battery-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.battery-icon {
-  flex: 0 0 auto;
-}
-.battery-icon.pulse {
-  animation: battery-pulse 1.2s ease-in-out infinite;
-}
-.battery-label {
-  font-family: var(--font-jetbrains-mono), monospace;
-}
-@keyframes battery-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.35;
-  }
-}
 /* Higher specificity than the global input[type=...]/select {width:100%} rule
    further down, so these actually win regardless of source order. */
 .fab-modal .field-row input {
@@ -1050,6 +1012,46 @@ select {
   color: var(--accent);
   font-size: 16px;
   margin: 0 0 14px;
+}
+.fab-modal-subheading {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 18px 0 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.fab-modal-subheading:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.quick-vehicle-btns {
+  display: flex;
+  gap: 8px;
+  margin: -2px 0 10px;
+}
+.quick-vehicle-btn {
+  flex: 1 1 auto;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.quick-vehicle-btn:hover {
+  border-color: var(--plum);
+}
+.quick-vehicle-btn.active {
+  background: var(--plum);
+  border-color: var(--plum);
+  color: #fff;
 }
 .fab-modal-actions {
   display: flex;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { todayStr } from "@/lib/constants";
 import { emptyRow, isEmptyRow, maybeAutofillPreis, monthKeyFromDate } from "@/lib/data";
 import type { AppData, ChargeRow } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
@@ -46,7 +47,7 @@ export default function AddEntryFab({
       {open && (
         <EntryFormModal
           title="Ladevorgang eintragen"
-          initial={emptyRow()}
+          initial={{ ...emptyRow(), datum: todayStr() }}
           data={data}
           cardOptions={data.cardsList}
           cardTarife={data.cardTarife}

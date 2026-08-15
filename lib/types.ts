@@ -7,8 +7,8 @@ export interface ChargeRow {
   ladestation: string;
   lat: string | number;
   lon: string | number;
-  akkuVorher: string;
-  akkuNachher: string;
+  reichweiteVorher: string;
+  reichweiteNachher: string;
   dauer: string;
   kwh: string;
   preis: string;

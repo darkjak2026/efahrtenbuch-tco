@@ -15,7 +15,6 @@ import {
 } from "@/lib/data";
 import type { AppData, ChargeRow } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
-import BatteryIcon from "./BatteryIcon";
 
 export default function ChargeTable({
   data,
@@ -111,9 +110,9 @@ export default function ChargeTable({
                 </div>
               )}
               <div className="entry-card-bottom">
-                {row.akkuVorher && <BatteryIcon percent={parseNum(row.akkuVorher)} />}
-                {row.akkuVorher && row.akkuNachher && <span className="entry-battery-arrow">→</span>}
-                {row.akkuNachher && <BatteryIcon percent={parseNum(row.akkuNachher)} />}
+                {row.reichweiteVorher && <span>{row.reichweiteVorher} km</span>}
+                {row.reichweiteVorher && row.reichweiteNachher && <span className="entry-battery-arrow">→</span>}
+                {row.reichweiteNachher && <span>{row.reichweiteNachher} km</span>}
                 {row.kwh && <span>{row.kwh} kWh</span>}
                 {row.dauer && (
                   <span>
