@@ -963,25 +963,33 @@ select {
   font-family: var(--font-jetbrains-mono), monospace;
 }
 
-/* ---- Floating "add entry" button + modal ---- */
-.fab {
+/* ---- Floating "add entry" buttons + modal ---- */
+.fab-group {
   position: fixed;
   right: 20px;
   bottom: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.fab {
   border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 26px;
   background: var(--plum);
   color: #fff;
-  font-size: 28px;
+  font-size: 15px;
+  font-weight: 700;
   line-height: 1;
+  padding: 0 16px;
+  height: 48px;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
 }
 .fab:hover {
   background: var(--plum-deep);
@@ -1028,30 +1036,6 @@ select {
   margin-top: 0;
   padding-top: 0;
   border-top: none;
-}
-.quick-vehicle-btns {
-  display: flex;
-  gap: 8px;
-  margin: -2px 0 10px;
-}
-.quick-vehicle-btn {
-  flex: 1 1 auto;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  color: var(--accent);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.quick-vehicle-btn:hover {
-  border-color: var(--plum);
-}
-.quick-vehicle-btn.active {
-  background: var(--plum);
-  border-color: var(--plum);
-  color: #fff;
 }
 .fab-modal-actions {
   display: flex;

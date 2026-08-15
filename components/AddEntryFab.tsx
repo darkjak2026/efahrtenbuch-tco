@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { todayStr } from "@/lib/constants";
+import { todayStr, VEHICLES } from "@/lib/constants";
 import { emptyRow, isEmptyRow, maybeAutofillPreis, monthKeyFromDate } from "@/lib/data";
-import type { AppData, ChargeRow } from "@/lib/types";
+import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
 
 export default function AddEntryFab({
@@ -19,7 +19,7 @@ export default function AddEntryFab({
   setActiveMonth: (key: string) => void;
   showToast: (msg: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [openVehicle, setOpenVehicle] = useState<VehicleKey | null>(null);
 
   const save = (form: ChargeRow) => {
     const row: ChargeRow = { ...form };
@@ -35,25 +35,35 @@ export default function AddEntryFab({
 
     if (targetMonth !== activeMonth) setActiveMonth(targetMonth);
     showToast("Ladevorgang eingetragen");
-    setOpen(false);
+    setOpenVehicle(null);
   };
 
   return (
     <>
-      <button type="button" className="fab" title="Ladevorgang eintragen" onClick={() => setOpen(true)}>
-        +
-      </button>
+      <div className="fab-group">
+        {(Object.keys(VEHICLES) as VehicleKey[]).map((key) => (
+          <button
+            type="button"
+            key={key}
+            className="fab"
+            title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
+            onClick={() => setOpenVehicle(key)}
+          >
+            + {key.toUpperCase()}
+          </button>
+        ))}
+      </div>
 
-      {open && (
+      {openVehicle && (
         <EntryFormModal
           title="Ladevorgang eintragen"
-          initial={{ ...emptyRow(), datum: todayStr() }}
+          initial={{ ...emptyRow(), datum: todayStr(), fahrzeug: openVehicle }}
           data={data}
           cardOptions={data.cardsList}
           cardTarife={data.cardTarife}
           autoLocate
           onSave={save}
-          onClose={() => setOpen(false)}
+          onClose={() => setOpenVehicle(null)}
           showToast={showToast}
         />
       )}

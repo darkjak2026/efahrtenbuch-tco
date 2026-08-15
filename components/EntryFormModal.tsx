@@ -119,14 +119,6 @@ export default function EntryFormModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.fahrzeug, lastKnownKm]);
 
-  // Quick-select: pick the vehicle and immediately take over its last known km-Stand
-  // in one step, bypassing the dropdown entirely.
-  const selectVehicle = (vehicle: VehicleKey) => {
-    const guess = lastKnownKmFor(vehicle);
-    lastAutofilledKm.current = guess !== null ? String(guess) : null;
-    patch({ fahrzeug: vehicle, km: guess !== null ? String(guess) : form.km });
-  };
-
   // The km-Stand field arrives pre-filled with a guess — select just the trailing
   // digits on focus so typing the real reading only takes the last few keystrokes.
   const selectTrailingDigits = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -166,19 +158,6 @@ export default function EntryFormModal({
               </option>
             ))}
           </select>
-        </div>
-        <div className="quick-vehicle-btns">
-          {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
-            <button
-              type="button"
-              key={val}
-              className={"quick-vehicle-btn" + (form.fahrzeug === val ? " active" : "")}
-              title={`${vehicleShortLabel(val)} (${val.toUpperCase()}) + zuletzt bekannten km-Stand übernehmen`}
-              onClick={() => selectVehicle(val)}
-            >
-              + {val.toUpperCase()}
-            </button>
-          ))}
         </div>
         <div className="field-row">
           <label>
