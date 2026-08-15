@@ -6,6 +6,7 @@ export function emptyRow(): ChargeRow {
     datum: "",
     fahrzeug: "",
     karte: "",
+    preisProKwh: "",
     ladestation: "",
     lat: "",
     lon: "",
@@ -42,7 +43,6 @@ export function defaultData(): AppData {
   });
   return {
     cardsList: DEFAULT_CARDS.slice(),
-    cardTarife: {},
     vehicles: {
       b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "" },
       t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696 },
@@ -60,7 +60,6 @@ export function migrate(raw: unknown): AppData {
   const d = (raw && typeof raw === "object" ? { ...(raw as Record<string, unknown>) } : {}) as Record<string, unknown> & Partial<AppData> & { abos?: Record<string, string | number> };
 
   if (!d.cardsList || !(d.cardsList as string[]).length) d.cardsList = def.cardsList;
-  if (!d.cardTarife) d.cardTarife = {};
   if (!d.vehicles) d.vehicles = def.vehicles;
   d.vehicles = {
     b10: Object.assign({}, def.vehicles.b10, d.vehicles.b10),
@@ -239,8 +238,8 @@ export function monthTotals(data: AppData, key: string) {
   return { kwh, preis, minutes };
 }
 
-export function maybeAutofillPreis(cardTarife: Record<string, string | number>, row: ChargeRow): void {
-  const tarif = parseNum(cardTarife[row.karte]);
+export function maybeAutofillPreis(row: ChargeRow): void {
+  const tarif = parseNum(row.preisProKwh);
   if (tarif > 0 && parseNum(row.kwh) > 0 && !parseNum(row.preis)) {
     row.preis = (parseNum(row.kwh) * tarif).toFixed(2);
   }

@@ -28,7 +28,7 @@ export default function AddEntryFab({
 
   const save = (form: ChargeRow) => {
     const row: ChargeRow = { ...form };
-    maybeAutofillPreis(data.cardTarife, row);
+    maybeAutofillPreis(row);
     const targetMonth = monthKeyFromDate(row.datum) ?? activeMonth;
 
     updateData((d) => {
@@ -82,7 +82,6 @@ export default function AddEntryFab({
           initial={{ ...emptyRow(), datum: todayStr(), fahrzeug: openRequest.vehicle }}
           data={data}
           cardOptions={data.cardsList}
-          cardTarife={data.cardTarife}
           autoLocate
           defaultSection={openRequest.section}
           onSave={save}

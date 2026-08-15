@@ -543,24 +543,6 @@ section.tco {
 .card-chip-name {
   white-space: nowrap;
 }
-.tarif-input-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-.tarif-input-wrap input {
-  width: 34px;
-  font-size: 11px;
-  padding: 2px 4px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  text-align: right;
-}
-.unit-suffix {
-  font-size: 10px;
-  color: var(--ink-soft);
-  white-space: nowrap;
-}
 .card-chip-v2 .mini-del {
   border-radius: 50%;
   width: 18px;

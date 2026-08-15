@@ -4,6 +4,7 @@ export interface ChargeRow {
   datum: string;
   fahrzeug: "" | VehicleKey;
   karte: string;
+  preisProKwh: string;
   ladestation: string;
   lat: string | number;
   lon: string | number;
@@ -42,7 +43,6 @@ export interface VehicleFixedCosts {
 
 export interface AppData {
   cardsList: string[];
-  cardTarife: Record<string, string | number>;
   vehicles: {
     b10: VehicleFixedCosts;
     t03: VehicleFixedCosts;

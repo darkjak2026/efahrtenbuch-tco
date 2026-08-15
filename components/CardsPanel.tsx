@@ -24,16 +24,6 @@ export default function CardsPanel({
                 {badge.label}
               </span>
               <span className="card-chip-name">{c}</span>
-              <span className="tarif-input-wrap">
-                <input
-                  type="number"
-                  step="0.01"
-                  title="Optionaler Tarif in €/kWh für automatische Preisvorschläge"
-                  value={data.cardTarife[c] ?? ""}
-                  onChange={(e) => updateData((d) => { d.cardTarife[c] = e.target.value; })}
-                />
-                <span className="unit-suffix">€/kWh</span>
-              </span>
               <button
                 type="button"
                 className="mini-del"
@@ -41,7 +31,6 @@ export default function CardsPanel({
                 onClick={() =>
                   updateData((d) => {
                     d.cardsList = d.cardsList.filter((x) => x !== c);
-                    delete d.cardTarife[c];
                   })
                 }
               >
@@ -74,9 +63,9 @@ export default function CardsPanel({
         </button>
       </div>
       <p className="hint">
-        Optionaler €/kWh-Tarif pro Karte (z.B. für &quot;Zuhause&quot;): wird beim Ausfüllen einer Ladezeile
-        automatisch als Preisvorschlag genutzt, sobald kWh eingetragen ist und das Preisfeld noch leer ist —
-        überschreibt nie einen bereits eingetragenen Preis.
+        Die genutzte Ladekarte wird pro Ladevorgang erfasst, dient aber nur noch statistischen Zwecken — der
+        Preis wird beim Eintragen direkt über den €/kWh-Preis der jeweiligen Sitzung berechnet, unabhängig
+        davon, welche Karte hier ausgewählt ist.
       </p>
     </>
   );

@@ -24,7 +24,6 @@ export default function EntryFormModal({
   initial,
   data,
   cardOptions,
-  cardTarife,
   autoLocate = false,
   defaultSection = "vor",
   onSave,
@@ -35,7 +34,6 @@ export default function EntryFormModal({
   initial: ChargeRow;
   data: AppData;
   cardOptions: string[];
-  cardTarife: Record<string, string | number>;
   autoLocate?: boolean;
   defaultSection?: "vor" | "nach";
   onSave: (row: ChargeRow) => void;
@@ -92,14 +90,15 @@ export default function EntryFormModal({
 
   const patch = (fields: Partial<ChargeRow>) => setForm((f) => ({ ...f, ...fields }));
 
-  // Preis = kWh × Kartentarif — a pure derived value (like computedDauer below),
-  // not effect-driven state. Shown live while the field is untouched; the moment
-  // the user types their own number, form.preis stops being empty and their value
-  // simply wins. (An earlier version mutated a ref inside the setState updater to
-  // track "still our guess" — that broke silently under React 18 StrictMode, which
-  // invokes updater functions twice in dev and desynced the ref from committed state.)
+  // Preis = kWh × der für diese Sitzung eingetragene €/kWh-Preis — a pure derived
+  // value (like computedDauer below), not effect-driven state. Shown live while the
+  // field is untouched; the moment the user types their own number, form.preis stops
+  // being empty and their value simply wins. (An earlier version mutated a ref inside
+  // the setState updater to track "still our guess" — that broke silently under React
+  // 18 StrictMode, which invokes updater functions twice in dev and desynced the ref
+  // from committed state.)
   const autoPreis = (() => {
-    const tarif = parseNum(cardTarife[form.karte]);
+    const tarif = parseNum(form.preisProKwh);
     if (tarif <= 0 || parseNum(form.kwh) <= 0) return null;
     return (parseNum(form.kwh) * tarif).toFixed(2);
   })();
@@ -179,6 +178,19 @@ export default function EntryFormModal({
       {activeSection === "vor" && (
         <>
           <div className="field-row-pair">
+            <div className="field-col">
+              <label>
+                <EuroIcon /> €/kWh
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="z.B. 0,32"
+                value={form.preisProKwh}
+                onChange={(e) => patch({ preisProKwh: e.target.value })}
+              />
+            </div>
             <div className="field-col">
               <label>
                 <CardIcon /> Ladekarte
