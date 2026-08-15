@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { VEHICLES, vehicleShortLabel } from "@/lib/constants";
-import { allRows, durationToMinutes, minutesToDuration, parseNum } from "@/lib/data";
+import { allRows, durationToMinutes, minutesToDuration, parseNum, reichweiteColorClass } from "@/lib/data";
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import {
@@ -206,6 +206,7 @@ export default function EntryFormModal({
                 step="1"
                 min="0"
                 placeholder="km"
+                className={reichweiteColorClass(form.reichweiteVorher)}
                 value={form.reichweiteVorher}
                 onChange={(e) => patch({ reichweiteVorher: e.target.value })}
               />
@@ -408,6 +409,7 @@ export default function EntryFormModal({
                   step="1"
                   min="0"
                   placeholder="km"
+                  className={reichweiteColorClass(form.reichweiteNachher)}
                   value={form.reichweiteNachher}
                   onChange={(e) => patch({ reichweiteNachher: e.target.value })}
                 />
@@ -442,6 +444,7 @@ export default function EntryFormModal({
                   step="1"
                   min="0"
                   placeholder="km"
+                  className={reichweiteColorClass(form.reichweiteNachher)}
                   value={form.reichweiteNachher}
                   onChange={(e) => patch({ reichweiteNachher: e.target.value })}
                 />

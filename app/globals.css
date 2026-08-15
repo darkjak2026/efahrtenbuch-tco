@@ -12,6 +12,9 @@
   --line: #3a3548;
   --lav: #2c2740;
   --danger: #e2664a;
+  --range-yellow: #f0d84a;
+  --range-green: #8bc34a;
+  --range-peak: #ffc107;
   --violet: #b79ae8;
   --radius: 10px;
   --focus: #d8cbf2;
@@ -924,7 +927,7 @@ select {
   width: 100%;
   text-align: left;
   background: rgba(34, 30, 44, 0.85);
-  border: 1px solid var(--line);
+  border: 2px solid var(--line);
   border-radius: 8px;
   padding: 8px 10px;
   cursor: pointer;
@@ -970,6 +973,37 @@ select {
   color: var(--ink-soft);
   font-size: 10px;
   margin: 0 -5px;
+}
+/* Reichweite colour coding: red/yellow/green bands, gold contour on the
+   household's realistic peak-range values. Applies both to plain history
+   text and (with extra specificity) the live dialog input fields. */
+.range-red {
+  color: var(--danger);
+}
+.range-yellow {
+  color: var(--range-yellow);
+}
+.range-green {
+  color: var(--range-green);
+}
+.range-peak {
+  color: var(--range-green);
+  border: 1.5px solid var(--range-peak);
+  border-radius: 4px;
+  padding: 0 3px;
+}
+.fab-modal .field-col input.range-red {
+  color: var(--danger);
+}
+.fab-modal .field-col input.range-yellow {
+  color: var(--range-yellow);
+}
+.fab-modal .field-col input.range-green {
+  color: var(--range-green);
+}
+.fab-modal .field-col input.range-peak {
+  color: var(--range-green);
+  border-color: var(--range-peak);
 }
 .entry-card-station {
   font-size: 11px;

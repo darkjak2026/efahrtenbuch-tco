@@ -11,7 +11,7 @@ export default function Footer() {
   const buildDate = process.env.NEXT_PUBLIC_BUILD_DATE || LAUNCH_DATE;
   return (
     <footer className="app-footer">
-      © Jakobs Claudius Digitalensis | {formatGerman(LAUNCH_DATE)} – {formatGerman(buildDate)} | v{packageJson.version}
+      © Jakobus Claudius Digitalensis | {formatGerman(LAUNCH_DATE)} – {formatGerman(buildDate)} | v{packageJson.version}
     </footer>
   );
 }

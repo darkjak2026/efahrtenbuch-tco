@@ -12,6 +12,7 @@ import {
   monthKeyFromDate,
   monthTotals,
   parseNum,
+  reichweiteColorClass,
 } from "@/lib/data";
 import type { AppData, ChargeRow } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
@@ -110,9 +111,13 @@ export default function ChargeTable({
                 </div>
               )}
               <div className="entry-card-bottom">
-                {row.reichweiteVorher && <span>{row.reichweiteVorher} km</span>}
+                {row.reichweiteVorher && (
+                  <span className={reichweiteColorClass(row.reichweiteVorher)}>{row.reichweiteVorher} km</span>
+                )}
                 {row.reichweiteVorher && row.reichweiteNachher && <span className="entry-battery-arrow">→</span>}
-                {row.reichweiteNachher && <span>{row.reichweiteNachher} km</span>}
+                {row.reichweiteNachher && (
+                  <span className={reichweiteColorClass(row.reichweiteNachher)}>{row.reichweiteNachher} km</span>
+                )}
                 {row.kwh && <span>{row.kwh} kWh</span>}
                 {row.dauer && (
                   <span>

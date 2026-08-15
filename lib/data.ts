@@ -100,6 +100,19 @@ export function parseNum(v: string | number | undefined | null): number {
   return isNaN(n) ? 0 : n;
 }
 
+// Colour-codes a Reichweite (remaining range) reading: red under 20 km, yellow
+// 20–69, green 70–295, and green-with-a-gold-contour from 296 km up — the
+// household's realistic max-range "Spitzenwerte" band. Empty/blank fields get
+// no class at all, so "not entered yet" is never mistaken for "critically low".
+export function reichweiteColorClass(value: string | number | undefined | null): string {
+  if (value === "" || value === null || value === undefined) return "";
+  const km = parseNum(value);
+  if (km < 20) return "range-red";
+  if (km < 70) return "range-yellow";
+  if (km < 296) return "range-green";
+  return "range-peak";
+}
+
 export function durationToMinutes(v: string): number {
   if (!v) return 0;
   const m = /^(\d{1,3}):([0-5]\d)$/.exec(v.trim());
