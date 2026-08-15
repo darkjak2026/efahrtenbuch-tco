@@ -1170,9 +1170,10 @@ select {
   height: 60px;
   padding: 0;
   border-radius: 50%;
-  font-size: 12px;
-  line-height: 1.15;
-  white-space: normal;
+  font-size: 21px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
   text-align: center;
 }
 .fab-section-vor {
