@@ -6,8 +6,6 @@ import { completionMessage, emptyRow, hasNachValues, isEmptyRow, maybeAutofillPr
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
 
-type OpenRequest = { vehicle: VehicleKey; section: "vor" | "nach" };
-
 export default function AddEntryFab({
   data,
   activeMonth,
@@ -23,10 +21,7 @@ export default function AddEntryFab({
   showToast: (msg: string) => void;
   onEntryCompleted: (row: ChargeRow) => void;
 }) {
-  const [openRequest, setOpenRequest] = useState<OpenRequest | null>(null);
-  // Which vehicle's "+ B10"/"+ T03" was tapped — reveals its Vor/Nach sub-buttons.
-  // Only one vehicle expanded at a time; tapping it again collapses it back.
-  const [expandedVehicle, setExpandedVehicle] = useState<VehicleKey | null>(null);
+  const [openVehicle, setOpenVehicle] = useState<VehicleKey | null>(null);
 
   const save = (form: ChargeRow) => {
     const row: ChargeRow = { ...form };
@@ -47,52 +42,34 @@ export default function AddEntryFab({
     } else {
       showToast("Ladevorgang eingetragen");
     }
-    setOpenRequest(null);
-  };
-
-  const openFor = (vehicle: VehicleKey, section: "vor" | "nach") => {
-    setOpenRequest({ vehicle, section });
-    setExpandedVehicle(null);
+    setOpenVehicle(null);
   };
 
   return (
     <>
       <div className="fab-group">
-        {(Object.keys(VEHICLES) as VehicleKey[])
-          .filter((key) => expandedVehicle === null || expandedVehicle === key)
-          .map((key) => (
-            <div className="fab-vehicle-block" key={key}>
-              <button
-                type="button"
-                className="fab"
-                title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
-                onClick={() => setExpandedVehicle(expandedVehicle === key ? null : key)}
-              >
-                {key === "t03" ? "t03" : key.toUpperCase()}
-              </button>
-              {expandedVehicle === key && (
-                <div className="fab-vehicle-row">
-                  <button type="button" className="fab fab-section fab-section-vor" onClick={() => openFor(key, "vor")}>
-                    Vor
-                  </button>
-                  <button type="button" className="fab fab-section fab-section-nach" onClick={() => openFor(key, "nach")}>
-                    Nach
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+        {(Object.keys(VEHICLES) as VehicleKey[]).map((key) => (
+          <button
+            type="button"
+            key={key}
+            className="fab"
+            title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
+            onClick={() => setOpenVehicle(key)}
+          >
+            {key === "t03" ? "t03" : key.toUpperCase()}
+          </button>
+        ))}
       </div>
 
-      {openRequest && (
+      {openVehicle && (
         <EntryFormModal
-          initial={{ ...emptyRow(), datum: todayStr(), fahrzeug: openRequest.vehicle }}
+          initial={{ ...emptyRow(), datum: todayStr(), fahrzeug: openVehicle }}
           data={data}
           cardOptions={data.cardsList}
           autoLocate
-          defaultSection={openRequest.section}
+          defaultSection="vor"
           onSave={save}
-          onClose={() => setOpenRequest(null)}
+          onClose={() => setOpenVehicle(null)}
           showToast={showToast}
         />
       )}

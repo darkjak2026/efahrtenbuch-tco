@@ -1234,67 +1234,29 @@ select {
   align-items: flex-end;
   gap: 8px;
 }
-.fab-vehicle-block {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-.fab-vehicle-row {
-  display: flex;
-  gap: 8px;
-}
+/* The vehicle-picker buttons ("B10" / "t03") are true circles, not pills —
+   fixed equal width/height, text wraps to fit instead of stretching the
+   shape wide. */
 .fab {
   border: 2px solid rgba(255, 255, 255, 0.85);
-  border-radius: 26px;
   background: var(--plum);
   color: #fff;
-  font-size: 15px;
   font-weight: 700;
   line-height: 1;
-  padding: 0 16px;
-  height: 48px;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-}
-.fab-section {
-  font-size: 12.5px;
-  padding: 0 12px;
-  height: 42px;
-  white-space: nowrap;
-}
-/* The two vehicle-picker buttons ("+ B10" / "+ T03") are true circles, not
-   pills — fixed equal width/height, text wraps to fit instead of stretching
-   the shape wide. */
-.fab-vehicle-block > .fab {
   width: 60px;
   height: 60px;
   padding: 0;
   border-radius: 50%;
   font-size: 21px;
   letter-spacing: -0.03em;
-  line-height: 1;
   white-space: nowrap;
   text-align: center;
-}
-.fab-section-vor {
-  background: var(--glacier);
-  color: #14232f;
-  border-color: rgba(0, 0, 0, 0.25);
-}
-.fab-section-vor:hover {
-  background: var(--glacier-deep);
-}
-.fab-section-nach {
-  background: #1d3f66;
-  color: #fff;
-}
-.fab-section-nach:hover {
-  background: #16314f;
 }
 .fab:hover {
   background: var(--plum-deep);
