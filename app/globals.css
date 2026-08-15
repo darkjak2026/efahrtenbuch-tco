@@ -1162,6 +1162,19 @@ select {
   height: 42px;
   white-space: nowrap;
 }
+/* The two vehicle-picker buttons ("+ B10" / "+ T03") are true circles, not
+   pills — fixed equal width/height, text wraps to fit instead of stretching
+   the shape wide. */
+.fab-vehicle-block > .fab {
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
+}
 .fab-section-vor {
   background: var(--glacier);
   color: #14232f;
