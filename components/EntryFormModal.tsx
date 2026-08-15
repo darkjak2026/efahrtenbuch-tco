@@ -21,7 +21,6 @@ import {
 const HINT_ICONS = ["⚡", "🔌", "🚗", "🔋", "🛣️"];
 
 export default function EntryFormModal({
-  action,
   initial,
   data,
   cardOptions,
@@ -32,7 +31,6 @@ export default function EntryFormModal({
   onClose,
   showToast,
 }: {
-  action: string;
   initial: ChargeRow;
   data: AppData;
   cardOptions: string[];
@@ -161,15 +159,9 @@ export default function EntryFormModal({
   const durMinutes = totalDurationMinutes % 60;
   const setDuration = (hours: number, minutes: number) => patch({ dauer: minutesToDuration(hours * 60 + minutes) });
 
-  // "Ladevorgang für B10 eintragen" once a vehicle is known, plain "Ladevorgang
-  // eintragen" otherwise — reacts live as the vehicle selection changes.
-  const heading = `Ladevorgang${form.fahrzeug ? ` für ${form.fahrzeug.toUpperCase()}` : ""} ${action}`;
-
   return (
     <div className="fab-overlay" onClick={onClose}>
       <div className="fab-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{heading}</h3>
-
         <button
           type="button"
           className={"fab-modal-subheading" + (activeSection === "vor" ? " active" : "")}
@@ -217,7 +209,7 @@ export default function EntryFormModal({
               <p className="fab-modal-sentence">
                 Unser{" "}
                 <select
-                  className="sentence-field"
+                  className="sentence-field fahrzeug-select"
                   value={form.fahrzeug}
                   onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}
                 >
@@ -296,7 +288,11 @@ export default function EntryFormModal({
                   <label>
                     <CarIcon /> Fahrzeug
                   </label>
-                  <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
+                  <select
+                    className="fahrzeug-select"
+                    value={form.fahrzeug}
+                    onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}
+                  >
                     <option value="">–</option>
                     {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
                       <option key={val} value={val}>

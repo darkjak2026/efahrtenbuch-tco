@@ -351,9 +351,12 @@ section.tco {
   border-width: 2px;
   border-color: var(--ink-soft);
 }
+.fahrzeug-select {
+  font-weight: 700;
+}
 .fab-modal-sentence {
   font-size: 14px;
-  line-height: 16px;
+  line-height: 15px;
   text-align: justify;
   color: var(--ink-soft);
   margin: 2px 0 6px;
@@ -376,6 +379,9 @@ section.tco {
   font-family: inherit;
   font-weight: inherit;
   color: var(--plum);
+}
+.fab-modal-sentence select.fahrzeug-select {
+  font-weight: 700;
 }
 .fab-modal-sentence input.sentence-field[type="date"] {
   width: 128px;

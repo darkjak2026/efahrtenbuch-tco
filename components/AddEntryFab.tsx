@@ -56,7 +56,6 @@ export default function AddEntryFab({
 
       {openVehicle && (
         <EntryFormModal
-          action="eintragen"
           initial={{ ...emptyRow(), datum: todayStr(), fahrzeug: openVehicle }}
           data={data}
           cardOptions={data.cardsList}
