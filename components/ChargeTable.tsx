@@ -143,6 +143,7 @@ export default function ChargeTable({
           initial={editingRow}
           data={data}
           cardOptions={data.cardsList}
+          defaultSection={isChargeIncomplete(editingRow) ? "nach" : "vor"}
           onSave={(updated) => {
             const row = { ...updated };
             maybeAutofillPreis(row);
