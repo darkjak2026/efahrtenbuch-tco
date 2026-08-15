@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { VEHICLES, vehicleShortLabel } from "@/lib/constants";
-import { allRows, durationToMinutes, minutesToDuration, parseNum, reichweiteColorClass } from "@/lib/data";
+import { allRows, durationToMinutes, fmtNum, minutesToDuration, parseNum, reichweiteColorClass } from "@/lib/data";
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import {
@@ -97,10 +97,10 @@ export default function EntryFormModal({
   // the setState updater to track "still our guess" — that broke silently under React
   // 18 StrictMode, which invokes updater functions twice in dev and desynced the ref
   // from committed state.)
+  const preisProKwhTarif = parseNum(form.preisProKwh);
   const autoPreis = (() => {
-    const tarif = parseNum(form.preisProKwh);
-    if (tarif <= 0 || parseNum(form.kwh) <= 0) return null;
-    return (parseNum(form.kwh) * tarif).toFixed(2);
+    if (preisProKwhTarif <= 0 || parseNum(form.kwh) <= 0) return null;
+    return (parseNum(form.kwh) * preisProKwhTarif).toFixed(2);
   })();
 
   // One-shot "it just filled itself in" glow the moment autoPreis first appears
@@ -116,6 +116,20 @@ export default function EntryFormModal({
     const t = setTimeout(() => setPriceJustFilled(false), 900);
     return () => clearTimeout(t);
   }, [autoPreis]);
+
+  // Jumping from the "kein kWh-Preis eingegeben"-hint in Nach straight to the
+  // €/kWh field in Vor (which normally sits collapsed and out of sight).
+  const preisProKwhInputRef = useRef<HTMLInputElement>(null);
+  const focusPreisProKwhPending = useRef(false);
+  useEffect(() => {
+    if (activeSection !== "vor" || !focusPreisProKwhPending.current) return;
+    focusPreisProKwhPending.current = false;
+    preisProKwhInputRef.current?.focus();
+  }, [activeSection]);
+  const jumpToPreisProKwh = () => {
+    focusPreisProKwhPending.current = true;
+    setActiveSection("vor");
+  };
 
   const options = cardOptions.includes(form.karte) || !form.karte ? cardOptions : [...cardOptions, form.karte];
 
@@ -197,6 +211,7 @@ export default function EntryFormModal({
                 <EuroIcon /> €/kWh
               </label>
               <input
+                ref={preisProKwhInputRef}
                 type="number"
                 step="0.01"
                 min="0"
@@ -512,6 +527,18 @@ export default function EntryFormModal({
                 />
               </div>
             </>
+          )}
+          {preisProKwhTarif > 0 ? (
+            <p className="preis-hint preis-hint-ok">
+              Der kWh-Preis wurde für diese Ladesession mit <strong>{fmtNum(preisProKwhTarif)} €/kWh</strong> festgelegt.
+            </p>
+          ) : (
+            <p className="preis-hint preis-hint-missing">
+              Kein kWh-Preis eingegeben, ein Gesamtpreis kann nicht gebildet werden.{" "}
+              <button type="button" className="preis-hint-link" onClick={jumpToPreisProKwh}>
+                Jetzt eintragen
+              </button>
+            </p>
           )}
           <div className="field-row">
             <label>
