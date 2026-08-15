@@ -4,7 +4,7 @@ import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { clearStoredPin, fetchData, getStoredPin, postData, storePin } from "@/lib/client-api";
 import { defaultData } from "@/lib/data";
-import type { AppData } from "@/lib/types";
+import type { AppData, ChargeRow } from "@/lib/types";
 import PinGate from "./PinGate";
 import TcoPanel from "./TcoPanel";
 import FixedCostsPanel from "./FixedCostsPanel";
@@ -29,15 +29,30 @@ export default function AppClient() {
   const [data, setData] = useState<AppData>(defaultData());
   const [activeMonth, setActiveMonth] = useState(() => currentMonthKey());
   const [toast, setToast] = useState<string | null>(null);
+  const [celebrateRow, setCelebrateRow] = useState<ChargeRow | null>(null);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNextSave = useRef(true);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const celebrateShowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const celebrateClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2400);
+  }, []);
+
+  // The reward for finishing a Nach-Erfassung: the dialog has already closed by
+  // the time this fires, so the glow/confetti lands on the entry as it settles
+  // into its spot in the Lade-Historie instead of racing the close animation.
+  const celebrateCompletion = useCallback((row: ChargeRow) => {
+    if (celebrateShowTimer.current) clearTimeout(celebrateShowTimer.current);
+    if (celebrateClearTimer.current) clearTimeout(celebrateClearTimer.current);
+    celebrateShowTimer.current = setTimeout(() => {
+      setCelebrateRow(row);
+      celebrateClearTimer.current = setTimeout(() => setCelebrateRow(null), 1800);
+    }, 2000);
   }, []);
 
   const authenticate = useCallback(async (candidatePin: string) => {
@@ -141,6 +156,8 @@ export default function AppClient() {
                   updateData={updateData}
                   setActiveMonth={setActiveMonth}
                   showToast={showToast}
+                  celebrateRow={celebrateRow}
+                  onEntryCompleted={celebrateCompletion}
                 />
               </section>
             </div>
@@ -236,6 +253,7 @@ export default function AppClient() {
         updateData={updateData}
         setActiveMonth={setActiveMonth}
         showToast={showToast}
+        onEntryCompleted={celebrateCompletion}
       />
 
       <div className={"toast" + (toast ? " show" : "")}>{toast}</div>

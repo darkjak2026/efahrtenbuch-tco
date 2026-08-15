@@ -103,6 +103,20 @@ export default function EntryFormModal({
     return (parseNum(form.kwh) * tarif).toFixed(2);
   })();
 
+  // One-shot "it just filled itself in" glow the moment autoPreis first appears
+  // (kWh went from empty to entered) — not on every subsequent digit, so typing
+  // out a multi-digit kWh value doesn't flicker the field repeatedly.
+  const [priceJustFilled, setPriceJustFilled] = useState(false);
+  const prevAutoPreis = useRef<string | null>(null);
+  useEffect(() => {
+    const prev = prevAutoPreis.current;
+    prevAutoPreis.current = autoPreis;
+    if (prev !== null || autoPreis === null) return;
+    setPriceJustFilled(true);
+    const t = setTimeout(() => setPriceJustFilled(false), 900);
+    return () => clearTimeout(t);
+  }, [autoPreis]);
+
   const options = cardOptions.includes(form.karte) || !form.karte ? cardOptions : [...cardOptions, form.karte];
 
   // Last known odometer reading for a given vehicle, excluding this very entry
@@ -507,6 +521,7 @@ export default function EntryFormModal({
               type="number"
               step="0.01"
               min="0"
+              className={priceJustFilled ? "price-input-glow" : undefined}
               value={form.preis || autoPreis || ""}
               onChange={(e) => patch({ preis: e.target.value })}
             />

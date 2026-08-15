@@ -238,6 +238,11 @@ export function monthTotals(data: AppData, key: string) {
   return { kwh, preis, minutes };
 }
 
+// The two "Nach"-values that actually mark a charge as finished.
+export function hasNachValues(row: ChargeRow): boolean {
+  return !!row.reichweiteNachher && !!row.kwh;
+}
+
 // Rows from before this rule existed were often left without Nach-Werte for
 // reasons unrelated to "charge still running" — only entries from here on get
 // flagged, so the household isn't retroactively swamped with old warnings.
@@ -248,7 +253,22 @@ const INCOMPLETE_FLAG_START = "2026-08-15";
 // since Vor and Nach can be minutes or days apart in real use.
 export function isChargeIncomplete(row: ChargeRow): boolean {
   if (!row.datum || row.datum < INCOMPLETE_FLAG_START) return false;
-  return !isEmptyRow(row) && (!row.reichweiteNachher || !row.kwh);
+  return !isEmptyRow(row) && !hasNachValues(row);
+}
+
+const COMPLETION_MESSAGES = [
+  "Vollständig geladen! ⚡",
+  "Ladevorgang komplett erfasst.",
+  "Stromkreis geschlossen. 🔌",
+  "Alle Werte im Kasten. 🔋",
+  "Sauber eingeladen.",
+  "100 % erfasst. ⚡",
+];
+
+// A small reward for finishing a Nach-Erfassung — picked fresh each time so it
+// doesn't get stale after the tenth charge of the month.
+export function completionMessage(): string {
+  return COMPLETION_MESSAGES[Math.floor(Math.random() * COMPLETION_MESSAGES.length)];
 }
 
 export function maybeAutofillPreis(row: ChargeRow): void {

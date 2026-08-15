@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { MONTHS, vehicleShortLabel } from "@/lib/constants";
 import {
+  completionMessage,
   durationToMinutes,
   fmtEUR,
   fmtNum,
+  hasNachValues,
   isChargeIncomplete,
   isEmptyRow,
   maybeAutofillPreis,
@@ -16,6 +18,7 @@ import {
   reichweiteColorClass,
 } from "@/lib/data";
 import type { AppData, ChargeRow } from "@/lib/types";
+import ConfettiBurst from "./ConfettiBurst";
 import EntryFormModal from "./EntryFormModal";
 
 export default function ChargeTable({
@@ -24,12 +27,16 @@ export default function ChargeTable({
   updateData,
   setActiveMonth,
   showToast,
+  celebrateRow,
+  onEntryCompleted,
 }: {
   data: AppData;
   activeMonth: string;
   updateData: (fn: (d: AppData) => void) => void;
   setActiveMonth: (key: string) => void;
   showToast: (msg: string) => void;
+  celebrateRow: ChargeRow | null;
+  onEntryCompleted: (row: ChargeRow) => void;
 }) {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
 
@@ -44,7 +51,7 @@ export default function ChargeTable({
     .filter(({ row }) => !isEmptyRow(row))
     .sort((a, b) => (b.row.datum || "").localeCompare(a.row.datum || ""));
 
-  const commitEdit = (updated: ChargeRow, sourceIdx: number) => {
+  const commitEdit = (updated: ChargeRow, sourceIdx: number, message = "Ladevorgang aktualisiert") => {
     const targetMonth = monthKeyFromDate(updated.datum) ?? activeMonth;
     updateData((d) => {
       d.months[activeMonth].splice(sourceIdx, 1);
@@ -54,7 +61,7 @@ export default function ChargeTable({
       else targetRows.push(updated);
     });
     if (targetMonth !== activeMonth) setActiveMonth(targetMonth);
-    showToast("Ladevorgang aktualisiert");
+    showToast(message);
     setEditingIdx(null);
   };
 
@@ -99,13 +106,19 @@ export default function ChargeTable({
         {visibleRows.map(({ row, idx }) => {
           const vehicleLabel = row.fahrzeug ? vehicleShortLabel(row.fahrzeug) : "–";
           const incomplete = isChargeIncomplete(row);
+          const justCompleted = row === celebrateRow;
           return (
             <button
               type="button"
               key={idx}
-              className={"entry-card" + (incomplete ? " entry-card-incomplete" : "")}
+              className={
+                "entry-card" +
+                (incomplete ? " entry-card-incomplete" : "") +
+                (justCompleted ? " entry-card-just-completed" : "")
+              }
               onClick={() => setEditingIdx(idx)}
             >
+              {justCompleted && <ConfettiBurst />}
               <div className="entry-card-top">
                 <span className="entry-date">{row.datum || "ohne Datum"}</span>
                 <span className={"entry-vehicle-badge" + (row.fahrzeug ? " " + row.fahrzeug : "")}>{vehicleLabel}</span>
@@ -147,7 +160,9 @@ export default function ChargeTable({
           onSave={(updated) => {
             const row = { ...updated };
             maybeAutofillPreis(row);
-            commitEdit(row, editingIdx!);
+            const justCompleted = !hasNachValues(editingRow) && hasNachValues(row);
+            commitEdit(row, editingIdx!, justCompleted ? completionMessage() : undefined);
+            if (justCompleted) onEntryCompleted(row);
           }}
           onDelete={() => deleteEntry(editingIdx!)}
           onClose={() => setEditingIdx(null)}

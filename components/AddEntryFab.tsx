@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { todayStr, VEHICLES } from "@/lib/constants";
-import { emptyRow, isEmptyRow, maybeAutofillPreis, monthKeyFromDate } from "@/lib/data";
+import { completionMessage, emptyRow, hasNachValues, isEmptyRow, maybeAutofillPreis, monthKeyFromDate } from "@/lib/data";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
 
@@ -14,12 +14,14 @@ export default function AddEntryFab({
   updateData,
   setActiveMonth,
   showToast,
+  onEntryCompleted,
 }: {
   data: AppData;
   activeMonth: string;
   updateData: (fn: (d: AppData) => void) => void;
   setActiveMonth: (key: string) => void;
   showToast: (msg: string) => void;
+  onEntryCompleted: (row: ChargeRow) => void;
 }) {
   const [openRequest, setOpenRequest] = useState<OpenRequest | null>(null);
   // Which vehicle's "+ B10"/"+ T03" was tapped — reveals its Vor/Nach sub-buttons.
@@ -39,7 +41,12 @@ export default function AddEntryFab({
     });
 
     if (targetMonth !== activeMonth) setActiveMonth(targetMonth);
-    showToast("Ladevorgang eingetragen");
+    if (hasNachValues(row)) {
+      showToast(completionMessage());
+      onEntryCompleted(row);
+    } else {
+      showToast("Ladevorgang eingetragen");
+    }
     setOpenRequest(null);
   };
 
