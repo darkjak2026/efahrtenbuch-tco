@@ -351,6 +351,47 @@ section.tco {
   border-width: 2px;
   border-color: var(--ink-soft);
 }
+.fab-modal-sentence {
+  font-size: 14px;
+  line-height: 2.3;
+  color: var(--ink-soft);
+  margin: 2px 0 6px;
+}
+.fab-modal-sentence .sentence-field,
+.fab-modal-sentence .sentence-value {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-weight: 700;
+  color: var(--accent);
+}
+.fab-modal-sentence input.sentence-field,
+.fab-modal-sentence select.sentence-field {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  border-bottom: 2px dotted var(--plum);
+  border-radius: 2px 2px 0 0;
+  padding: 1px 4px;
+  margin: 0 1px;
+  font-size: 13.5px;
+}
+.fab-modal-sentence input.sentence-field[type="date"] {
+  width: 128px;
+}
+.fab-modal-sentence input.sentence-field.sentence-field-wide {
+  width: 128px;
+}
+.fab-modal-sentence input.sentence-field.sentence-field-num {
+  width: 60px;
+  text-align: center;
+}
+.sentence-station {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+}
 .field-hint {
   margin: -4px 0 8px;
   display: flex;

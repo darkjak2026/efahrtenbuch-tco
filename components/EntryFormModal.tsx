@@ -208,42 +208,158 @@ export default function EntryFormModal({
                 />
               </div>
             </div>
-            <div className="field-row">
-              <label>
-                <CalendarIcon /> Datum
-              </label>
-              <input type="date" value={form.datum} onChange={(e) => patch({ datum: e.target.value })} />
-            </div>
-            <div className="field-row">
-              <label>
-                <CarIcon /> Fahrzeug
-              </label>
-              <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
-                <option value="">–</option>
-                {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
-                  <option key={val} value={val}>
-                    {vehicleShortLabel(val)} ({val.toUpperCase()})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field-row">
-              <label>
-                <RoadIcon /> km-Stand
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="km"
-                value={form.km}
-                onFocus={selectTrailingDigits}
-                onChange={(e) => {
-                  lastAutofilledKm.current = null;
-                  patch({ km: e.target.value.replace(/\D/g, "") });
-                }}
-              />
-            </div>
+            {isNewEntry ? (
+              // All auto-derivable data folded into one sentence — the coloured/underlined
+              // words are still real inputs, just styled to read as prose. Only Ladekarte
+              // and Reichweite vorher above (nothing to derive them from) stay as plain
+              // fields, so the two things that truly need the user's own knowledge remain
+              // visually distinct from everything the app can already guess.
+              <p className="fab-modal-sentence">
+                Unser{" "}
+                <select
+                  className="sentence-field"
+                  value={form.fahrzeug}
+                  onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}
+                >
+                  <option value="">Fahrzeug</option>
+                  {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
+                    <option key={val} value={val}>
+                      {vehicleShortLabel(val)} ({val.toUpperCase()})
+                    </option>
+                  ))}
+                </select>{" "}
+                wird am{" "}
+                <input
+                  type="date"
+                  className="sentence-field"
+                  value={form.datum}
+                  onChange={(e) => patch({ datum: e.target.value })}
+                />{" "}
+                an der Ladestation{" "}
+                <span className="sentence-station">
+                  <input
+                    type="text"
+                    className="sentence-field sentence-field-wide"
+                    placeholder="Ladestation"
+                    value={form.ladestation}
+                    onChange={(e) => patch({ ladestation: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    className={"locate-btn" + (locating ? " busy" : "")}
+                    title="Standort per GPS abrufen und Ladestation nachschlagen"
+                    disabled={locating}
+                    onClick={() => {
+                      setLocating(true);
+                      locateStation(
+                        form.ladestation,
+                        (result) => {
+                          setLocating(false);
+                          patch({ lat: result.lat, lon: result.lon, ladestation: result.ladestation });
+                          showToast(result.toast);
+                        },
+                        (msg) => {
+                          setLocating(false);
+                          showToast(msg);
+                        }
+                      );
+                    }}
+                  >
+                    <LocationPinIcon size={14} />
+                  </button>
+                </span>{" "}
+                bei einem <span style={{ whiteSpace: "nowrap" }}>km-Stand</span> von{" "}
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="sentence-field sentence-field-num"
+                  placeholder="km"
+                  value={form.km}
+                  onFocus={selectTrailingDigits}
+                  onChange={(e) => {
+                    lastAutofilledKm.current = null;
+                    patch({ km: e.target.value.replace(/\D/g, "") });
+                  }}
+                />{" "}
+                km geladen. Die Startzeit ist ca. <span className="sentence-value">{chargeStartLabel} Uhr</span>.
+              </p>
+            ) : (
+              <>
+                <div className="field-row">
+                  <label>
+                    <CalendarIcon /> Datum
+                  </label>
+                  <input type="date" value={form.datum} onChange={(e) => patch({ datum: e.target.value })} />
+                </div>
+                <div className="field-row">
+                  <label>
+                    <CarIcon /> Fahrzeug
+                  </label>
+                  <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
+                    <option value="">–</option>
+                    {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
+                      <option key={val} value={val}>
+                        {vehicleShortLabel(val)} ({val.toUpperCase()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="field-row">
+                  <label>
+                    <RoadIcon /> km-Stand
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="km"
+                    value={form.km}
+                    onFocus={selectTrailingDigits}
+                    onChange={(e) => {
+                      lastAutofilledKm.current = null;
+                      patch({ km: e.target.value.replace(/\D/g, "") });
+                    }}
+                  />
+                </div>
+                <div className="field-row">
+                  <label>
+                    <PlugIcon /> Ladestation
+                  </label>
+                  <div className="station-cell">
+                    <input
+                      type="text"
+                      placeholder="Name der Ladestation"
+                      value={form.ladestation}
+                      onChange={(e) => patch({ ladestation: e.target.value })}
+                    />
+                    <button
+                      type="button"
+                      className={"locate-btn" + (locating ? " busy" : "")}
+                      title="Standort per GPS abrufen und Ladestation nachschlagen"
+                      disabled={locating}
+                      onClick={() => {
+                        setLocating(true);
+                        locateStation(
+                          form.ladestation,
+                          (result) => {
+                            setLocating(false);
+                            patch({ lat: result.lat, lon: result.lon, ladestation: result.ladestation });
+                            showToast(result.toast);
+                          },
+                          (msg) => {
+                            setLocating(false);
+                            showToast(msg);
+                          }
+                        );
+                      }}
+                    >
+                      <LocationPinIcon size={14} />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
             {lastKnownKm !== null && (
               <div className="field-hint">
                 <span className="field-hint-text">
@@ -252,42 +368,6 @@ export default function EntryFormModal({
                 <span className="field-hint-icon">{hintIcon}</span>
               </div>
             )}
-            <div className="field-row">
-              <label>
-                <PlugIcon /> Ladestation
-              </label>
-              <div className="station-cell">
-                <input
-                  type="text"
-                  placeholder="Name der Ladestation"
-                  value={form.ladestation}
-                  onChange={(e) => patch({ ladestation: e.target.value })}
-                />
-                <button
-                  type="button"
-                  className={"locate-btn" + (locating ? " busy" : "")}
-                  title="Standort per GPS abrufen und Ladestation nachschlagen"
-                  disabled={locating}
-                  onClick={() => {
-                    setLocating(true);
-                    locateStation(
-                      form.ladestation,
-                      (result) => {
-                        setLocating(false);
-                        patch({ lat: result.lat, lon: result.lon, ladestation: result.ladestation });
-                        showToast(result.toast);
-                      },
-                      (msg) => {
-                        setLocating(false);
-                        showToast(msg);
-                      }
-                    );
-                  }}
-                >
-                  <LocationPinIcon size={14} />
-                </button>
-              </div>
-            </div>
           </>
         )}
 
