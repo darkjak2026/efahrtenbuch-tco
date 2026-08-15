@@ -1,0 +1,44 @@
+{
+  "projektname": "eFahrtenbuch TCO (Familie Liese-Held)",
+  "live_seit": "05.07.2026",
+  "aktualisiert": "15.08.2026",
+  "naechste_pruefung": "15.11.2026",
+  "absicht": "Familie Liese-Held fährt zwei Elektroautos (Leapmotor B10 'BIO-Leapy' und Leapmotor T03 'Leapy') und wollte die echten laufenden Kosten pro gefahrenem Kilometer sehen, nicht nur die Stromrechnung. Die App ist ein gemeinsames, PIN-geschütztes Ladeprotokoll: jeder Ladevorgang wird mit Ladekarte, kWh, Preis, Kilometerstand und Standort erfasst, daraus berechnet die App laufend die TCO (Total Cost of Ownership) je Fahrzeug und für den Haushalt insgesamt (Ladekosten + Leasing + Versicherung + Investitionen + wiederkehrende Kosten, geteilt durch die gefahrenen Kilometer). Ursprünglich eine statische HTML-Datei, seit 05.07.2026 als Next.js-App auf Vercel mit Upstash Redis als gemeinsamem Datenspeicher, damit beide Haushaltsmitglieder vom Handy aus eintragen können.",
+  "funktionen": [
+    ["Ladevorgang erfassen", "Formular pro Fahrzeug (B10/T03) mit Datum, Ladekarte, km-Stand, Ladestation (GPS-Suche + Adress-Fallback), Reichweite vorher/nachher, Dauer, kWh, Preis, Notiz; Preis wird automatisch aus kWh x Kartentarif berechnet"],
+    ["TCO-Berechnung", "Laufende €/km-Kennzahl je Fahrzeug und Haushalt aus Ladekosten, Leasing, Versicherung, Investitionen (36 Monate abgeschrieben) und wiederkehrenden Kosten"],
+    ["Lade-Historie", "Monatsweise Liste aller Ladevorgänge, editierbar per Antippen, mit farbcodierter Reichweiten-Anzeige (rot/gelb/grün/Spitzenwert)"],
+    ["Ladekarten & Tarife", "Verwaltung der genutzten Ladekarten und ihrer €/kWh-Tarife für die automatische Preisberechnung"],
+    ["Fixkosten & Investitionen", "Erfassung von Leasingraten, Versicherung, Anschaffungen (abgeschrieben) und Abos je Fahrzeug oder Haushalt"],
+    ["Export", "PDF- und Excel-Export der Monats- und Gesamtübersicht (SheetJS/jsPDF im Client)"],
+    ["Zugriffsschutz", "Gemeinsamer Haushalts-PIN (kein Login pro Person), Daten liegen zentral in Upstash Redis"]
+  ],
+  "hosting": [
+    ["Haupt-Hosting", "Vercel - https://efahrtenbuch-tco.vercel.app (Projekt jakob-s-projects18/efahrtenbuch-tco)"],
+    ["Domain", "keine eigene Domain, nur die vercel.app-Subdomain"]
+  ],
+  "dienste": [
+    ["Vercel", "Hosting, Build/Deploy bei jedem Push auf GitHub master", "kritisch"],
+    ["Upstash Redis (KV)", "Einziger Datenspeicher - alle Ladevorgänge, Fixkosten, Ladekarten liegen unter dem Redis-Key 'ladeprotokoll:2026'", "kritisch"],
+    ["GitHub", "Quellcode-Repository darkjak2026/efahrtenbuch-tco", "kritisch"],
+    ["Open Charge Map API", "Ladestationssuche per GPS beim Erfassen eines Ladevorgangs", "nice-to-have (Adress-Fallback ohne diesen Dienst)"],
+    ["OpenStreetMap / Nominatim", "Adress-Fallback (Straße/PLZ/Ort), wenn keine bekannte Ladestation in der Nähe gefunden wird", "nice-to-have"],
+    ["SheetJS (xlsx) / jsPDF", "Client-seitig per <script> von cdnjs eingebunden, für Excel-/PDF-Export", "nice-to-have (nur Export betroffen)"]
+  ],
+  "accounts": [
+    ["Vercel", "darkjak2026 (Team jakob-s-projects18)", "unklar - siehe offene_punkte"],
+    ["GitHub", "darkjak2026", "unklar - siehe offene_punkte"],
+    ["Upstash Redis", "Zugangsdaten als KV_REST_API_URL/KV_REST_API_TOKEN in .env.local / Vercel Environment Variables", ".env.local (lokal) bzw. Vercel-Projekteinstellungen"],
+    ["App-Zugriffs-PIN (Haushalt)", "gemeinsamer PIN für Familie Liese-Held", "als LADEPROTOKOLL_PIN in .env.local / Vercel Environment Variables"]
+  ],
+  "changelog": [
+    ["05.07.2026", "V1.00", "Projekt gestartet: Migration der bisherigen statischen HTML-Version zu Next.js + Upstash Redis auf Vercel; Ladeprotokoll, TCO-Berechnung, PIN-Schutz, PDF/Excel-Export aufgebaut"],
+    ["07.07.2026", "V1.00", "Stichtag-Kilometerstände je Fahrzeug ergänzt, km-Berechnung korrigiert (höchster bekannter Wert statt Differenz), Absturz beim Excel-Export behoben (Monatsblattnamen kollidierten über Jahresgrenzen)"],
+    ["15.08.2026", "V2.00", "Eingabedialog grundlegend überarbeitet: automatische Datum-/Zeitvorschläge, Fahrzeug-Schnellwahl mit 'Vor'/'Nach dem Laden'-Ansicht, Reichweite in km statt Akku-%, automatische Preisberechnung aus Ladekarte x kWh, GPS-Adressauflösung statt Rohkoordinaten, farbcodierte Reichweiten-Anzeige in der Historie; Bugfix an der Preis-Automatik (blieb nach dem ersten Berechnen stumm hängen)"]
+  ],
+  "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
+  "offene_punkte": [
+    "Wo genau die Passwörter/2FA für die Vercel- und GitHub-Accounts (darkjak2026) hinterlegt sind, ist der KI nicht bekannt - bitte von Jakob ergänzen (Passwort-Manager?).",
+    "Kein automatisiertes Backup der Upstash-Redis-Daten bekannt - nur der manuelle JSON-Export in der App selbst (Exportieren aller Daten)."
+  ]
+}

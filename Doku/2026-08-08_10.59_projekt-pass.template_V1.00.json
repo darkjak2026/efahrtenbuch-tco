@@ -1,0 +1,25 @@
+{
+  "projektname": "",
+  "live_seit": "",
+  "aktualisiert": "",
+  "naechste_pruefung": "",
+  "absicht": "[Ausgangsproblem, Zielgruppe, ursprüngliche Idee in 3-5 Sätzen]",
+  "funktionen": [
+    ["", ""]
+  ],
+  "hosting": [
+    ["Haupt-Hosting", ""],
+    ["Domain", ""]
+  ],
+  "dienste": [
+    ["", "", ""]
+  ],
+  "accounts": [
+    ["", "", ""]
+  ],
+  "changelog": [
+    ["TT.MM.JJJJ", "V1.00", "Projekt gestartet"]
+  ],
+  "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
+  "offene_punkte": []
+}
