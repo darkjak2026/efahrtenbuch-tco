@@ -523,7 +523,10 @@ export default function EntryFormModal({
 
   return (
     <div className="fab-overlay" onClick={onClose}>
-      <div className="fab-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={"fab-modal" + (activeSection === "vor" ? " fab-modal-vor" : " fab-modal-nach")}
+        onClick={(e) => e.stopPropagation()}
+      >
         {activeSection === "nach" ? (
           <>
             {nachBlock}

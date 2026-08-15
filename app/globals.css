@@ -1167,6 +1167,12 @@ select {
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
+.fab-modal-vor {
+  background: color-mix(in srgb, var(--glacier) 35%, var(--panel));
+}
+.fab-modal-nach {
+  background: color-mix(in srgb, #1d3f66 65%, var(--panel));
+}
 .fab-modal h3 {
   font-family: var(--font-space-grotesk), sans-serif;
   color: var(--accent);
