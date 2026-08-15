@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { VEHICLES, vehicleShortLabel } from "@/lib/constants";
-import { allRows, durationToMinutes, maybeAutofillPreis, minutesToDuration, parseNum } from "@/lib/data";
+import { allRows, durationToMinutes, minutesToDuration, parseNum } from "@/lib/data";
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import {
@@ -89,13 +89,19 @@ export default function EntryFormModal({
 
   const patch = (fields: Partial<ChargeRow>) => setForm((f) => ({ ...f, ...fields }));
 
-  // Only run the tariff-based price suggestion on a discrete selection (Ladekarte)
-  // or once the kWh field is left (onBlur) — never on every keystroke, or a
-  // half-typed kWh value (e.g. the "1" in "12.5") would freeze in a wrong price.
+  // Tracks the Preis guess we last wrote ourselves, so kWh × Kartentarif keeps the
+  // field in sync live — but the moment the user types their own number, it stops
+  // touching it (same "still our guess vs. hands off" pattern as km-Stand below).
+  const lastAutoPreis = useRef<string | null>(null);
   const patchWithAutofill = (fields: Partial<ChargeRow>) =>
     setForm((f) => {
       const next = { ...f, ...fields };
-      maybeAutofillPreis(cardTarife, next);
+      const tarif = parseNum(cardTarife[next.karte]);
+      if (tarif > 0 && parseNum(next.kwh) > 0 && (next.preis === "" || next.preis === lastAutoPreis.current)) {
+        const guess = (parseNum(next.kwh) * tarif).toFixed(2);
+        next.preis = guess;
+        lastAutoPreis.current = guess;
+      }
       return next;
     });
 
@@ -185,6 +191,7 @@ export default function EntryFormModal({
                     </option>
                   ))}
                 </select>
+                {!form.karte && <span className="field-required-hint">Karte auswählen</span>}
               </div>
               <div className="field-col">
                 <label>
@@ -377,26 +384,40 @@ export default function EntryFormModal({
         </button>
         {activeSection === "nach" && (
           <>
-            <div className="field-row">
-              <label>
-                <RoadIcon /> Reichweite nachher
-              </label>
-              <input
-                type="number"
-                step="1"
-                min="0"
-                placeholder="km"
-                value={form.reichweiteNachher}
-                onChange={(e) => patch({ reichweiteNachher: e.target.value })}
-              />
-            </div>
             {isNewEntry ? (
               <>
-                <div className="field-row">
-                  <label>
-                    <ClockIcon /> Ende des Ladevorgangs
-                  </label>
-                  <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                <div className="field-row-pair">
+                  <div className="field-col">
+                    <label>
+                      <RoadIcon /> Reichweite neu
+                    </label>
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      placeholder="km"
+                      value={form.reichweiteNachher}
+                      onChange={(e) => patch({ reichweiteNachher: e.target.value })}
+                    />
+                  </div>
+                  <div className="field-col">
+                    <label>
+                      <ClockIcon /> Ende Ladevorgang
+                    </label>
+                    <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                  </div>
+                  <div className="field-col">
+                    <label>
+                      <BoltIcon /> geladene kWh
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={form.kwh}
+                      onChange={(e) => patchWithAutofill({ kwh: e.target.value })}
+                    />
+                  </div>
                 </div>
                 <div className="field-hint">
                   <span className="field-hint-text">
@@ -406,48 +427,62 @@ export default function EntryFormModal({
                 </div>
               </>
             ) : (
-              <div className="field-row">
-                <label>
-                  <ClockIcon /> Dauer (Std : Min)
-                </label>
-                <div className="duration-inputs">
+              <>
+                <div className="field-row">
+                  <label>
+                    <RoadIcon /> Reichweite neu
+                  </label>
                   <input
                     type="number"
-                    inputMode="numeric"
                     step="1"
                     min="0"
-                    max="999"
-                    placeholder="Std"
-                    value={durHours || ""}
-                    onChange={(e) => setDuration(Number(e.target.value) || 0, durMinutes)}
-                  />
-                  <span>:</span>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    step="1"
-                    min="0"
-                    max="59"
-                    placeholder="Min"
-                    value={durMinutes || ""}
-                    onChange={(e) => setDuration(durHours, Number(e.target.value) || 0)}
+                    placeholder="km"
+                    value={form.reichweiteNachher}
+                    onChange={(e) => patch({ reichweiteNachher: e.target.value })}
                   />
                 </div>
-              </div>
+                <div className="field-row">
+                  <label>
+                    <ClockIcon /> Dauer (Std : Min)
+                  </label>
+                  <div className="duration-inputs">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      step="1"
+                      min="0"
+                      max="999"
+                      placeholder="Std"
+                      value={durHours || ""}
+                      onChange={(e) => setDuration(Number(e.target.value) || 0, durMinutes)}
+                    />
+                    <span>:</span>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      step="1"
+                      min="0"
+                      max="59"
+                      placeholder="Min"
+                      value={durMinutes || ""}
+                      onChange={(e) => setDuration(durHours, Number(e.target.value) || 0)}
+                    />
+                  </div>
+                </div>
+                <div className="field-row">
+                  <label>
+                    <BoltIcon /> geladene kWh
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.kwh}
+                    onChange={(e) => patchWithAutofill({ kwh: e.target.value })}
+                  />
+                </div>
+              </>
             )}
-            <div className="field-row">
-              <label>
-                <BoltIcon /> kWh
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={form.kwh}
-                onChange={(e) => patch({ kwh: e.target.value })}
-                onBlur={() => patchWithAutofill({})}
-              />
-            </div>
             <div className="field-row">
               <label>
                 <EuroIcon /> Preis €
@@ -457,7 +492,10 @@ export default function EntryFormModal({
                 step="0.01"
                 min="0"
                 value={form.preis}
-                onChange={(e) => patch({ preis: e.target.value })}
+                onChange={(e) => {
+                  lastAutoPreis.current = null;
+                  patch({ preis: e.target.value });
+                }}
               />
             </div>
             <div className="field-row">
@@ -488,6 +526,8 @@ export default function EntryFormModal({
           <button
             type="button"
             className="btn btn-primary"
+            disabled={!form.karte}
+            title={!form.karte ? "Bitte zuerst eine Ladekarte auswählen" : undefined}
             onClick={() => onSave(computedDauer ? { ...form, dauer: computedDauer } : form)}
           >
             Speichern
