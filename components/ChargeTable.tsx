@@ -6,6 +6,7 @@ import {
   durationToMinutes,
   fmtEUR,
   fmtNum,
+  isChargeIncomplete,
   isEmptyRow,
   maybeAutofillPreis,
   minutesToDuration,
@@ -97,11 +98,18 @@ export default function ChargeTable({
         {visibleRows.length === 0 && <div className="entry-list-empty">Keine Ladevorgänge in diesem Monat.</div>}
         {visibleRows.map(({ row, idx }) => {
           const vehicleLabel = row.fahrzeug ? vehicleShortLabel(row.fahrzeug) : "–";
+          const incomplete = isChargeIncomplete(row);
           return (
-            <button type="button" key={idx} className="entry-card" onClick={() => setEditingIdx(idx)}>
+            <button
+              type="button"
+              key={idx}
+              className={"entry-card" + (incomplete ? " entry-card-incomplete" : "")}
+              onClick={() => setEditingIdx(idx)}
+            >
               <div className="entry-card-top">
                 <span className="entry-date">{row.datum || "ohne Datum"}</span>
                 <span className={"entry-vehicle-badge" + (row.fahrzeug ? " " + row.fahrzeug : "")}>{vehicleLabel}</span>
+                {incomplete && <span className="entry-badge-incomplete">unvollständig</span>}
                 {row.notiz && <span className="entry-notiz-hint">Notiz</span>}
                 <span className="entry-price">{row.preis ? fmtEUR(parseNum(row.preis)) : "–"}</span>
               </div>

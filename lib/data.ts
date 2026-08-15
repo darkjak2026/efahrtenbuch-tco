@@ -238,6 +238,13 @@ export function monthTotals(data: AppData, key: string) {
   return { kwh, preis, minutes };
 }
 
+// A row saved from the "Vor"-section alone (no reichweiteNachher/kwh yet) is a
+// charge that's still running — surfaced in the Lade-Historie as "unvollständig"
+// since Vor and Nach can be minutes or days apart in real use.
+export function isChargeIncomplete(row: ChargeRow): boolean {
+  return !isEmptyRow(row) && (!row.reichweiteNachher || !row.kwh);
+}
+
 export function maybeAutofillPreis(row: ChargeRow): void {
   const tarif = parseNum(row.preisProKwh);
   if (tarif > 0 && parseNum(row.kwh) > 0 && !parseNum(row.preis)) {

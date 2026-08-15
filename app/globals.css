@@ -919,6 +919,38 @@ select {
   border-color: var(--plum);
   background: var(--lav);
 }
+@keyframes entry-badge-incomplete-pulse {
+  0%,
+  100% {
+    background: var(--danger);
+  }
+  50% {
+    background: rgba(226, 102, 74, 0.45);
+  }
+}
+@keyframes entry-card-incomplete-pulse {
+  0%,
+  100% {
+    border-color: rgba(226, 102, 74, 0.45);
+  }
+  50% {
+    border-color: var(--danger);
+  }
+}
+.entry-card.entry-card-incomplete,
+.entry-card.entry-card-incomplete:hover {
+  animation: entry-card-incomplete-pulse 2.6s ease-in-out infinite;
+}
+.entry-badge-incomplete {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  animation: entry-badge-incomplete-pulse 2.6s ease-in-out infinite;
+}
 .entry-card-top {
   display: flex;
   align-items: center;
