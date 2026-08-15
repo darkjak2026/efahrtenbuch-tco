@@ -221,6 +221,9 @@ section.tco {
   font-weight: 600;
   color: var(--accent);
 }
+.collapsible-toggle-static {
+  cursor: default;
+}
 .collapsible-chevron {
   display: inline-block;
   transition: transform 0.15s;

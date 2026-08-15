@@ -128,25 +128,23 @@ export default function AppClient() {
         </section>
 
         <section className="tco history-toggle-wrap">
-          <Collapsible
-            title={
-              <>
-                <PlugIcon /> Lade-Historie
-              </>
-            }
-            defaultOpen={false}
-          >
-            <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
-            <section className="panel">
-              <ChargeTable
-                data={data}
-                activeMonth={activeMonth}
-                updateData={updateData}
-                setActiveMonth={setActiveMonth}
-                showToast={showToast}
-              />
-            </section>
-          </Collapsible>
+          <div className="collapsible">
+            <div className="collapsible-toggle collapsible-toggle-static">
+              <PlugIcon /> Lade-Historie
+            </div>
+            <div className="collapsible-body">
+              <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
+              <section className="panel">
+                <ChargeTable
+                  data={data}
+                  activeMonth={activeMonth}
+                  updateData={updateData}
+                  setActiveMonth={setActiveMonth}
+                  showToast={showToast}
+                />
+              </section>
+            </div>
+          </div>
         </section>
 
         <section className="tco fixed-panel-card">

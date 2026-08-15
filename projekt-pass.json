@@ -7,7 +7,7 @@
   "funktionen": [
     ["Ladevorgang erfassen", "Formular pro Fahrzeug (B10/T03) mit Datum, €/kWh-Preis der Sitzung, Ladekarte, km-Stand, Ladestation (GPS-Suche + Adress-Fallback), Reichweite vorher/nachher, Dauer, kWh, Preis, Notiz; Preis wird automatisch aus kWh x dem für diese Sitzung eingetragenen €/kWh-Preis berechnet, unabhängig von der gewählten Ladekarte"],
     ["TCO-Berechnung", "Laufende €/km-Kennzahl je Fahrzeug und Haushalt aus Ladekosten, Leasing, Versicherung, Investitionen (36 Monate abgeschrieben) und wiederkehrenden Kosten"],
-    ["Lade-Historie", "Monatsweise Liste aller Ladevorgänge, editierbar per Antippen, mit farbcodierter Reichweiten-Anzeige (rot/gelb/grün/Spitzenwert); Einträge ohne 'Nach'-Werte (Reichweite/kWh) zeigen ein rot pulsierendes 'unvollständig'-Badge und einen rot pulsierenden Kartenrahmen"],
+    ["Lade-Historie", "Immer ausgeklappte, monatsweise Liste aller Ladevorgänge, editierbar per Antippen, mit farbcodierter Reichweiten-Anzeige (rot/gelb/grün/Spitzenwert); Einträge ohne 'Nach'-Werte (Reichweite/kWh) zeigen ein rot pulsierendes 'unvollständig'-Badge und einen rot pulsierenden Kartenrahmen"],
     ["Ladekarten & Tarife", "Verwaltung der genutzten Ladekarten; dient nur noch statistischen Zwecken, kein Euro-Tarif mehr hinterlegbar und keine Kopplung mehr an die Preisberechnung"],
     ["Fixkosten & Investitionen", "Erfassung von Leasingraten, Versicherung, Anschaffungen (abgeschrieben) und Abos je Fahrzeug oder Haushalt"],
     ["Export", "PDF- und Excel-Export der Monats- und Gesamtübersicht (SheetJS/jsPDF im Client)"],
@@ -36,7 +36,8 @@
     ["07.07.2026", "V1.00", "Stichtag-Kilometerstände je Fahrzeug ergänzt, km-Berechnung korrigiert (höchster bekannter Wert statt Differenz), Absturz beim Excel-Export behoben (Monatsblattnamen kollidierten über Jahresgrenzen)"],
     ["15.08.2026", "V2.00", "Eingabedialog grundlegend überarbeitet: automatische Datum-/Zeitvorschläge, Fahrzeug-Schnellwahl mit 'Vor'/'Nach dem Laden'-Ansicht, Reichweite in km statt Akku-%, automatische Preisberechnung aus Ladekarte x kWh, GPS-Adressauflösung statt Rohkoordinaten, farbcodierte Reichweiten-Anzeige in der Historie; Bugfix an der Preis-Automatik (blieb nach dem ersten Berechnen stumm hängen)"],
     ["15.08.2026", "V2.01", "Preisberechnung im 'Vor'-Dialog umgestellt: statt eines fest bei der Ladekarte hinterlegten Tarifs wird jetzt pro Ladevorgang ein eigener €/kWh-Preis eingetragen, aus dem der Sitzungspreis berechnet wird. Die Ladekarten-Tarife (Ladekarten verwalten) sind dadurch von der Preisberechnung entkoppelt und dienen nur noch statistischen Zwecken; die Euro-Tarif-Eingabe dort wurde entfernt."],
-    ["15.08.2026", "V2.02", "Lade-Historie zeigt jetzt ein rot pulsierendes 'unvollständig'-Badge samt rot pulsierendem Kartenrahmen bei Einträgen, deren 'Nach'-Werte (Reichweite/kWh) noch fehlen — relevant, weil zwischen Vor- und Nach-Eintrag oft Stunden oder Tage liegen."]
+    ["15.08.2026", "V2.02", "Lade-Historie zeigt jetzt ein rot pulsierendes 'unvollständig'-Badge samt rot pulsierendem Kartenrahmen bei Einträgen, deren 'Nach'-Werte (Reichweite/kWh) noch fehlen — relevant, weil zwischen Vor- und Nach-Eintrag oft Stunden oder Tage liegen."],
+    ["15.08.2026", "V2.03", "Lade-Historie ist jetzt immer ausgeklappt statt eingeklappt zu starten, damit alle Ladevorgänge inkl. 'unvollständig'-Markierung sofort ohne Klick sichtbar sind."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [
