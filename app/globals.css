@@ -368,7 +368,7 @@ section.tco {
 .fab-modal-sentence input.sentence-field,
 .fab-modal-sentence select.sentence-field {
   display: inline-block;
-  width: auto;
+  width: fit-content;
   max-width: 100%;
   background: transparent;
   border: none;
@@ -383,8 +383,31 @@ section.tco {
 .fab-modal-sentence select.fahrzeug-select {
   font-weight: 700;
 }
-.fab-modal-sentence input.sentence-field[type="date"] {
-  width: 128px;
+/* Native <select>/<input type=date> chrome reserves more width than the
+   text actually needs — trim it down to text + a small custom arrow. */
+.fab-modal-sentence select.sentence-field {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 13px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--plum) 50%), linear-gradient(135deg, var(--plum) 50%, transparent 50%);
+  background-position: right 3px top 60%, right 0 top 60%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.fab-modal-sentence input.sentence-field[type="date"]::-webkit-calendar-picker-indicator {
+  padding: 0;
+  margin-left: 2px;
+  width: 13px;
+  height: 13px;
+}
+.fab-modal-sentence input.sentence-field[type="date"]::-webkit-clear-button {
+  display: none;
+}
+.fab-modal-sentence input.sentence-field[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+}
+.fab-modal-sentence input.sentence-field[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
 }
 .fab-modal-sentence input.sentence-field.sentence-field-wide {
   width: 128px;
