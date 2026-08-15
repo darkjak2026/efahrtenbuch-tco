@@ -127,7 +127,7 @@ export default function ChargeTable({
 
       {editingRow && (
         <EntryFormModal
-          title="Ladevorgang bearbeiten"
+          action="bearbeiten"
           initial={editingRow}
           data={data}
           cardOptions={data.cardsList}

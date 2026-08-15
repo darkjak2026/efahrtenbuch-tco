@@ -21,7 +21,7 @@ import {
 const HINT_ICONS = ["⚡", "🔌", "🚗", "🔋", "🛣️"];
 
 export default function EntryFormModal({
-  title,
+  action,
   initial,
   data,
   cardOptions,
@@ -32,7 +32,7 @@ export default function EntryFormModal({
   onClose,
   showToast,
 }: {
-  title: string;
+  action: string;
   initial: ChargeRow;
   data: AppData;
   cardOptions: string[];
@@ -134,10 +134,14 @@ export default function EntryFormModal({
   const durMinutes = totalDurationMinutes % 60;
   const setDuration = (hours: number, minutes: number) => patch({ dauer: minutesToDuration(hours * 60 + minutes) });
 
+  // "Ladevorgang für B10 eintragen" once a vehicle is known, plain "Ladevorgang
+  // eintragen" otherwise — reacts live as the vehicle selection changes.
+  const heading = `Ladevorgang${form.fahrzeug ? ` für ${form.fahrzeug.toUpperCase()}` : ""} ${action}`;
+
   return (
     <div className="fab-overlay" onClick={onClose}>
       <div className="fab-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{title}</h3>
+        <h3>{heading}</h3>
 
         <div className="fab-modal-subheading">Vor dem Laden</div>
         <div className="field-row">
