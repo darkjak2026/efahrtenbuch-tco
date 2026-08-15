@@ -403,7 +403,7 @@ section.tco {
 }
 .fab-modal-sentence .sentence-field,
 .fab-modal-sentence .sentence-value {
-  color: var(--plum);
+  color: var(--ink);
 }
 .fab-modal-sentence input.sentence-field,
 .fab-modal-sentence select.sentence-field {
@@ -419,10 +419,7 @@ section.tco {
   font-size: inherit;
   font-family: inherit;
   font-weight: inherit;
-  color: var(--plum);
-}
-.fab-modal-sentence select.fahrzeug-select {
-  font-weight: 700;
+  color: var(--ink);
 }
 /* Native <select>/<input type=date> chrome reserves more width than the
    text actually needs — trim it down to text + a small custom arrow. */
@@ -430,7 +427,7 @@ section.tco {
   appearance: none;
   -webkit-appearance: none;
   padding-right: 13px;
-  background-image: linear-gradient(45deg, transparent 50%, var(--plum) 50%), linear-gradient(135deg, var(--plum) 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%);
   background-position: right 3px top 60%, right 0 top 60%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
