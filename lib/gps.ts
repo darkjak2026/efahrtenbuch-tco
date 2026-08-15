@@ -19,8 +19,8 @@ export async function hasGeolocationPermission(): Promise<boolean> {
   }
 }
 
-// Reverse-geocodes to a human-readable "Straße Nr., PLZ" via OpenStreetMap/Nominatim —
-// used whenever no known charging station is nearby, so the field stays traceable
+// Reverse-geocodes to a human-readable "Straße Nr., PLZ Stadt" via OpenStreetMap/Nominatim
+// — used whenever no known charging station is nearby, so the field stays traceable
 // instead of falling back to a raw lat/lon pair nobody can place.
 async function reverseGeocodeAddress(lat: number, lon: number): Promise<string | null> {
   try {
@@ -32,9 +32,11 @@ async function reverseGeocodeAddress(lat: number, lon: number): Promise<string |
     const street: string | undefined = addr.road || addr.pedestrian || addr.footway;
     const houseNumber: string | undefined = addr.house_number;
     const postcode: string | undefined = addr.postcode;
+    const city: string | undefined = addr.city || addr.town || addr.village || addr.municipality;
     const streetPart = street ? (houseNumber ? `${street} ${houseNumber}` : street) : null;
-    if (streetPart && postcode) return `${streetPart}, ${postcode}`;
-    return streetPart || postcode || null;
+    const cityPart = postcode && city ? `${postcode} ${city}` : postcode || city;
+    if (streetPart && cityPart) return `${streetPart}, ${cityPart}`;
+    return streetPart || cityPart || null;
   } catch {
     return null;
   }
