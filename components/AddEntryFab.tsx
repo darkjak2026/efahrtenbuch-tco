@@ -61,7 +61,7 @@ export default function AddEntryFab({
                 title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
                 onClick={() => setExpandedVehicle(expandedVehicle === key ? null : key)}
               >
-                {key.toUpperCase()}
+                {key === "t03" ? "t03" : key.toUpperCase()}
               </button>
               {expandedVehicle === key && (
                 <div className="fab-vehicle-row">
