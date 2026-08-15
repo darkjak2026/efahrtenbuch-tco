@@ -45,6 +45,17 @@ export default function EntryFormModal({
 }) {
   const [form, setForm] = useState<ChargeRow>(initial);
   const [locating, setLocating] = useState(false);
+  // Mutually exclusive: only one of the two sections is expanded at a time.
+  const [activeSection, setActiveSection] = useState<"vor" | "nach">("vor");
+
+  // Only for brand-new entries (no onDelete → not editing a past, already-finished
+  // row) does an "app just opened" timestamp mean anything as a charge start time.
+  const isNewEntry = !onDelete;
+  const [openedAt] = useState(() => new Date());
+  // The few minutes between opening the dialog and actually plugging in.
+  const chargeStart = new Date(openedAt.getTime() + 3 * 60000);
+  const chargeStartLabel = chargeStart.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  const [endTime, setEndTime] = useState("");
 
   // On opening the add-entry form, silently try GPS — but only if permission
   // was already granted previously, so no permission prompt pops up unasked.
@@ -127,8 +138,24 @@ export default function EntryFormModal({
     else e.target.select();
   };
 
-  // Separate Std/Min fields — fast to type either one or both without ever
-  // having to convert "6h 37min" into a total-minutes figure by hand.
+  // For a new entry, Dauer is derived from chargeStart (dialog-open time + 3min) and
+  // the end time the user enters — no manual Std/Min typing. A derived value, not
+  // effect-driven state: computed on render and folded into the row on save.
+  // Assumes the same day; an end time earlier than the start rolled past midnight.
+  const computeDauerFromEndTime = (): string | null => {
+    if (!endTime) return null;
+    const [h, m] = endTime.split(":").map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) return null;
+    const end = new Date(chargeStart);
+    end.setHours(h, m, 0, 0);
+    if (end.getTime() < chargeStart.getTime()) end.setDate(end.getDate() + 1);
+    const minutes = Math.round((end.getTime() - chargeStart.getTime()) / 60000);
+    return minutesToDuration(minutes);
+  };
+  const computedDauer = isNewEntry ? computeDauerFromEndTime() : null;
+
+  // Editing an existing (already-finished) entry has no live start-time reference,
+  // so Dauer stays directly editable as separate Std/Min fields there.
   const totalDurationMinutes = durationToMinutes(form.dauer);
   const durHours = Math.floor(totalDurationMinutes / 60);
   const durMinutes = totalDurationMinutes % 60;
@@ -143,188 +170,235 @@ export default function EntryFormModal({
       <div className="fab-modal" onClick={(e) => e.stopPropagation()}>
         <h3>{heading}</h3>
 
-        <div className="fab-modal-subheading">Vor dem Laden</div>
-        <div className="field-row">
-          <label>
-            <CalendarIcon /> Datum
-          </label>
-          <input type="date" value={form.datum} onChange={(e) => patch({ datum: e.target.value })} />
-        </div>
-        <div className="field-row">
-          <label>
-            <CarIcon /> Fahrzeug
-          </label>
-          <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
-            <option value="">–</option>
-            {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
-              <option key={val} value={val}>
-                {vehicleShortLabel(val)} ({val.toUpperCase()})
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="field-row">
-          <label>
-            <RoadIcon /> km-Stand
-          </label>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            placeholder="km"
-            value={form.km}
-            onFocus={selectTrailingDigits}
-            onChange={(e) => {
-              lastAutofilledKm.current = null;
-              patch({ km: e.target.value.replace(/\D/g, "") });
-            }}
-          />
-        </div>
-        {lastKnownKm !== null && (
-          <div className="field-hint">
-            <span className="field-hint-text">
-              der {vehicleShortLabel(form.fahrzeug as VehicleKey)} wurde zuletzt bei einem ODO von {lastKnownKm} geladen
-            </span>
-            <span className="field-hint-icon">{hintIcon}</span>
-          </div>
+        <button
+          type="button"
+          className={"fab-modal-subheading" + (activeSection === "vor" ? " active" : "")}
+          onClick={() => setActiveSection("vor")}
+        >
+          Vor dem Laden
+          <span className="fab-modal-subheading-chevron">{activeSection === "vor" ? "▾" : "▸"}</span>
+        </button>
+        {activeSection === "vor" && (
+          <>
+            <div className="field-row">
+              <label>
+                <CalendarIcon /> Datum
+              </label>
+              <input type="date" value={form.datum} onChange={(e) => patch({ datum: e.target.value })} />
+            </div>
+            <div className="field-row">
+              <label>
+                <CarIcon /> Fahrzeug
+              </label>
+              <select value={form.fahrzeug} onChange={(e) => patch({ fahrzeug: e.target.value as "" | VehicleKey })}>
+                <option value="">–</option>
+                {(Object.keys(VEHICLES) as VehicleKey[]).map((val) => (
+                  <option key={val} value={val}>
+                    {vehicleShortLabel(val)} ({val.toUpperCase()})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field-row">
+              <label>
+                <RoadIcon /> km-Stand
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="km"
+                value={form.km}
+                onFocus={selectTrailingDigits}
+                onChange={(e) => {
+                  lastAutofilledKm.current = null;
+                  patch({ km: e.target.value.replace(/\D/g, "") });
+                }}
+              />
+            </div>
+            {lastKnownKm !== null && (
+              <div className="field-hint">
+                <span className="field-hint-text">
+                  der {vehicleShortLabel(form.fahrzeug as VehicleKey)} wurde zuletzt bei einem ODO von {lastKnownKm} geladen
+                </span>
+                <span className="field-hint-icon">{hintIcon}</span>
+              </div>
+            )}
+            <div className="field-row-pair">
+              <div className="field-col">
+                <label>
+                  <CardIcon /> Ladekarte
+                </label>
+                <select value={form.karte} onChange={(e) => patchWithAutofill({ karte: e.target.value })}>
+                  <option value="">– wählen –</option>
+                  {options.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field-col">
+                <label>
+                  <RoadIcon /> Reichweite vorher
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  placeholder="km"
+                  value={form.reichweiteVorher}
+                  onChange={(e) => patch({ reichweiteVorher: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="field-row">
+              <label>
+                <PlugIcon /> Ladestation
+              </label>
+              <div className="station-cell">
+                <input
+                  type="text"
+                  placeholder="Name der Ladestation"
+                  value={form.ladestation}
+                  onChange={(e) => patch({ ladestation: e.target.value })}
+                />
+                <button
+                  type="button"
+                  className={"locate-btn" + (locating ? " busy" : "")}
+                  title="Standort per GPS abrufen und Ladestation nachschlagen"
+                  disabled={locating}
+                  onClick={() => {
+                    setLocating(true);
+                    locateStation(
+                      form.ladestation,
+                      (result) => {
+                        setLocating(false);
+                        patch({ lat: result.lat, lon: result.lon, ladestation: result.ladestation });
+                        showToast(result.toast);
+                      },
+                      (msg) => {
+                        setLocating(false);
+                        showToast(msg);
+                      }
+                    );
+                  }}
+                >
+                  <LocationPinIcon size={14} />
+                </button>
+              </div>
+            </div>
+          </>
         )}
-        <div className="field-row">
-          <label>
-            <CardIcon /> Ladekarte
-          </label>
-          <select value={form.karte} onChange={(e) => patchWithAutofill({ karte: e.target.value })}>
-            <option value="">– wählen –</option>
-            {options.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="field-row">
-          <label>
-            <PlugIcon /> Ladestation
-          </label>
-          <div className="station-cell">
-            <input
-              type="text"
-              placeholder="Name der Ladestation"
-              value={form.ladestation}
-              onChange={(e) => patch({ ladestation: e.target.value })}
-            />
-            <button
-              type="button"
-              className={"locate-btn" + (locating ? " busy" : "")}
-              title="Standort per GPS abrufen und Ladestation nachschlagen"
-              disabled={locating}
-              onClick={() => {
-                setLocating(true);
-                locateStation(
-                  form.ladestation,
-                  (result) => {
-                    setLocating(false);
-                    patch({ lat: result.lat, lon: result.lon, ladestation: result.ladestation });
-                    showToast(result.toast);
-                  },
-                  (msg) => {
-                    setLocating(false);
-                    showToast(msg);
-                  }
-                );
-              }}
-            >
-              <LocationPinIcon size={14} />
-            </button>
-          </div>
-        </div>
-        <div className="field-row">
-          <label>
-            <RoadIcon /> Reichweite vorher
-          </label>
-          <input
-            type="number"
-            step="1"
-            min="0"
-            placeholder="km"
-            value={form.reichweiteVorher}
-            onChange={(e) => patch({ reichweiteVorher: e.target.value })}
-          />
-        </div>
 
-        <div className="fab-modal-subheading">Nach dem Laden</div>
-        <div className="field-row">
-          <label>
-            <RoadIcon /> Reichweite nachher
-          </label>
-          <input
-            type="number"
-            step="1"
-            min="0"
-            placeholder="km"
-            value={form.reichweiteNachher}
-            onChange={(e) => patch({ reichweiteNachher: e.target.value })}
-          />
-        </div>
-        <div className="field-row">
-          <label>
-            <ClockIcon /> Dauer (Std : Min)
-          </label>
-          <div className="duration-inputs">
-            <input
-              type="number"
-              inputMode="numeric"
-              step="1"
-              min="0"
-              max="999"
-              placeholder="Std"
-              value={durHours || ""}
-              onChange={(e) => setDuration(Number(e.target.value) || 0, durMinutes)}
-            />
-            <span>:</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              step="1"
-              min="0"
-              max="59"
-              placeholder="Min"
-              value={durMinutes || ""}
-              onChange={(e) => setDuration(durHours, Number(e.target.value) || 0)}
-            />
-          </div>
-        </div>
-        <div className="field-row">
-          <label>
-            <BoltIcon /> kWh
-          </label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={form.kwh}
-            onChange={(e) => patch({ kwh: e.target.value })}
-            onBlur={() => patchWithAutofill({})}
-          />
-        </div>
-        <div className="field-row">
-          <label>
-            <EuroIcon /> Preis €
-          </label>
-          <input type="number" step="0.01" min="0" value={form.preis} onChange={(e) => patch({ preis: e.target.value })} />
-        </div>
-        <div className="field-row">
-          <label>
-            <NoteIcon /> Notiz
-          </label>
-          <input
-            type="text"
-            className="notiz-input"
-            maxLength={500}
-            placeholder="Optionale Notiz"
-            value={form.notiz}
-            onChange={(e) => patch({ notiz: e.target.value })}
-          />
-        </div>
+        <button
+          type="button"
+          className={"fab-modal-subheading" + (activeSection === "nach" ? " active" : "")}
+          onClick={() => setActiveSection("nach")}
+        >
+          Nach dem Laden
+          <span className="fab-modal-subheading-chevron">{activeSection === "nach" ? "▾" : "▸"}</span>
+        </button>
+        {activeSection === "nach" && (
+          <>
+            <div className="field-row">
+              <label>
+                <RoadIcon /> Reichweite nachher
+              </label>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                placeholder="km"
+                value={form.reichweiteNachher}
+                onChange={(e) => patch({ reichweiteNachher: e.target.value })}
+              />
+            </div>
+            {isNewEntry ? (
+              <>
+                <div className="field-row">
+                  <label>
+                    <ClockIcon /> Ende des Ladevorgangs
+                  </label>
+                  <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                </div>
+                <div className="field-hint">
+                  <span className="field-hint-text">
+                    Start ca. {chargeStartLabel} Uhr{computedDauer ? ` · Dauer ${computedDauer} h` : ""}
+                  </span>
+                  <span className="field-hint-icon">{hintIcon}</span>
+                </div>
+              </>
+            ) : (
+              <div className="field-row">
+                <label>
+                  <ClockIcon /> Dauer (Std : Min)
+                </label>
+                <div className="duration-inputs">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    step="1"
+                    min="0"
+                    max="999"
+                    placeholder="Std"
+                    value={durHours || ""}
+                    onChange={(e) => setDuration(Number(e.target.value) || 0, durMinutes)}
+                  />
+                  <span>:</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    step="1"
+                    min="0"
+                    max="59"
+                    placeholder="Min"
+                    value={durMinutes || ""}
+                    onChange={(e) => setDuration(durHours, Number(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+            )}
+            <div className="field-row">
+              <label>
+                <BoltIcon /> kWh
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.kwh}
+                onChange={(e) => patch({ kwh: e.target.value })}
+                onBlur={() => patchWithAutofill({})}
+              />
+            </div>
+            <div className="field-row">
+              <label>
+                <EuroIcon /> Preis €
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.preis}
+                onChange={(e) => patch({ preis: e.target.value })}
+              />
+            </div>
+            <div className="field-row">
+              <label>
+                <NoteIcon /> Notiz
+              </label>
+              <input
+                type="text"
+                className="notiz-input"
+                maxLength={500}
+                placeholder="Optionale Notiz"
+                value={form.notiz}
+                onChange={(e) => patch({ notiz: e.target.value })}
+              />
+            </div>
+          </>
+        )}
 
         <div className="fab-modal-actions">
           {onDelete && (
@@ -335,7 +409,11 @@ export default function EntryFormModal({
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             Abbrechen
           </button>
-          <button type="button" className="btn btn-primary" onClick={() => onSave(form)}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => onSave(computedDauer ? { ...form, dauer: computedDauer } : form)}
+          >
             Speichern
           </button>
         </div>
