@@ -395,9 +395,10 @@ section.tco {
 }
 .fab-modal-sentence {
   font-size: 14px;
-  line-height: 15px;
+  line-height: 26px;
   text-align: justify;
-  color: var(--ink-soft);
+  color: var(--ink);
+  font-weight: 700;
   margin: 2px 0 6px;
 }
 .fab-modal-sentence .sentence-field,
@@ -407,6 +408,7 @@ section.tco {
 .fab-modal-sentence input.sentence-field,
 .fab-modal-sentence select.sentence-field {
   display: inline-block;
+  vertical-align: middle;
   width: fit-content;
   max-width: 100%;
   background: transparent;
