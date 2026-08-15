@@ -92,21 +92,17 @@ export default function EntryFormModal({
 
   const patch = (fields: Partial<ChargeRow>) => setForm((f) => ({ ...f, ...fields }));
 
-  // Tracks the Preis guess we last wrote ourselves, so kWh × Kartentarif keeps the
-  // field in sync live — but the moment the user types their own number, it stops
-  // touching it (same "still our guess vs. hands off" pattern as km-Stand below).
-  const lastAutoPreis = useRef<string | null>(null);
-  const patchWithAutofill = (fields: Partial<ChargeRow>) =>
-    setForm((f) => {
-      const next = { ...f, ...fields };
-      const tarif = parseNum(cardTarife[next.karte]);
-      if (tarif > 0 && parseNum(next.kwh) > 0 && (next.preis === "" || next.preis === lastAutoPreis.current)) {
-        const guess = (parseNum(next.kwh) * tarif).toFixed(2);
-        next.preis = guess;
-        lastAutoPreis.current = guess;
-      }
-      return next;
-    });
+  // Preis = kWh × Kartentarif — a pure derived value (like computedDauer below),
+  // not effect-driven state. Shown live while the field is untouched; the moment
+  // the user types their own number, form.preis stops being empty and their value
+  // simply wins. (An earlier version mutated a ref inside the setState updater to
+  // track "still our guess" — that broke silently under React 18 StrictMode, which
+  // invokes updater functions twice in dev and desynced the ref from committed state.)
+  const autoPreis = (() => {
+    const tarif = parseNum(cardTarife[form.karte]);
+    if (tarif <= 0 || parseNum(form.kwh) <= 0) return null;
+    return (parseNum(form.kwh) * tarif).toFixed(2);
+  })();
 
   const options = cardOptions.includes(form.karte) || !form.karte ? cardOptions : [...cardOptions, form.karte];
 
@@ -187,7 +183,7 @@ export default function EntryFormModal({
               <label>
                 <CardIcon /> Ladekarte
               </label>
-              <select value={form.karte} onChange={(e) => patchWithAutofill({ karte: e.target.value })}>
+              <select value={form.karte} onChange={(e) => patch({ karte: e.target.value })}>
                 <option value="">– wählen –</option>
                 {options.map((c) => (
                   <option key={c} value={c}>
@@ -429,7 +425,7 @@ export default function EntryFormModal({
                   step="0.01"
                   min="0"
                   value={form.kwh}
-                  onChange={(e) => patchWithAutofill({ kwh: e.target.value })}
+                  onChange={(e) => patch({ kwh: e.target.value })}
                 />
               </div>
             </div>
@@ -486,7 +482,7 @@ export default function EntryFormModal({
                   step="0.01"
                   min="0"
                   value={form.kwh}
-                  onChange={(e) => patchWithAutofill({ kwh: e.target.value })}
+                  onChange={(e) => patch({ kwh: e.target.value })}
                 />
               </div>
             </>
@@ -499,11 +495,8 @@ export default function EntryFormModal({
               type="number"
               step="0.01"
               min="0"
-              value={form.preis}
-              onChange={(e) => {
-                lastAutoPreis.current = null;
-                patch({ preis: e.target.value });
-              }}
+              value={form.preis || autoPreis || ""}
+              onChange={(e) => patch({ preis: e.target.value })}
             />
           </div>
           <div className="field-row">
@@ -556,7 +549,13 @@ export default function EntryFormModal({
             className="btn btn-primary"
             disabled={!form.karte}
             title={!form.karte ? "Bitte zuerst eine Ladekarte auswählen" : undefined}
-            onClick={() => onSave(computedDauer ? { ...form, dauer: computedDauer } : form)}
+            onClick={() =>
+              onSave({
+                ...form,
+                dauer: computedDauer ?? form.dauer,
+                preis: form.preis || autoPreis || form.preis,
+              })
+            }
           >
             Speichern
           </button>
