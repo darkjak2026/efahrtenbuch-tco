@@ -6,6 +6,8 @@ import { emptyRow, isEmptyRow, maybeAutofillPreis, monthKeyFromDate } from "@/li
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import EntryFormModal from "./EntryFormModal";
 
+type OpenRequest = { vehicle: VehicleKey; section: "vor" | "nach" };
+
 export default function AddEntryFab({
   data,
   activeMonth,
@@ -19,7 +21,7 @@ export default function AddEntryFab({
   setActiveMonth: (key: string) => void;
   showToast: (msg: string) => void;
 }) {
-  const [openVehicle, setOpenVehicle] = useState<VehicleKey | null>(null);
+  const [openRequest, setOpenRequest] = useState<OpenRequest | null>(null);
 
   const save = (form: ChargeRow) => {
     const row: ChargeRow = { ...form };
@@ -35,34 +37,44 @@ export default function AddEntryFab({
 
     if (targetMonth !== activeMonth) setActiveMonth(targetMonth);
     showToast("Ladevorgang eingetragen");
-    setOpenVehicle(null);
+    setOpenRequest(null);
   };
 
   return (
     <>
       <div className="fab-group">
         {(Object.keys(VEHICLES) as VehicleKey[]).map((key) => (
-          <button
-            type="button"
-            key={key}
-            className="fab"
-            title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
-            onClick={() => setOpenVehicle(key)}
-          >
-            + {key.toUpperCase()}
-          </button>
+          <div className="fab-vehicle-row" key={key}>
+            <button
+              type="button"
+              className="fab fab-section"
+              title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen — Vor dem Laden`}
+              onClick={() => setOpenRequest({ vehicle: key, section: "vor" })}
+            >
+              {key.toUpperCase()} – Vor
+            </button>
+            <button
+              type="button"
+              className="fab fab-section"
+              title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen — Nach dem Laden`}
+              onClick={() => setOpenRequest({ vehicle: key, section: "nach" })}
+            >
+              {key.toUpperCase()} – Nach
+            </button>
+          </div>
         ))}
       </div>
 
-      {openVehicle && (
+      {openRequest && (
         <EntryFormModal
-          initial={{ ...emptyRow(), datum: todayStr(), fahrzeug: openVehicle }}
+          initial={{ ...emptyRow(), datum: todayStr(), fahrzeug: openRequest.vehicle }}
           data={data}
           cardOptions={data.cardsList}
           cardTarife={data.cardTarife}
           autoLocate
+          defaultSection={openRequest.section}
           onSave={save}
-          onClose={() => setOpenVehicle(null)}
+          onClose={() => setOpenRequest(null)}
           showToast={showToast}
         />
       )}
