@@ -22,6 +22,9 @@ export default function AddEntryFab({
   showToast: (msg: string) => void;
 }) {
   const [openRequest, setOpenRequest] = useState<OpenRequest | null>(null);
+  // Which vehicle's "+ B10"/"+ T03" was tapped — reveals its Vor/Nach sub-buttons.
+  // Only one vehicle expanded at a time; tapping it again collapses it back.
+  const [expandedVehicle, setExpandedVehicle] = useState<VehicleKey | null>(null);
 
   const save = (form: ChargeRow) => {
     const row: ChargeRow = { ...form };
@@ -40,27 +43,34 @@ export default function AddEntryFab({
     setOpenRequest(null);
   };
 
+  const openFor = (vehicle: VehicleKey, section: "vor" | "nach") => {
+    setOpenRequest({ vehicle, section });
+    setExpandedVehicle(null);
+  };
+
   return (
     <>
       <div className="fab-group">
         {(Object.keys(VEHICLES) as VehicleKey[]).map((key) => (
-          <div className="fab-vehicle-row" key={key}>
+          <div className="fab-vehicle-block" key={key}>
             <button
               type="button"
-              className="fab fab-section"
-              title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen — Vor dem Laden`}
-              onClick={() => setOpenRequest({ vehicle: key, section: "vor" })}
+              className="fab"
+              title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
+              onClick={() => setExpandedVehicle(expandedVehicle === key ? null : key)}
             >
-              {key.toUpperCase()} – Vor
+              + {key.toUpperCase()}
             </button>
-            <button
-              type="button"
-              className="fab fab-section"
-              title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen — Nach dem Laden`}
-              onClick={() => setOpenRequest({ vehicle: key, section: "nach" })}
-            >
-              {key.toUpperCase()} – Nach
-            </button>
+            {expandedVehicle === key && (
+              <div className="fab-vehicle-row">
+                <button type="button" className="fab fab-section" onClick={() => openFor(key, "vor")}>
+                  Vor dem Laden
+                </button>
+                <button type="button" className="fab fab-section" onClick={() => openFor(key, "nach")}>
+                  Nach dem Laden
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
