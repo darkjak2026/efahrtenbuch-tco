@@ -187,21 +187,36 @@ section.tco {
   font-weight: 500;
   color: var(--ink-soft);
 }
-.tco-card .sub {
+.tco-card .odo {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.tco-card .odo b {
+  color: var(--accent);
+}
+.tco-card .sub-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 14px;
+  row-gap: 6px;
   font-size: 13px;
   color: var(--ink-soft);
   margin-top: 12px;
-  line-height: 1.8;
+  align-items: center;
 }
-.tco-card .sub b {
-  color: var(--ink);
+.tco-card .sub-value {
   font-family: var(--font-jetbrains-mono), monospace;
   font-weight: 600;
+  color: var(--ink);
+  text-align: center;
 }
 .tco-card .warn {
   font-size: 12px;
   color: var(--danger);
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 /* ---- generic collapsible section ---- */

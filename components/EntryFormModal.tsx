@@ -144,21 +144,54 @@ export default function EntryFormModal({
   };
   const lastKnownKm = lastKnownKmFor(form.fahrzeug);
 
+  // The most recently *completed* charge for a vehicle — its odometer reading and
+  // the range it reached right after charging. That range is the reference point
+  // range decays from until the car plugs in again.
+  const lastCompletedChargeFor = (vehicle: "" | VehicleKey): { km: number; reichweiteNachher: number } | null => {
+    if (!vehicle) return null;
+    const candidates = allRows(data)
+      .filter(
+        (r) => r.fahrzeug === vehicle && r !== initial && r.datum && parseNum(r.km) > 0 && parseNum(r.reichweiteNachher) > 0
+      )
+      .sort((a, b) => b.datum.localeCompare(a.datum));
+    if (!candidates.length) return null;
+    return { km: parseNum(candidates[0].km), reichweiteNachher: parseNum(candidates[0].reichweiteNachher) };
+  };
+  const lastCompletedCharge = lastCompletedChargeFor(form.fahrzeug);
+
+  // Best current ODO guess: once we know the range reached after the last charge
+  // *and* the user has typed today's remaining range, the gap between the two is
+  // exactly what's been driven since — added onto that last charge's odometer
+  // reading. Falls back to simply repeating the last known odometer when either
+  // reference point is missing (first entry for the vehicle, or Reichweite vorher
+  // not typed in yet), or when the numbers would imply negative km driven (e.g.
+  // still mid-keystroke on Reichweite vorher).
+  const reichweiteVorherNow = parseNum(form.reichweiteVorher);
+  const odoGuess = (() => {
+    if (lastCompletedCharge && reichweiteVorherNow > 0) {
+      const gefahren = lastCompletedCharge.reichweiteNachher - reichweiteVorherNow;
+      if (gefahren >= 0) return lastCompletedCharge.km + gefahren;
+    }
+    return lastKnownKm;
+  })();
+
   // Tracks the km-Stand guess we last wrote ourselves, so we can tell "still our
   // guess, safe to refresh" apart from "the user typed something, hands off".
   const lastAutofilledKm = useRef<string | null>(null);
 
-  // Once a vehicle is known, silently pre-fill km-Stand with its last known odometer
-  // reading — only the last few digits then need retyping. Never touches a value the
-  // user actually entered (editing an existing row keeps its real km-Stand untouched).
+  // Once a vehicle is known, silently pre-fill km-Stand with the best available ODO
+  // guess (see odoGuess above) — only the last few digits then need retyping, and
+  // it keeps refining itself as the user types Reichweite vorher. Never touches a
+  // value the user actually entered (editing an existing row keeps its real
+  // km-Stand untouched).
   useEffect(() => {
-    if (lastKnownKm === null) return;
+    if (odoGuess === null) return;
     if (form.km !== "" && form.km !== lastAutofilledKm.current) return;
-    const guess = String(lastKnownKm);
+    const guess = String(Math.round(odoGuess));
     lastAutofilledKm.current = guess;
     patch({ km: guess });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.fahrzeug, lastKnownKm]);
+  }, [form.fahrzeug, odoGuess]);
 
   // The km-Stand field arrives pre-filled with a guess — select just the trailing
   // digits on focus so typing the real reading only takes the last few keystrokes.
