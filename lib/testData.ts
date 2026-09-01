@@ -45,9 +45,17 @@ export function generateTestData(): AppData {
     const [y, mo] = m.key.split("-").map(Number);
     const rows: ChargeRow[] = [];
 
+    // t03 als Vielfahrer zuerst würfeln (8-14 Ladevorgänge/Monat, entspricht dem
+    // echten August mit 13); b10 bekommt daraus abgeleitet ein Viertel weniger.
+    const t03Sessions = 8 + Math.floor(rnd() * 7);
+    const sessionsByVehicle: Record<VehicleKey, number> = {
+      t03: t03Sessions,
+      b10: Math.max(1, Math.round(t03Sessions * 0.75)),
+    };
+
     (["b10", "t03"] as VehicleKey[]).forEach((vehicle) => {
       const profile = VEHICLE_PROFILE[vehicle];
-      const sessions = 2 + Math.floor(rnd() * 4); // 2-5 Ladevorgänge pro Fahrzeug/Monat
+      const sessions = sessionsByVehicle[vehicle];
       for (let i = 0; i < sessions; i++) {
         const day = 1 + Math.floor(rnd() * 27);
         const datum = `${y}-${String(mo).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
