@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import projektPass from "../projekt-pass.json";
+import { DEV_BRIEFING } from "@/lib/devBriefing";
 import type { AppData } from "@/lib/types";
 
 function nowTimestamp(): string {
@@ -110,6 +111,22 @@ export default function InfoOverlay({
             ))}
           </div>
         </section>
+
+        <details className="info-dev-briefing">
+          <summary>🛠️ Für Entwickler — in 7 Minuten wieder einsteigen</summary>
+          <div className="info-dev-briefing-body">
+            <p className="info-overlay-hint" style={{ marginTop: 8 }}>
+              Falls hier jemand ganz ohne Vorwissen ansetzt (neue Entwicklerin, oder eine KI-Sitzung ohne
+              Gesprächsverlauf): das reicht, um produktiv weiterzumachen.
+            </p>
+            {DEV_BRIEFING.map((section) => (
+              <div className="info-dev-briefing-section" key={section.heading}>
+                <h5>{section.heading}</h5>
+                <p>{section.body}</p>
+              </div>
+            ))}
+          </div>
+        </details>
       </div>
     </div>
   );

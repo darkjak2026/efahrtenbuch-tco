@@ -1397,6 +1397,53 @@ select {
   background: color-mix(in srgb, var(--ink-soft) 25%, transparent);
   color: var(--ink-soft);
 }
+.info-dev-briefing {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.info-dev-briefing > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.info-dev-briefing > summary::-webkit-details-marker {
+  display: none;
+}
+.info-dev-briefing > summary::before {
+  content: "▸";
+  font-family: var(--font-inter), system-ui, sans-serif;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.info-dev-briefing[open] > summary::before {
+  content: "▾";
+}
+.info-dev-briefing-body {
+  margin-top: 4px;
+}
+.info-dev-briefing-section {
+  margin-top: 12px;
+}
+.info-dev-briefing-section h5 {
+  margin: 0 0 4px;
+  font-size: 11.5px;
+  color: var(--accent);
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+.info-dev-briefing-section p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  white-space: pre-line;
+}
 .entry-price {
   margin-left: auto;
   font-family: var(--font-jetbrains-mono), monospace;
