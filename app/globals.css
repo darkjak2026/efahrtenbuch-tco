@@ -1363,9 +1363,21 @@ select {
   color: var(--ink-soft);
   flex-shrink: 0;
 }
+.info-note-check {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
 .info-note-text {
   flex: 1 1 160px;
   color: var(--ink);
+}
+.info-note-done .info-note-text {
+  color: var(--ink-soft);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--ink-soft) 60%, transparent);
 }
 .info-note-input {
   flex: 1 1 160px;
@@ -1396,6 +1408,10 @@ select {
 .info-note-status-verworfen {
   background: color-mix(in srgb, var(--ink-soft) 25%, transparent);
   color: var(--ink-soft);
+}
+.info-note-status-erledigt {
+  background: color-mix(in srgb, var(--range-green) 25%, transparent);
+  color: var(--range-green);
 }
 .info-dev-briefing {
   margin-top: 18px;

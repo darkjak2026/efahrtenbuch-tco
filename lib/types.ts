@@ -44,7 +44,8 @@ export interface VehicleFixedCosts {
 export interface FeatureRequestEntry {
   ts: string; // "JJJJ-MM-TT||HH:MM"
   text: string;
-  status: "offen" | "uebernommen" | "verworfen";
+  status: "offen" | "uebernommen" | "verworfen" | "erledigt";
+  doneAt?: string; // "JJJJ-MM-TT||HH:MM" - wann auf "erledigt" gesetzt wurde
 }
 
 export interface AppData {

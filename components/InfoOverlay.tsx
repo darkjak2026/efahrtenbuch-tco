@@ -15,6 +15,7 @@ const STATUS_LABEL: Record<string, string> = {
   offen: "offen",
   uebernommen: "übernommen",
   verworfen: "verworfen",
+  erledigt: "erledigt",
 };
 
 export default function InfoOverlay({
@@ -32,7 +33,12 @@ export default function InfoOverlay({
   // projekt-pass.json lists the changelog oldest-first (how entries get appended);
   // shown here newest-first, same convention as the feature-request notes below.
   const changelog = [...projektPass.changelog].reverse();
-  const requests = [...(data.featureRequests || [])].sort((a, b) => b.ts.localeCompare(a.ts));
+  // Sort a list of {entry, idx} pairs (not the entries themselves) so the
+  // checkbox below can still write back to the right slot in
+  // data.featureRequests after the display order has been reversed.
+  const requests = (data.featureRequests || [])
+    .map((r, idx) => ({ r, idx }))
+    .sort((a, b) => b.r.ts.localeCompare(a.r.ts));
 
   const commitDraft = () => {
     const text = draft.trim();
@@ -41,6 +47,19 @@ export default function InfoOverlay({
     if (!text) return;
     updateData((d) => {
       d.featureRequests.unshift({ ts: nowTimestamp(), text, status: "offen" });
+    });
+  };
+
+  const toggleDone = (idx: number) => {
+    updateData((d) => {
+      const entry = d.featureRequests[idx];
+      if (entry.status === "erledigt") {
+        entry.status = "offen";
+        delete entry.doneAt;
+      } else {
+        entry.status = "erledigt";
+        entry.doneAt = nowTimestamp();
+      }
     });
   };
 
@@ -88,11 +107,22 @@ export default function InfoOverlay({
           )}
 
           <div className="info-note-list">
-            {requests.map((r, i) => (
-              <div className="info-note-row" key={`${r.ts}-${i}`}>
+            {requests.map(({ r, idx }) => (
+              <div className={"info-note-row" + (r.status === "erledigt" ? " info-note-done" : "")} key={`${r.ts}-${idx}`}>
+                <input
+                  type="checkbox"
+                  className="info-note-check"
+                  checked={r.status === "erledigt"}
+                  title={r.status === "erledigt" ? "Als offen markieren" : "Als erledigt markieren"}
+                  onChange={() => toggleDone(idx)}
+                />
                 <span className="info-note-ts">[{r.ts}]:</span>
                 <span className="info-note-text">{r.text}</span>
-                <span className={"info-note-status info-note-status-" + r.status}>{STATUS_LABEL[r.status] ?? r.status}</span>
+                {r.status === "erledigt" && r.doneAt ? (
+                  <span className="info-note-status info-note-status-erledigt">erledigt [{r.doneAt}]</span>
+                ) : (
+                  <span className={"info-note-status info-note-status-" + r.status}>{STATUS_LABEL[r.status] ?? r.status}</span>
+                )}
               </div>
             ))}
           </div>
