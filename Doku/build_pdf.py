@@ -133,6 +133,8 @@ def build(json_path, pdf_path):
     story.append(P(d.get("projektname", ""), "DocSub"))
     story.append(meta_block([
         ("Projektname", d.get("projektname", "")),
+        ("Urheber", d.get("urheber", "")),
+        ("Status", d.get("status", "")),
         ("Live seit", d.get("live_seit", "")),
         ("Dokument zuletzt aktualisiert", d.get("aktualisiert", "")),
         ("Nächste Prüfung fällig", d.get("naechste_pruefung", "")),
@@ -158,6 +160,16 @@ def build(json_path, pdf_path):
     story.append(PR("3.3&nbsp; Tools, Accounts &amp; Zugangsdaten", "SectionSub"))
     story.append(PR("Kein Klartext-Passwort - nur der Hinweis, WO es hinterlegt ist.", "Guidance"))
     story.append(section_table([["Dienst", "Account / E-Mail", "Passwort hinterlegt in"]] + d.get("accounts", []), [40 * mm, 65 * mm, 65 * mm]))
+    story.append(Spacer(1, 3 * mm))
+
+    story.append(PR("3.4&nbsp; Datenschutz &amp; Sicherung", "SectionSub"))
+    story.append(meta_block([
+        ("DSGVO-Status", d.get("dsgvo_status", "")),
+        ("Speicherort der Daten", d.get("daten_speicherort", "")),
+        ("AVV-Stand", d.get("avv_stand", "")),
+        ("Backup-Strategie/-Ort", d.get("backup", "")),
+        ("Lizenz/Nutzungsrecht", d.get("lizenz", "")),
+    ]))
     story.append(Spacer(1, 3 * mm))
 
     story.append(PR("4&nbsp;&nbsp;Änderungsprotokoll", "SectionHead"))

@@ -1,0 +1,33 @@
+{
+  "projektname": "",
+  "urheber": "[Name, z.B. \"Vorname Nachname\" - bei KI-Beteiligung: \"Vorname Nachname (+KI-Claude)\"]",
+  "status": "[aktiv / archiviert / Prototyp / eingestellt / pausiert]",
+  "live_seit": "",
+  "aktualisiert": "",
+  "naechste_pruefung": "",
+  "absicht": "[Ausgangsproblem, Zielgruppe, ursprüngliche Idee in 3-5 Sätzen]",
+  "funktionen": [
+    ["", ""]
+  ],
+  "hosting": [
+    ["Haupt-Hosting", ""],
+    ["Domain", ""]
+  ],
+  "dienste": [
+    ["", "", ""]
+  ],
+  "accounts": [
+    ["", "", ""]
+  ],
+  "dsgvo_status": "[Pflichtfeld: z.B. \"Keine personenbezogenen Daten\" oder \"Personenbezogene Daten, DSGVO-konform\" - besonders wichtig bei Daten von Minderjährigen]",
+  "daten_speicherort": "[z.B. \"Nur lokal auf dem Gerät\", \"Vercel/EU-Server\", \"Keine Speicherung\"]",
+  "avv_stand": "[Auftragsverarbeitungsvertrag: Anbieter/Datum/Status, oder \"nicht erforderlich\" mit Begründung]",
+  "backup": "[Backup-Strategie und -Ort, z.B. \"täglich automatisch zu ...\", oder \"kein Backup nötig, weil ...\"]",
+  "lizenz": "[Nutzungsrecht/Lizenz, falls relevant, sonst \"nicht zutreffend\"]",
+  "changelog": [
+    ["TT.MM.JJJJ", "V1.00", "Projekt gestartet"]
+  ],
+  "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
+  "offene_punkte": [],
+  "feature_requests": []
+}

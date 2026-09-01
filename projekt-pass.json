@@ -1,7 +1,9 @@
 {
   "projektname": "eFahrtenbuch TCO (Familie Liese-Held)",
+  "urheber": "Jakobus Claudius Digitalensis (+KI-Claude)",
+  "status": "aktiv",
   "live_seit": "05.07.2026",
-  "aktualisiert": "31.08.2026",
+  "aktualisiert": "01.09.2026",
   "naechste_pruefung": "15.11.2026",
   "absicht": "Familie Liese-Held fährt zwei Elektroautos (Leapmotor B10 'BIO-Leapy' und Leapmotor T03 'Leapy') und wollte die echten laufenden Kosten pro gefahrenem Kilometer sehen, nicht nur die Stromrechnung. Die App ist ein gemeinsames, PIN-geschütztes Ladeprotokoll: jeder Ladevorgang wird mit Ladekarte, kWh, Preis, Kilometerstand und Standort erfasst, daraus berechnet die App laufend die TCO (Total Cost of Ownership) je Fahrzeug und für den Haushalt insgesamt (Ladekosten + Leasing + Versicherung + Investitionen + wiederkehrende Kosten, geteilt durch die gefahrenen Kilometer). Ursprünglich eine statische HTML-Datei, seit 05.07.2026 als Next.js-App auf Vercel mit Upstash Redis als gemeinsamem Datenspeicher, damit beide Haushaltsmitglieder vom Handy aus eintragen können.",
   "funktionen": [
@@ -31,6 +33,11 @@
     ["Upstash Redis", "Zugangsdaten als KV_REST_API_URL/KV_REST_API_TOKEN in .env.local / Vercel Environment Variables", ".env.local (lokal) bzw. Vercel-Projekteinstellungen"],
     ["App-Zugriffs-PIN (Haushalt)", "gemeinsamer PIN für Familie Liese-Held", "als LADEPROTOKOLL_PIN in .env.local / Vercel Environment Variables"]
   ],
+  "dsgvo_status": "",
+  "daten_speicherort": "",
+  "avv_stand": "",
+  "backup": "Kein automatisiertes Backup - nur manueller JSON-Export in der App selbst (Exportieren aller Daten).",
+  "lizenz": "nicht zutreffend",
   "changelog": [
     ["05.07.2026", "V1.00", "Projekt gestartet: Migration der bisherigen statischen HTML-Version zu Next.js + Upstash Redis auf Vercel; Ladeprotokoll, TCO-Berechnung, PIN-Schutz, PDF/Excel-Export aufgebaut"],
     ["07.07.2026", "V1.00", "Stichtag-Kilometerstände je Fahrzeug ergänzt, km-Berechnung korrigiert (höchster bekannter Wert statt Differenz), Absturz beim Excel-Export behoben (Monatsblattnamen kollidierten über Jahresgrenzen)"],
@@ -53,6 +60,8 @@
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [
     "Wo genau die Passwörter/2FA für die Vercel- und GitHub-Accounts (darkjak2026) hinterlegt sind, ist der KI nicht bekannt - bitte von Jakob ergänzen (Passwort-Manager?).",
-    "Kein automatisiertes Backup der Upstash-Redis-Daten bekannt - nur der manuelle JSON-Export in der App selbst (Exportieren aller Daten)."
-  ]
+    "Kein automatisiertes Backup der Upstash-Redis-Daten bekannt - nur der manuelle JSON-Export in der App selbst (Exportieren aller Daten).",
+    "dsgvo_status, daten_speicherort und avv_stand sind noch nicht ausgefüllt (auf Wunsch erstmal leer gelassen, siehe Doku-Update vom 01.09.2026). daten_speicherort insbesondere: welche Region nutzt die Upstash-Redis-Datenbank (EU/US)?"
+  ],
+  "feature_requests": []
 }
