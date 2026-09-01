@@ -58,7 +58,8 @@
     ["31.08.2026", "V2.14", "Schriftgröße in dieser neuen Detail-Tabelle verkleinert und Zeilenumbruch mitten im Wert unterbunden, weil lange Bezeichnungen/Beträge sonst abgeschnitten wurden (die Kachel blendet überstehenden Text aus, statt ihn umzubrechen)."],
     ["01.09.2026", "V2.15", "Verstecktes Menü ergänzt: 5x Antippen der Zeile mit Copyright/Version im Fußbereich öffnet ein Fenster mit dem Änderungsprotokoll (aufklappbare Einträge, jeweils Datum/Version zuerst, Erklärung erst beim Antippen) und einer Notizliste für eigene Ideen zu künftigen Funktionen (Feature-Request-Notizbuch), die automatisch mit Datum und Uhrzeit versehen werden."],
     ["01.09.2026", "V2.16", "Kilometerstand (ODO) beim Erfassen eines Ladevorgangs grundlegend umgestellt: er steht jetzt als eigenes, an erster Stelle stehendes Eingabefeld ganz oben und muss von Hand eingetragen werden - die bisherige automatische Schätzformel wurde vollständig entfernt. Der Satztext übernimmt den eingetragenen Wert nur noch zur Anzeige. Zusätzlich zeigt die Lade-Historie jetzt pro Eintrag den ODO-Stand zum Ladezeitpunkt sowie die seit dem letzten Laden gefahrenen Kilometer an."],
-    ["01.09.2026", "V2.17", "Reihenfolge im versteckten Menü (5x Antippen der Versionszeile) getauscht: 'Ideen für später' steht jetzt oben, das Änderungsprotokoll darunter."]
+    ["01.09.2026", "V2.17", "Reihenfolge im versteckten Menü (5x Antippen der Versionszeile) getauscht: 'Ideen für später' steht jetzt oben, das Änderungsprotokoll darunter."],
+    ["01.09.2026", "V2.18", "Symbol beim Feld 'Restreichweite' im 'Vor'-Bereich getauscht: statt des Straßen-Symbols steht dort jetzt ein Batterie-Symbol mit niedrigem Füllstand, das besser zu 'Reserve' passt."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [

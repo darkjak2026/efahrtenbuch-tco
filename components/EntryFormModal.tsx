@@ -6,6 +6,7 @@ import { allRows, durationToMinutes, fmtNum, minutesToDuration, parseNum, reichw
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import {
+  BatteryOutlineIcon,
   BoltIcon,
   CalendarIcon,
   CardIcon,
@@ -234,7 +235,7 @@ export default function EntryFormModal({
             </div>
             <div className="field-col">
               <label>
-                <RoadIcon /> Restreichweite
+                <BatteryOutlineIcon /> Restreichweite
               </label>
               <input
                 type="number"
