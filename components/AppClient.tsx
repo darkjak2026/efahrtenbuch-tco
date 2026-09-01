@@ -245,7 +245,7 @@ export default function AppClient() {
         </section>
       </main>
 
-      <Footer />
+      <Footer data={data} updateData={updateData} />
 
       <AddEntryFab
         data={data}

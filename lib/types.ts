@@ -41,6 +41,12 @@ export interface VehicleFixedCosts {
   stichtagLadekosten: string | number;
 }
 
+export interface FeatureRequestEntry {
+  ts: string; // "JJJJ-MM-TT||HH:MM"
+  text: string;
+  status: "offen" | "uebernommen" | "verworfen";
+}
+
 export interface AppData {
   cardsList: string[];
   vehicles: {
@@ -51,6 +57,7 @@ export interface AppData {
   erfassungStart: string;
   investitionen: Investition[];
   months: Record<string, ChargeRow[]>;
+  featureRequests: FeatureRequestEntry[];
 }
 
 export interface MonthMeta {

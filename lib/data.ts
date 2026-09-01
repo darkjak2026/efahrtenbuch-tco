@@ -51,6 +51,7 @@ export function defaultData(): AppData {
     erfassungStart: "2026-07-01",
     investitionen: [emptyInvest()],
     months,
+    featureRequests: [],
   };
 }
 
@@ -68,6 +69,7 @@ export function migrate(raw: unknown): AppData {
   if (!d.erfassungStart) d.erfassungStart = def.erfassungStart;
   if (!d.investitionen) d.investitionen = def.investitionen;
   if (!d.months) d.months = def.months;
+  if (!d.featureRequests) d.featureRequests = def.featureRequests;
 
   if (!d.recurringCosts) {
     d.recurringCosts = [];
