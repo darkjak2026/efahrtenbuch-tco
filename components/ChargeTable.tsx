@@ -16,6 +16,7 @@ import {
   monthTotals,
   parseNum,
   reichweiteColorClass,
+  rowKmDriven,
 } from "@/lib/data";
 import type { AppData, ChargeRow } from "@/lib/types";
 import ConfettiBurst from "./ConfettiBurst";
@@ -107,6 +108,7 @@ export default function ChargeTable({
           const vehicleLabel = row.fahrzeug ? vehicleShortLabel(row.fahrzeug) : "–";
           const incomplete = isChargeIncomplete(row);
           const justCompleted = row === celebrateRow;
+          const kmDriven = rowKmDriven(data, row);
           return (
             <button
               type="button"
@@ -126,6 +128,12 @@ export default function ChargeTable({
                 {row.notiz && <span className="entry-notiz-hint">Notiz</span>}
                 <span className="entry-price">{row.preis ? fmtEUR(parseNum(row.preis)) : "–"}</span>
               </div>
+              {row.km && (
+                <div className="entry-card-km">
+                  <span className="entry-card-odo">ODO {row.km} km</span>
+                  {kmDriven !== null && <span className="entry-card-driven">{kmDriven} km seit letztem Laden</span>}
+                </div>
+              )}
               {row.ladestation && (
                 <div className="entry-card-station">
                   <span className="entry-station">{row.ladestation}</span>

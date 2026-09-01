@@ -347,11 +347,12 @@ section.tco {
 }
 .field-row-pair {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 8px;
 }
 .field-col {
-  flex: 1 1 0;
+  flex: 1 1 90px;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -1132,6 +1133,21 @@ select {
 .entry-card-station {
   font-size: 11px;
   margin: 1px 0;
+}
+.entry-card-km {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  font-size: 11px;
+  margin: 2px 0 1px;
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+.entry-card-odo {
+  color: var(--ink);
+  font-weight: 600;
+}
+.entry-card-driven {
+  color: var(--ink-soft);
 }
 .app-footer {
   max-width: 1180px;

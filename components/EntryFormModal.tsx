@@ -144,56 +144,7 @@ export default function EntryFormModal({
   };
   const lastKnownKm = lastKnownKmFor(form.fahrzeug);
 
-  // The most recently *completed* charge for a vehicle — its odometer reading and
-  // the range it reached right after charging. That range is the reference point
-  // range decays from until the car plugs in again.
-  const lastCompletedChargeFor = (vehicle: "" | VehicleKey): { km: number; reichweiteNachher: number } | null => {
-    if (!vehicle) return null;
-    const candidates = allRows(data)
-      .filter(
-        (r) => r.fahrzeug === vehicle && r !== initial && r.datum && parseNum(r.km) > 0 && parseNum(r.reichweiteNachher) > 0
-      )
-      .sort((a, b) => b.datum.localeCompare(a.datum));
-    if (!candidates.length) return null;
-    return { km: parseNum(candidates[0].km), reichweiteNachher: parseNum(candidates[0].reichweiteNachher) };
-  };
-  const lastCompletedCharge = lastCompletedChargeFor(form.fahrzeug);
-
-  // Best current ODO guess: once we know the range reached after the last charge
-  // *and* the user has typed today's remaining range, the gap between the two is
-  // exactly what's been driven since — added onto that last charge's odometer
-  // reading. Falls back to simply repeating the last known odometer when either
-  // reference point is missing (first entry for the vehicle, or Reichweite vorher
-  // not typed in yet), or when the numbers would imply negative km driven (e.g.
-  // still mid-keystroke on Reichweite vorher).
-  const reichweiteVorherNow = parseNum(form.reichweiteVorher);
-  const odoGuess = (() => {
-    if (lastCompletedCharge && reichweiteVorherNow > 0) {
-      const gefahren = lastCompletedCharge.reichweiteNachher - reichweiteVorherNow;
-      if (gefahren >= 0) return lastCompletedCharge.km + gefahren;
-    }
-    return lastKnownKm;
-  })();
-
-  // Tracks the km-Stand guess we last wrote ourselves, so we can tell "still our
-  // guess, safe to refresh" apart from "the user typed something, hands off".
-  const lastAutofilledKm = useRef<string | null>(null);
-
-  // Once a vehicle is known, silently pre-fill km-Stand with the best available ODO
-  // guess (see odoGuess above) — only the last few digits then need retyping, and
-  // it keeps refining itself as the user types Reichweite vorher. Never touches a
-  // value the user actually entered (editing an existing row keeps its real
-  // km-Stand untouched).
-  useEffect(() => {
-    if (odoGuess === null) return;
-    if (form.km !== "" && form.km !== lastAutofilledKm.current) return;
-    const guess = String(Math.round(odoGuess));
-    lastAutofilledKm.current = guess;
-    patch({ km: guess });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.fahrzeug, odoGuess]);
-
-  // The km-Stand field arrives pre-filled with a guess — select just the trailing
+  // The km-Stand field (when editable) arrives with the previous value — select just the trailing
   // digits on focus so typing the real reading only takes the last few keystrokes.
   const selectTrailingDigits = (e: React.FocusEvent<HTMLInputElement>) => {
     const len = e.target.value.length;
@@ -239,6 +190,20 @@ export default function EntryFormModal({
       {activeSection === "vor" && (
         <>
           <div className="field-row-pair">
+            <div className="field-col">
+              <label>
+                <RoadIcon /> km-Stand
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="km"
+                value={form.km}
+                onFocus={selectTrailingDigits}
+                onChange={(e) => patch({ km: e.target.value.replace(/\D/g, "") })}
+              />
+            </div>
             <div className="field-col">
               <label>
                 <EuroIcon /> €/kWh
@@ -343,20 +308,8 @@ export default function EntryFormModal({
                 </button>
               </span>{" "}
               bei einem <span style={{ whiteSpace: "nowrap" }}>km-Stand</span> von{" "}
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                className="sentence-field sentence-field-num"
-                placeholder="km"
-                value={form.km}
-                onFocus={selectTrailingDigits}
-                onChange={(e) => {
-                  lastAutofilledKm.current = null;
-                  patch({ km: e.target.value.replace(/\D/g, "") });
-                }}
-              />{" "}
-              km geladen. Die Startzeit ist ca. <span className="sentence-value">{chargeStartLabel} Uhr</span>.
+              <span className="sentence-value">{form.km || "–"} km</span> geladen. Die Startzeit ist ca.{" "}
+              <span className="sentence-value">{chargeStartLabel} Uhr</span>.
             </p>
           ) : (
             <>
@@ -394,10 +347,7 @@ export default function EntryFormModal({
                   placeholder="km"
                   value={form.km}
                   onFocus={selectTrailingDigits}
-                  onChange={(e) => {
-                    lastAutofilledKm.current = null;
-                    patch({ km: e.target.value.replace(/\D/g, "") });
-                  }}
+                  onChange={(e) => patch({ km: e.target.value.replace(/\D/g, "") })}
                 />
               </div>
               <div className="field-row">

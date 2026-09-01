@@ -303,6 +303,23 @@ export function vehicleKmWindowUpTo(data: AppData, vehicleKey: VehicleKey, cutof
   return best;
 }
 
+// Km driven since the previous charge of the same vehicle (previous = the highest
+// known ODO reading strictly before this row's date, including the vehicle's
+// Stichtag baseline). Null when there's nothing earlier to compare against, or
+// when this row has no ODO of its own — shown in the Lade-Historie next to the
+// entry's own ODO reading.
+export function rowKmDriven(data: AppData, row: ChargeRow): number | null {
+  if (!row.fahrzeug || !row.datum) return null;
+  const rowKm = parseNum(row.km);
+  if (rowKm <= 0) return null;
+  const dayBefore = new Date(row.datum);
+  dayBefore.setDate(dayBefore.getDate() - 1);
+  const prevKm = vehicleKmWindowUpTo(data, row.fahrzeug, dayBefore.toISOString().slice(0, 10));
+  if (prevKm === null) return null;
+  const driven = rowKm - prevKm;
+  return driven >= 0 ? driven : null;
+}
+
 export interface MonthStatementFixItem {
   label: string;
   betrag: number;
