@@ -57,20 +57,6 @@ export default function InfoOverlay({
         </div>
 
         <section className="info-overlay-section">
-          <h4>Änderungsprotokoll</h4>
-          <div className="info-changelog">
-            {changelog.map(([datum, version, text], i) => (
-              <details className="info-changelog-entry" key={`${datum}-${version}-${i}`}>
-                <summary>
-                  {datum} · {version}
-                </summary>
-                <p>{text}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        <section className="info-overlay-section">
           <h4>Ideen für später</h4>
           <p className="info-overlay-hint">Antippen, um eine neue Notiz mit Zeitstempel zu beginnen.</p>
 
@@ -107,6 +93,20 @@ export default function InfoOverlay({
                 <span className="info-note-text">{r.text}</span>
                 <span className={"info-note-status info-note-status-" + r.status}>{STATUS_LABEL[r.status] ?? r.status}</span>
               </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="info-overlay-section">
+          <h4>Änderungsprotokoll</h4>
+          <div className="info-changelog">
+            {changelog.map(([datum, version, text], i) => (
+              <details className="info-changelog-entry" key={`${datum}-${version}-${i}`}>
+                <summary>
+                  {datum} · {version}
+                </summary>
+                <p>{text}</p>
+              </details>
             ))}
           </div>
         </section>
