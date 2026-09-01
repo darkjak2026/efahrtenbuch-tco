@@ -48,6 +48,10 @@ export interface FeatureRequestEntry {
 }
 
 export interface AppData {
+  // Optimistic-concurrency counter (see lib/redis.ts setAppData) - lets two
+  // household members on different devices save without silently
+  // overwriting each other. Not user-facing.
+  _rev: number;
   cardsList: string[];
   vehicles: {
     b10: VehicleFixedCosts;

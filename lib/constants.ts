@@ -33,6 +33,15 @@ function generateMonths(startYear: number, startMonth: number, endYear: number, 
 // Erfassungsstart (Juli 2026) bis zum Ende des 36-monatigen Leasingzeitraums (Oktober 2028).
 export const MONTHS: MonthMeta[] = generateMonths(2026, 7, 2028, 10);
 
+// Datumsgrenzen des unterstützten Zeitraums, z.B. als min/max an <input type="date">
+// - verhindert Tippfehler wie ein falsches Jahr, die sonst still im aktuell
+// offenen Monats-Tab statt im (ungültigen) Zieldatum landen würden.
+export const DATE_RANGE_MIN = `${MONTHS[0].key}-01`;
+export const DATE_RANGE_MAX = (() => {
+  const [y, m] = MONTHS[MONTHS.length - 1].key.split("-").map(Number);
+  return new Date(y, m, 0).toISOString().slice(0, 10);
+})();
+
 // Today's month key, clamped into the supported range — used as the default active tab.
 export function currentMonthKey(): string {
   const now = new Date();

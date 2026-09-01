@@ -222,12 +222,14 @@ export default function FixedCostsPanel({
                     type="button"
                     className="mini-del"
                     title="Position löschen"
-                    onClick={() =>
+                    onClick={() => {
+                      const label = [rec.anbieter, rec.zweck].filter(Boolean).join(" – ") || "diese Position";
+                      if (!window.confirm(`"${label}" wirklich löschen?`)) return;
                       updateData((d) => {
                         d.recurringCosts.splice(idx, 1);
                         if (d.recurringCosts.length === 0) d.recurringCosts.push(emptyRecurring());
-                      })
-                    }
+                      });
+                    }}
                   >
                     ✕
                   </button>

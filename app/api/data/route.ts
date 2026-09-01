@@ -22,6 +22,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const body = await req.json();
-  await setAppData(body);
-  return NextResponse.json({ ok: true });
+  // Reject anything that isn't at least shaped like a real AppData document -
+  // a broken/empty request body must never be allowed to migrate() its way
+  // into overwriting the household's real data with defaults.
+  if (!body || typeof body !== "object" || Array.isArray(body) || typeof body.months !== "object") {
+    return NextResponse.json({ error: "invalid body" }, { status: 400 });
+  }
+  const result = await setAppData(body);
+  if (!result.ok) {
+    return NextResponse.json({ error: "conflict", data: result.current }, { status: 409 });
+  }
+  return NextResponse.json(result.data);
 }

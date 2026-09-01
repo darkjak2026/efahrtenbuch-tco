@@ -28,11 +28,12 @@ export default function CardsPanel({
                 type="button"
                 className="mini-del"
                 title="Karte entfernen"
-                onClick={() =>
+                onClick={() => {
+                  if (!window.confirm(`Ladekarte "${c}" wirklich entfernen?`)) return;
                   updateData((d) => {
                     d.cardsList = d.cardsList.filter((x) => x !== c);
-                  })
-                }
+                  });
+                }}
               >
                 ✕
               </button>

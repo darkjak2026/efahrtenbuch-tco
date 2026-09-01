@@ -42,6 +42,7 @@ export function defaultData(): AppData {
     months[m.key] = [emptyRow(), emptyRow(), emptyRow(), emptyRow(), emptyRow()];
   });
   return {
+    _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
       b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "" },
@@ -70,6 +71,7 @@ export function migrate(raw: unknown): AppData {
   if (!d.investitionen) d.investitionen = def.investitionen;
   if (!d.months) d.months = def.months;
   if (!d.featureRequests) d.featureRequests = def.featureRequests;
+  if (typeof d._rev !== "number") d._rev = 0;
 
   if (!d.recurringCosts) {
     d.recurringCosts = [];

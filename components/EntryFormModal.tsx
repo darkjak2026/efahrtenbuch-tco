@@ -1,8 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { VEHICLES, vehicleShortLabel } from "@/lib/constants";
-import { allRows, durationToMinutes, fmtNum, minutesToDuration, parseNum, reichweiteColorClass } from "@/lib/data";
+import { DATE_RANGE_MAX, DATE_RANGE_MIN, VEHICLES, vehicleShortLabel } from "@/lib/constants";
+import {
+  allRows,
+  durationToMinutes,
+  fmtNum,
+  minutesToDuration,
+  monthKeyFromDate,
+  parseNum,
+  reichweiteColorClass,
+} from "@/lib/data";
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import {
@@ -44,6 +52,11 @@ export default function EntryFormModal({
 }) {
   const [form, setForm] = useState<ChargeRow>(initial);
   const [locating, setLocating] = useState(false);
+  // Guards against a fast double-click/double-tap on "Speichern" creating a
+  // duplicate entry. A ref (checked synchronously, before React re-renders)
+  // is the actual guard; the state below only drives the visible disabled look.
+  const submittedRef = useRef(false);
+  const [submitting, setSubmitting] = useState(false);
   // Mutually exclusive: only one of the two sections is expanded at a time.
   // The active section always leads (renders first); the collapsed one follows below.
   const [activeSection, setActiveSection] = useState<"vor" | "nach">(defaultSection);
@@ -272,6 +285,8 @@ export default function EntryFormModal({
               <input
                 type="date"
                 className="sentence-field"
+                min={DATE_RANGE_MIN}
+                max={DATE_RANGE_MAX}
                 value={form.datum}
                 onChange={(e) => patch({ datum: e.target.value })}
               />{" "}
@@ -281,6 +296,7 @@ export default function EntryFormModal({
                   type="text"
                   className="sentence-field sentence-field-wide"
                   placeholder="Ladestation"
+                  maxLength={500}
                   value={form.ladestation}
                   onChange={(e) => patch({ ladestation: e.target.value })}
                 />
@@ -318,7 +334,13 @@ export default function EntryFormModal({
                 <label>
                   <CalendarIcon /> Datum
                 </label>
-                <input type="date" value={form.datum} onChange={(e) => patch({ datum: e.target.value })} />
+                <input
+                  type="date"
+                  min={DATE_RANGE_MIN}
+                  max={DATE_RANGE_MAX}
+                  value={form.datum}
+                  onChange={(e) => patch({ datum: e.target.value })}
+                />
               </div>
               <div className="field-row">
                 <label>
@@ -359,6 +381,7 @@ export default function EntryFormModal({
                   <input
                     type="text"
                     placeholder="Name der Ladestation"
+                    maxLength={500}
                     value={form.ladestation}
                     onChange={(e) => patch({ ladestation: e.target.value })}
                   />
@@ -575,7 +598,13 @@ export default function EntryFormModal({
 
         <div className="fab-modal-actions">
           {onDelete && (
-            <button type="button" className="btn btn-ghost fab-delete" onClick={onDelete}>
+            <button
+              type="button"
+              className="btn btn-ghost fab-delete"
+              onClick={() => {
+                if (window.confirm("Diesen Ladevorgang wirklich löschen?")) onDelete();
+              }}
+            >
               Löschen
             </button>
           )}
@@ -585,15 +614,22 @@ export default function EntryFormModal({
           <button
             type="button"
             className="btn btn-primary"
-            disabled={!form.karte}
+            disabled={!form.karte || submitting}
             title={!form.karte ? "Bitte zuerst eine Ladekarte auswählen" : undefined}
-            onClick={() =>
+            onClick={() => {
+              if (submittedRef.current) return;
+              if (!monthKeyFromDate(form.datum)) {
+                showToast(`Datum muss zwischen ${DATE_RANGE_MIN} und ${DATE_RANGE_MAX} liegen`);
+                return;
+              }
+              submittedRef.current = true;
+              setSubmitting(true);
               onSave({
                 ...form,
                 dauer: computedDauer ?? form.dauer,
                 preis: form.preis || autoPreis || form.preis,
-              })
-            }
+              });
+            }}
           >
             Speichern
           </button>

@@ -92,6 +92,7 @@ export function generateTestData(): AppData {
   });
 
   return {
+    _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
       b10: { leasing: 331.51, versicherung: 78.4, start: "2026-07-01", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.b10.startKm, stichtagLadekosten: 120 },

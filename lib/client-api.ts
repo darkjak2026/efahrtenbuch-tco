@@ -23,11 +23,30 @@ export async function fetchData(pin: string): Promise<{ ok: boolean; status: num
   return { ok: true, status: res.status, data };
 }
 
-export async function postData(pin: string, data: AppData): Promise<boolean> {
-  const res = await fetch("/api/data", {
-    method: "POST",
-    headers: { "x-pin": pin, "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return res.ok;
+export type PostResult =
+  | { ok: true; data: AppData }
+  | { ok: false; conflict: true; data: AppData }
+  | { ok: false; conflict: false };
+
+// Result must always be checked by the caller - a silently ignored save
+// failure (network drop, PIN expired, conflict) means a change looks saved
+// in the UI while it never actually reached the household's real data.
+export async function postData(pin: string, data: AppData): Promise<PostResult> {
+  let res: Response;
+  try {
+    res = await fetch("/api/data", {
+      method: "POST",
+      headers: { "x-pin": pin, "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  } catch {
+    return { ok: false, conflict: false };
+  }
+  if (res.status === 409) {
+    const body = (await res.json()) as { data: AppData };
+    return { ok: false, conflict: true, data: body.data };
+  }
+  if (!res.ok) return { ok: false, conflict: false };
+  const saved = (await res.json()) as AppData;
+  return { ok: true, data: saved };
 }

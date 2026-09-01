@@ -30,6 +30,7 @@ export default function AppClient() {
   const [data, setData] = useState<AppData>(defaultData());
   const [activeMonth, setActiveMonth] = useState(() => currentMonthKey());
   const [testMode, setTestMode] = useState(false);
+  const [saveConflict, setSaveConflict] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [celebrateRow, setCelebrateRow] = useState<ChargeRow | null>(null);
 
@@ -111,18 +112,36 @@ export default function AppClient() {
   useEffect(() => {
     if (testMode) return; // fiktive Testdaten werden nie gespeichert
     if (status !== "ready" || !pin) return;
+    // Ein erkannter Konflikt (siehe unten) stoppt weitere automatische
+    // Speicherversuche - die lokalen Daten sind ab dann bekanntermaßen
+    // veraltet, ein weiterer Versuch würde nur denselben Konflikt erneut
+    // auslösen, ohne dass die Nutzerin etwas davon mitbekommt.
+    if (saveConflict) return;
     if (skipNextSave.current) {
       skipNextSave.current = false;
       return;
     }
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      postData(pin, data);
+    saveTimer.current = setTimeout(async () => {
+      const result = await postData(pin, data);
+      if (result.ok) {
+        // Nur die vom Server bestätigte Versionsnummer übernehmen (nicht das
+        // ganze Objekt ersetzen) - falls währenddessen schon weiterbearbeitet
+        // wurde, bleiben diese neueren Änderungen erhalten, zählen aber ab
+        // jetzt korrekt gegen die neue Server-Version statt einen Konflikt
+        // mit dem eigenen, gerade erfolgreichen Speichervorgang zu erzeugen.
+        skipNextSave.current = true;
+        setData((prev) => (prev._rev === data._rev ? { ...prev, _rev: result.data._rev } : prev));
+      } else if (result.conflict) {
+        setSaveConflict(true);
+      } else {
+        showToast("Speichern fehlgeschlagen — bitte Verbindung prüfen");
+      }
     }, 800);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [data, pin, status, testMode]);
+  }, [data, pin, status, testMode, saveConflict, showToast]);
 
   const updateData = useCallback((fn: (d: AppData) => void) => {
     setData((prev) => {
@@ -147,6 +166,15 @@ export default function AppClient() {
           🧪 Testmodus — fiktive Daten für den gesamten Leasingzeitraum, es wird nichts gespeichert.
           <button type="button" onClick={() => { window.location.href = window.location.pathname; }}>
             Testmodus verlassen
+          </button>
+        </div>
+      )}
+      {saveConflict && (
+        <div className="conflict-banner">
+          ⚠️ Jemand anderes hat zwischenzeitlich auf einem anderen Gerät gespeichert. Deine letzten Änderungen hier
+          wurden nicht übernommen, damit nichts überschrieben wird.
+          <button type="button" onClick={() => window.location.reload()}>
+            Seite neu laden
           </button>
         </div>
       )}

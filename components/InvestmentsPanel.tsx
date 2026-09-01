@@ -73,12 +73,14 @@ export default function InvestmentsPanel({
                   type="button"
                   className="mini-del"
                   title="Position löschen"
-                  onClick={() =>
+                  onClick={() => {
+                    const label = inv.beschreibung || "diese Position";
+                    if (!window.confirm(`"${label}" wirklich löschen?`)) return;
                     updateData((d) => {
                       d.investitionen.splice(idx, 1);
                       if (d.investitionen.length === 0) d.investitionen.push(emptyInvest());
-                    })
-                  }
+                    });
+                  }}
                 >
                   ✕
                 </button>

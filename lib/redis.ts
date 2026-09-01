@@ -18,6 +18,27 @@ export async function getAppData(): Promise<AppData> {
   return fresh;
 }
 
-export async function setAppData(data: AppData): Promise<void> {
-  await redis.set(REDIS_KEY, migrate(data));
+export type SetAppDataResult = { ok: true; data: AppData } | { ok: false; current: AppData };
+
+// Optimistic concurrency: the caller must pass the _rev it last read. If
+// someone else has saved in the meantime (current._rev !== expectedRev), the
+// write is refused and the current (newer) data is returned instead of
+// silently overwriting it - relevant because this household has two people
+// who may have the app open on different devices at once.
+//
+// Not a true atomic compare-and-swap (there's a small window between the GET
+// and the SET below where a second concurrent write could still slip through
+// undetected) - Upstash's REST API has no WATCH/MULTI. For this app's real
+// usage pattern (occasional saves from at most two people) that residual
+// race is far better than the previous unconditional overwrite, and doesn't
+// carry the risk of an untested Lua script in production.
+export async function setAppData(data: AppData): Promise<SetAppDataResult> {
+  const existing = await redis.get<AppData>(REDIS_KEY);
+  const current = existing ? migrate(existing) : defaultData();
+  if (current._rev !== data._rev) {
+    return { ok: false, current };
+  }
+  const next = migrate({ ...data, _rev: current._rev + 1 });
+  await redis.set(REDIS_KEY, next);
+  return { ok: true, data: next };
 }
