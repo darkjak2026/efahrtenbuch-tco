@@ -9,11 +9,13 @@ export default function ExportPanel({
   activeMonth,
   updateData,
   showToast,
+  testMode = false,
 }: {
   data: AppData;
   activeMonth: string;
   updateData: (fn: (d: AppData) => void) => void;
   showToast: (msg: string) => void;
+  testMode?: boolean;
 }) {
   const importFileRef = useRef<HTMLInputElement>(null);
 
@@ -26,7 +28,7 @@ export default function ExportPanel({
             className="btn btn-ghost"
             title="Kontenübersicht des aktuellen Monats als PDF herunterladen"
             onClick={() => {
-              const ok = exportPdf(data, activeMonth);
+              const ok = exportPdf(data, activeMonth, testMode);
               showToast(ok ? "PDF erzeugt" : "PDF-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen)");
             }}
           >
@@ -36,7 +38,7 @@ export default function ExportPanel({
             className="btn btn-ghost"
             title="Alle Monate, Kontenübersicht und TCO als Excel-Datei herunterladen"
             onClick={() => {
-              const ok = exportXlsx(data);
+              const ok = exportXlsx(data, testMode);
               showToast(ok ? "Excel-Datei erzeugt" : "Excel-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen)");
             }}
           >
@@ -49,7 +51,7 @@ export default function ExportPanel({
         <button
           className="btn btn-ghost"
           onClick={() => {
-            exportJson(data);
+            exportJson(data, testMode);
             showToast("Sicherung heruntergeladen");
           }}
         >

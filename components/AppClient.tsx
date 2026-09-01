@@ -31,14 +31,21 @@ export default function AppClient() {
   const [activeMonth, setActiveMonth] = useState(() => currentMonthKey());
   const [testMode, setTestMode] = useState(false);
   const [saveConflict, setSaveConflict] = useState(false);
+  const [pinLockedUntil, setPinLockedUntil] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [celebrateRow, setCelebrateRow] = useState<ChargeRow | null>(null);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNextSave = useRef(true);
+  // Set while a change is debounced/in flight to Redis, cleared once it lands
+  // (or is known lost via a conflict) - beforeunload below warns only then,
+  // not on every stale leftover timer id.
+  const unsavedRef = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const celebrateShowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const celebrateClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const failedPinAttempts = useRef(0);
+  const pinLockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -59,11 +66,13 @@ export default function AppClient() {
   }, []);
 
   const authenticate = useCallback(async (candidatePin: string) => {
+    if (pinLockedUntil && Date.now() < pinLockedUntil) return;
     setPinBusy(true);
     setPinError(null);
     try {
       const result = await fetchData(candidatePin);
       if (result.ok && result.data) {
+        failedPinAttempts.current = 0;
         storePin(candidatePin);
         setPin(candidatePin);
         skipNextSave.current = true;
@@ -71,7 +80,22 @@ export default function AppClient() {
         setStatus("ready");
       } else if (result.status === 401) {
         clearStoredPin();
-        setPinError("PIN falsch");
+        failedPinAttempts.current += 1;
+        // Nur eine leichte, clientseitige Bremse gegen wiederholtes Vertippen -
+        // kein Ersatz für echten Schutz, aber genug gegen versehentliches
+        // Dauer-Antippen der falschen Ziffernfolge.
+        if (failedPinAttempts.current >= 5) {
+          const until = Date.now() + 30000;
+          setPinLockedUntil(until);
+          setPinError("Zu viele Fehlversuche — bitte 30 Sekunden warten");
+          if (pinLockTimer.current) clearTimeout(pinLockTimer.current);
+          pinLockTimer.current = setTimeout(() => {
+            setPinLockedUntil(null);
+            failedPinAttempts.current = 0;
+          }, 30000);
+        } else {
+          setPinError("PIN falsch");
+        }
         setStatus("gate");
       } else {
         setPinError("Verbindung fehlgeschlagen — bitte erneut versuchen");
@@ -83,7 +107,7 @@ export default function AppClient() {
     } finally {
       setPinBusy(false);
     }
-  }, []);
+  }, [pinLockedUntil]);
 
   useEffect(() => {
     // ?testmode=1 skips the PIN gate and loads a full fictional dataset spanning
@@ -121,6 +145,7 @@ export default function AppClient() {
       skipNextSave.current = false;
       return;
     }
+    unsavedRef.current = true;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       const result = await postData(pin, data);
@@ -130,9 +155,14 @@ export default function AppClient() {
         // wurde, bleiben diese neueren Änderungen erhalten, zählen aber ab
         // jetzt korrekt gegen die neue Server-Version statt einen Konflikt
         // mit dem eigenen, gerade erfolgreichen Speichervorgang zu erzeugen.
+        unsavedRef.current = false;
         skipNextSave.current = true;
         setData((prev) => (prev._rev === data._rev ? { ...prev, _rev: result.data._rev } : prev));
       } else if (result.conflict) {
+        // Die Änderung ist bekanntermaßen nicht angekommen - das rote Banner
+        // bleibt sichtbar, bis neu geladen wird; ein beforeunload-Hinweis
+        // würde hier nichts zusätzlich retten.
+        unsavedRef.current = false;
         setSaveConflict(true);
       } else {
         showToast("Speichern fehlgeschlagen — bitte Verbindung prüfen");
@@ -142,6 +172,20 @@ export default function AppClient() {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, [data, pin, status, testMode, saveConflict, showToast]);
+
+  // Warnt vor dem Schließen/Neuladen des Tabs, solange eine Änderung noch nicht
+  // bestätigt gespeichert ist (die 800ms-Debounce-Lücke oder ein laufender
+  // Speicher-Request) - sonst geht ein Eintrag beim hastigen Wegtippen
+  // kommentarlos verloren.
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!unsavedRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
 
   const updateData = useCallback((fn: (d: AppData) => void) => {
     setData((prev) => {
@@ -156,7 +200,14 @@ export default function AppClient() {
   }
 
   if (status === "gate") {
-    return <PinGate onSubmit={authenticate} error={pinError} busy={pinBusy} />;
+    return (
+      <PinGate
+        onSubmit={authenticate}
+        error={pinError}
+        busy={pinBusy}
+        locked={pinLockedUntil !== null}
+      />
+    );
   }
 
   return (
@@ -292,7 +343,13 @@ export default function AppClient() {
             }
             defaultOpen={false}
           >
-            <ExportPanel data={data} activeMonth={activeMonth} updateData={updateData} showToast={showToast} />
+            <ExportPanel
+              data={data}
+              activeMonth={activeMonth}
+              updateData={updateData}
+              showToast={showToast}
+              testMode={testMode}
+            />
           </Collapsible>
         </section>
       </main>

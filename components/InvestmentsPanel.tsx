@@ -62,8 +62,9 @@ export default function InvestmentsPanel({
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     value={inv.betrag}
-                    onChange={(e) => updateData((d) => { d.investitionen[idx].betrag = e.target.value; })}
+                    onChange={(e) => updateData((d) => { d.investitionen[idx].betrag = e.target.value.replace(/-/g, ""); })}
                   />
                   {monthly > 0 && <span className="monthly-equiv">≈ {fmtEUR(monthly)} / Monat (36 Mon.)</span>}
                 </div>

@@ -57,6 +57,25 @@ export default function EntryFormModal({
   // is the actual guard; the state below only drives the visible disabled look.
   const submittedRef = useRef(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // The Android/browser "Zurück"-Geste otherwise leaves the whole app instead
+  // of just closing this dialog. Push a dummy history entry while open and
+  // treat popstate as a close; on a normal close (Speichern/Abbrechen/Löschen)
+  // consume that same entry again so "Zurück" doesn't need an extra press.
+  const closedByPopRef = useRef(false);
+  useEffect(() => {
+    window.history.pushState({ fabModal: true }, "");
+    const onPopState = () => {
+      closedByPopRef.current = true;
+      onClose();
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => {
+      window.removeEventListener("popstate", onPopState);
+      if (!closedByPopRef.current) window.history.back();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Mutually exclusive: only one of the two sections is expanded at a time.
   // The active section always leads (renders first); the collapsed one follows below.
   const [activeSection, setActiveSection] = useState<"vor" | "nach">(defaultSection);
@@ -215,7 +234,7 @@ export default function EntryFormModal({
                 placeholder="km"
                 value={form.km}
                 onFocus={selectTrailingDigits}
-                onChange={(e) => patch({ km: e.target.value.replace(/\D/g, "") })}
+                onChange={(e) => patch({ km: e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "") })}
               />
             </div>
             <div className="field-col">
@@ -229,7 +248,7 @@ export default function EntryFormModal({
                 min="0"
                 placeholder="z.B. 0,32"
                 value={form.preisProKwh}
-                onChange={(e) => patch({ preisProKwh: e.target.value })}
+                onChange={(e) => patch({ preisProKwh: e.target.value.replace(/-/g, "") })}
               />
             </div>
             <div className="field-col">
@@ -257,7 +276,7 @@ export default function EntryFormModal({
                 placeholder="km"
                 className={reichweiteColorClass(form.reichweiteVorher)}
                 value={form.reichweiteVorher}
-                onChange={(e) => patch({ reichweiteVorher: e.target.value })}
+                onChange={(e) => patch({ reichweiteVorher: e.target.value.replace(/-/g, "") })}
               />
             </div>
           </div>
@@ -325,7 +344,7 @@ export default function EntryFormModal({
                 </button>
               </span>{" "}
               bei einem <span style={{ whiteSpace: "nowrap" }}>km-Stand</span> von{" "}
-              <span className="sentence-value">{form.km || "–"} km</span> geladen. Die Startzeit ist ca.{" "}
+              <span className="sentence-value">{form.km ? parseNum(form.km) : "–"} km</span> geladen. Die Startzeit ist ca.{" "}
               <span className="sentence-value">{chargeStartLabel} Uhr</span>.
             </p>
           ) : (
@@ -370,7 +389,7 @@ export default function EntryFormModal({
                   placeholder="km"
                   value={form.km}
                   onFocus={selectTrailingDigits}
-                  onChange={(e) => patch({ km: e.target.value.replace(/\D/g, "") })}
+                  onChange={(e) => patch({ km: e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "") })}
                 />
               </div>
               <div className="field-row">
@@ -455,7 +474,7 @@ export default function EntryFormModal({
                   placeholder="km"
                   className={reichweiteColorClass(form.reichweiteNachher)}
                   value={form.reichweiteNachher}
-                  onChange={(e) => patch({ reichweiteNachher: e.target.value })}
+                  onChange={(e) => patch({ reichweiteNachher: e.target.value.replace(/-/g, "") })}
                 />
               </div>
               <div className="field-col">
@@ -473,7 +492,7 @@ export default function EntryFormModal({
                   step="0.01"
                   min="0"
                   value={form.kwh}
-                  onChange={(e) => patch({ kwh: e.target.value })}
+                  onChange={(e) => patch({ kwh: e.target.value.replace(/-/g, "") })}
                 />
               </div>
             </div>
@@ -490,7 +509,7 @@ export default function EntryFormModal({
                   placeholder="km"
                   className={reichweiteColorClass(form.reichweiteNachher)}
                   value={form.reichweiteNachher}
-                  onChange={(e) => patch({ reichweiteNachher: e.target.value })}
+                  onChange={(e) => patch({ reichweiteNachher: e.target.value.replace(/-/g, "") })}
                 />
               </div>
               <div className="field-row">
@@ -530,7 +549,7 @@ export default function EntryFormModal({
                   step="0.01"
                   min="0"
                   value={form.kwh}
-                  onChange={(e) => patch({ kwh: e.target.value })}
+                  onChange={(e) => patch({ kwh: e.target.value.replace(/-/g, "") })}
                 />
               </div>
             </>
@@ -557,7 +576,7 @@ export default function EntryFormModal({
               min="0"
               className={priceJustFilled ? "price-input-glow" : undefined}
               value={form.preis || autoPreis || ""}
-              onChange={(e) => patch({ preis: e.target.value })}
+              onChange={(e) => patch({ preis: e.target.value.replace(/-/g, "") })}
             />
           </div>
           <div className="field-row">
@@ -614,12 +633,40 @@ export default function EntryFormModal({
           <button
             type="button"
             className="btn btn-primary"
-            disabled={!form.karte || submitting}
-            title={!form.karte ? "Bitte zuerst eine Ladekarte auswählen" : undefined}
+            disabled={!form.karte || !form.fahrzeug || !form.km || submitting}
+            title={
+              !form.karte
+                ? "Bitte zuerst eine Ladekarte auswählen"
+                : !form.fahrzeug
+                ? "Bitte zuerst ein Fahrzeug auswählen"
+                : !form.km
+                ? "Bitte zuerst den km-Stand eintragen"
+                : undefined
+            }
             onClick={() => {
               if (submittedRef.current) return;
               if (!monthKeyFromDate(form.datum)) {
                 showToast(`Datum muss zwischen ${DATE_RANGE_MIN} und ${DATE_RANGE_MAX} liegen`);
+                return;
+              }
+              if (form.reichweiteNachher && parseNum(form.reichweiteNachher) < parseNum(form.reichweiteVorher)) {
+                showToast("Reichweite nachher kann nicht kleiner als Reichweite vorher sein — bitte prüfen");
+                return;
+              }
+              // Zwei getrennt erfasste Ladevorgänge mit exakt gleichem Fahrzeug,
+              // Datum und km-Stand sind so gut wie sicher ein versehentliches
+              // Doppel-Erfassen (z.B. Formular versehentlich zweimal ausgefüllt).
+              const duplicate = form.fahrzeug
+                ? allRows(data).find(
+                    (r) => r !== initial && r.fahrzeug === form.fahrzeug && r.datum === form.datum && r.km === form.km
+                  )
+                : undefined;
+              if (
+                duplicate &&
+                !window.confirm(
+                  `Für ${vehicleShortLabel(form.fahrzeug as VehicleKey)} gibt es am ${form.datum} bereits einen Eintrag mit demselben km-Stand (${parseNum(form.km)} km). Trotzdem als neuen, separaten Ladevorgang speichern?`
+                )
+              ) {
                 return;
               }
               submittedRef.current = true;

@@ -54,8 +54,12 @@ export default function CardsPanel({
           onClick={() => {
             const name = newCardName.trim();
             if (!name) return;
+            if (data.cardsList.some((x) => x.toLowerCase() === name.toLowerCase())) {
+              setNewCardName("");
+              return;
+            }
             updateData((d) => {
-              if (!d.cardsList.includes(name)) d.cardsList.push(name);
+              d.cardsList.push(name);
             });
             setNewCardName("");
           }}

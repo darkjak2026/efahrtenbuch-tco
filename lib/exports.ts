@@ -28,9 +28,10 @@ function downloadBlob(content: BlobPart, filename: string, type: string) {
   URL.revokeObjectURL(url);
 }
 
-export function exportJson(data: AppData) {
+export function exportJson(data: AppData, testMode = false) {
   const stamp = new Date().toISOString().slice(0, 10);
-  downloadBlob(JSON.stringify(data, null, 2), `eFahrtenbuchTCO_Sicherung_${stamp}.json`, "application/json");
+  const prefix = testMode ? "TESTMODUS_" : "";
+  downloadBlob(JSON.stringify(data, null, 2), `${prefix}eFahrtenbuchTCO_Sicherung_${stamp}.json`, "application/json");
 }
 
 export function importJson(file: File): Promise<AppData> {
@@ -38,7 +39,15 @@ export function importJson(file: File): Promise<AppData> {
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
-        resolve(migrate(JSON.parse(evt.target?.result as string)));
+        const parsed = migrate(JSON.parse(evt.target?.result as string));
+        // Eine von Hand editierte Sicherung könnte falsche/fremde Monatsschlüssel
+        // enthalten - alles verwerfen, was nicht zum unterstützten Zeitraum
+        // gehört, statt es unsichtbar als "toter" Monat mitzuschleppen.
+        const knownKeys = new Set(MONTHS.map((m) => m.key));
+        for (const key of Object.keys(parsed.months)) {
+          if (!knownKeys.has(key)) delete parsed.months[key];
+        }
+        resolve(parsed);
       } catch (err) {
         reject(err);
       }
@@ -48,7 +57,7 @@ export function importJson(file: File): Promise<AppData> {
   });
 }
 
-export function exportPdf(data: AppData, activeMonth: string): boolean {
+export function exportPdf(data: AppData, activeMonth: string, testMode = false): boolean {
   if (!window.jspdf) return false;
   const st = computeMonthStatement(data, activeMonth);
   const { jsPDF } = window.jspdf;
@@ -73,7 +82,7 @@ export function exportPdf(data: AppData, activeMonth: string): boolean {
       r.dauer || "",
       r.kwh ? fmtNum(parseNum(r.kwh)) : "",
       r.preis ? fmtEUR(parseNum(r.preis)) : "",
-      r.km || "",
+      r.km ? String(parseNum(r.km)) : "",
     ]),
     styles: { fontSize: 8 },
     headStyles: { fillColor: [53, 40, 73] },
@@ -116,11 +125,11 @@ export function exportPdf(data: AppData, activeMonth: string): boolean {
     { maxWidth: 180 }
   );
 
-  doc.save(`Kontenuebersicht_${st.label}_${st.jahr}.pdf`);
+  doc.save(`${testMode ? "TESTMODUS_" : ""}Kontenuebersicht_${st.label}_${st.jahr}.pdf`);
   return true;
 }
 
-export function exportXlsx(data: AppData): boolean {
+export function exportXlsx(data: AppData, testMode = false): boolean {
   if (!window.XLSX) return false;
   const XLSX = window.XLSX;
   const wb = XLSX.utils.book_new();
@@ -208,6 +217,6 @@ export function exportXlsx(data: AppData): boolean {
   XLSX.utils.book_append_sheet(wb, wsTco, "TCO Gesamt");
 
   const stamp = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `eFahrtenbuchTCO_Export_${stamp}.xlsx`);
+  XLSX.writeFile(wb, `${testMode ? "TESTMODUS_" : ""}eFahrtenbuchTCO_Export_${stamp}.xlsx`);
   return true;
 }

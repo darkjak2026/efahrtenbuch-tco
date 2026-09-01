@@ -130,7 +130,7 @@ export default function ChargeTable({
               </div>
               {row.km && (
                 <div className="entry-card-km">
-                  <span className="entry-card-odo">ODO {row.km} km</span>
+                  <span className="entry-card-odo">ODO {parseNum(row.km)} km</span>
                   {kmDriven !== null && <span className="entry-card-driven">{kmDriven} km seit letztem Laden</span>}
                 </div>
               )}

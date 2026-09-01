@@ -3,17 +3,32 @@
 import { PIN_STORAGE_KEY } from "./constants";
 import type { AppData } from "./types";
 
+// localStorage can throw (strict private-browsing modes, blocked site data,
+// storage quota) instead of just being empty - falling through to the PIN
+// screen is fine, a hard crash on load is not.
 export function getStoredPin(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(PIN_STORAGE_KEY);
+  try {
+    return window.localStorage.getItem(PIN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function storePin(pin: string): void {
-  window.localStorage.setItem(PIN_STORAGE_KEY, pin);
+  try {
+    window.localStorage.setItem(PIN_STORAGE_KEY, pin);
+  } catch {
+    // Nothing we can do - the user will just have to re-enter the PIN next visit.
+  }
 }
 
 export function clearStoredPin(): void {
-  window.localStorage.removeItem(PIN_STORAGE_KEY);
+  try {
+    window.localStorage.removeItem(PIN_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
 }
 
 export async function fetchData(pin: string): Promise<{ ok: boolean; status: number; data?: AppData }> {

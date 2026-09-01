@@ -1,7 +1,7 @@
 "use client";
 
 import { emptyRecurring } from "@/lib/data";
-import { VEHICLES, vehicleShortLabel } from "@/lib/constants";
+import { DATE_RANGE_MAX, DATE_RANGE_MIN, VEHICLES, vehicleShortLabel } from "@/lib/constants";
 import Collapsible from "./Collapsible";
 import type { AppData, VehicleKey } from "@/lib/types";
 
@@ -43,8 +43,9 @@ export default function FixedCostsPanel({
               type="number"
               step="0.01"
               id="b10_leasing"
+              min="0"
               value={data.vehicles.b10.leasing}
-              onChange={(e) => updateData((d) => { d.vehicles.b10.leasing = e.target.value; })}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.leasing = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">
@@ -53,8 +54,9 @@ export default function FixedCostsPanel({
               type="number"
               step="0.01"
               id="b10_versicherung"
+              min="0"
               value={data.vehicles.b10.versicherung}
-              onChange={(e) => updateData((d) => { d.vehicles.b10.versicherung = e.target.value; })}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.versicherung = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">
@@ -71,6 +73,8 @@ export default function FixedCostsPanel({
             <input
               type="date"
               id="b10_stichtag"
+              min={DATE_RANGE_MIN}
+              max={DATE_RANGE_MAX}
               value={data.vehicles.b10.stichtag}
               onChange={(e) => updateData((d) => { d.vehicles.b10.stichtag = e.target.value; })}
             />
@@ -81,8 +85,9 @@ export default function FixedCostsPanel({
               type="number"
               step="1"
               id="b10_stichtagKm"
+              min="0"
               value={data.vehicles.b10.stichtagKm}
-              onChange={(e) => updateData((d) => { d.vehicles.b10.stichtagKm = e.target.value; })}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.stichtagKm = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">
@@ -91,8 +96,9 @@ export default function FixedCostsPanel({
               type="number"
               step="0.01"
               id="b10_stichtagLadekosten"
+              min="0"
               value={data.vehicles.b10.stichtagLadekosten}
-              onChange={(e) => updateData((d) => { d.vehicles.b10.stichtagLadekosten = e.target.value; })}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.stichtagLadekosten = e.target.value.replace(/-/g, ""); })}
             />
           </div>
         </Collapsible>
@@ -106,8 +112,9 @@ export default function FixedCostsPanel({
               type="number"
               step="0.01"
               id="t03_leasing"
+              min="0"
               value={data.vehicles.t03.leasing}
-              onChange={(e) => updateData((d) => { d.vehicles.t03.leasing = e.target.value; })}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.leasing = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">
@@ -116,8 +123,9 @@ export default function FixedCostsPanel({
               type="number"
               step="0.01"
               id="t03_versicherung"
+              min="0"
               value={data.vehicles.t03.versicherung}
-              onChange={(e) => updateData((d) => { d.vehicles.t03.versicherung = e.target.value; })}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.versicherung = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">
@@ -134,6 +142,8 @@ export default function FixedCostsPanel({
             <input
               type="date"
               id="t03_stichtag"
+              min={DATE_RANGE_MIN}
+              max={DATE_RANGE_MAX}
               value={data.vehicles.t03.stichtag}
               onChange={(e) => updateData((d) => { d.vehicles.t03.stichtag = e.target.value; })}
             />
@@ -144,8 +154,9 @@ export default function FixedCostsPanel({
               type="number"
               step="1"
               id="t03_stichtagKm"
+              min="0"
               value={data.vehicles.t03.stichtagKm}
-              onChange={(e) => updateData((d) => { d.vehicles.t03.stichtagKm = e.target.value; })}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.stichtagKm = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">
@@ -154,8 +165,9 @@ export default function FixedCostsPanel({
               type="number"
               step="0.01"
               id="t03_stichtagLadekosten"
+              min="0"
               value={data.vehicles.t03.stichtagLadekosten}
-              onChange={(e) => updateData((d) => { d.vehicles.t03.stichtagLadekosten = e.target.value; })}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.stichtagLadekosten = e.target.value.replace(/-/g, ""); })}
             />
           </div>
         </Collapsible>
@@ -193,8 +205,9 @@ export default function FixedCostsPanel({
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     value={rec.betrag}
-                    onChange={(e) => updateData((d) => { d.recurringCosts[idx].betrag = e.target.value; })}
+                    onChange={(e) => updateData((d) => { d.recurringCosts[idx].betrag = e.target.value.replace(/-/g, ""); })}
                   />
                 </div>
                 <div className="recurring-meta">
