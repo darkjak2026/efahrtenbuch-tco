@@ -60,7 +60,8 @@
     ["01.09.2026", "V2.16", "Kilometerstand (ODO) beim Erfassen eines Ladevorgangs grundlegend umgestellt: er steht jetzt als eigenes, an erster Stelle stehendes Eingabefeld ganz oben und muss von Hand eingetragen werden - die bisherige automatische Schätzformel wurde vollständig entfernt. Der Satztext übernimmt den eingetragenen Wert nur noch zur Anzeige. Zusätzlich zeigt die Lade-Historie jetzt pro Eintrag den ODO-Stand zum Ladezeitpunkt sowie die seit dem letzten Laden gefahrenen Kilometer an."],
     ["01.09.2026", "V2.17", "Reihenfolge im versteckten Menü (5x Antippen der Versionszeile) getauscht: 'Ideen für später' steht jetzt oben, das Änderungsprotokoll darunter."],
     ["01.09.2026", "V2.18", "Symbol beim Feld 'Restreichweite' im 'Vor'-Bereich getauscht: statt des Straßen-Symbols steht dort jetzt ein Batterie-Symbol mit niedrigem Füllstand, das besser zu 'Reserve' passt."],
-    ["01.09.2026", "V2.19", "Beschriftungen über den Eingabefeldern im 'Vor'/'Nach'-Bereich um 20% vergrößert und näher an die Felder herangerückt (weniger Abstand zwischen Beschriftung und Eingabefeld)."]
+    ["01.09.2026", "V2.19", "Beschriftungen über den Eingabefeldern im 'Vor'/'Nach'-Bereich um 20% vergrößert und näher an die Felder herangerückt (weniger Abstand zwischen Beschriftung und Eingabefeld)."],
+    ["01.09.2026", "V2.20", "Testmodus ergänzt: der Link .../?testmode=1 öffnet die App ohne PIN-Abfrage mit einem vollständigen, frei erfundenen Datensatz für den gesamten Leasingzeitraum (Juli 2026 - Oktober 2028). Gut sichtbares gelbes Band oben markiert den Modus; nichts davon wird gespeichert, die echten Daten bleiben unberührt (technisch: Automatisches Speichern in die Datenbank ist in diesem Modus komplett abgeschaltet)."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [

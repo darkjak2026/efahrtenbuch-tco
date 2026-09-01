@@ -4,6 +4,7 @@ import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { clearStoredPin, fetchData, getStoredPin, postData, storePin } from "@/lib/client-api";
 import { defaultData } from "@/lib/data";
+import { generateTestData } from "@/lib/testData";
 import type { AppData, ChargeRow } from "@/lib/types";
 import PinGate from "./PinGate";
 import TcoPanel from "./TcoPanel";
@@ -28,6 +29,7 @@ export default function AppClient() {
   const [pinBusy, setPinBusy] = useState(false);
   const [data, setData] = useState<AppData>(defaultData());
   const [activeMonth, setActiveMonth] = useState(() => currentMonthKey());
+  const [testMode, setTestMode] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [celebrateRow, setCelebrateRow] = useState<ChargeRow | null>(null);
 
@@ -83,6 +85,19 @@ export default function AppClient() {
   }, []);
 
   useEffect(() => {
+    // ?testmode=1 skips the PIN gate and loads a full fictional dataset spanning
+    // the whole leasing period, purely in memory - never sent to Redis (see the
+    // save effect below). Safe to try even on the live URL: nothing real is ever
+    // touched or exposed, since the data shown is entirely made up.
+    if (new URLSearchParams(window.location.search).get("testmode") === "1") {
+      skipNextSave.current = true;
+      queueMicrotask(() => {
+        setData(generateTestData());
+        setTestMode(true);
+        setStatus("ready");
+      });
+      return;
+    }
     const stored = getStoredPin();
     if (stored) {
       queueMicrotask(() => {
@@ -94,6 +109,7 @@ export default function AppClient() {
   }, []);
 
   useEffect(() => {
+    if (testMode) return; // fiktive Testdaten werden nie gespeichert
     if (status !== "ready" || !pin) return;
     if (skipNextSave.current) {
       skipNextSave.current = false;
@@ -106,7 +122,7 @@ export default function AppClient() {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [data, pin, status]);
+  }, [data, pin, status, testMode]);
 
   const updateData = useCallback((fn: (d: AppData) => void) => {
     setData((prev) => {
@@ -126,6 +142,14 @@ export default function AppClient() {
 
   return (
     <>
+      {testMode && (
+        <div className="testmode-banner">
+          🧪 Testmodus — fiktive Daten für den gesamten Leasingzeitraum, es wird nichts gespeichert.
+          <button type="button" onClick={() => { window.location.href = window.location.pathname; }}>
+            Testmodus verlassen
+          </button>
+        </div>
+      )}
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" strategy="afterInteractive" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="afterInteractive" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" strategy="afterInteractive" />
