@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { DATE_RANGE_MAX, DATE_RANGE_MIN, VEHICLES, vehicleShortLabel } from "@/lib/constants";
+import { DATE_RANGE_MIN, VEHICLES, vehicleShortLabel } from "@/lib/constants";
 import {
   allRows,
   durationToMinutes,
@@ -10,6 +10,7 @@ import {
   monthKeyFromDate,
   parseNum,
   reichweiteColorClass,
+  dateRangeMax,
 } from "@/lib/data";
 import { hasGeolocationPermission, locateStation } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
@@ -83,6 +84,8 @@ export default function EntryFormModal({
   // Only for brand-new entries (no onDelete → not editing a past, already-finished
   // row) does an "app just opened" timestamp mean anything as a charge start time.
   const isNewEntry = !onDelete;
+  // Nur bis zum Ende des sichtbaren Zeitraums (spätestes Leasingende).
+  const DATE_RANGE_MAX = dateRangeMax(data);
   const [openedAt] = useState(() => new Date());
   // The few minutes between opening the dialog and actually plugging in.
   const chargeStart = new Date(openedAt.getTime() + 3 * 60000);

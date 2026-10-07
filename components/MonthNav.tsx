@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MONTHS, shiftMonth } from "@/lib/constants";
+import { shiftMonth } from "@/lib/constants";
+import type { MonthMeta } from "@/lib/types";
 
 // Floating month bar above the two-column Lade-Historie, modelled on the week
 // bar of Wochenstimme (gradient from the left to the right column colour,
 // ◀ label ▶, arrow keys). Tapping the label opens a month picker.
-export default function MonthNav({ activeMonth, onChange }: { activeMonth: string; onChange: (key: string) => void }) {
+export default function MonthNav({
+  activeMonth,
+  months: MONTHS,
+  onChange,
+}: {
+  activeMonth: string;
+  months: MonthMeta[];
+  onChange: (key: string) => void;
+}) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const idx = MONTHS.findIndex((m) => m.key === activeMonth);
@@ -14,7 +23,7 @@ export default function MonthNav({ activeMonth, onChange }: { activeMonth: strin
   const year = activeMonth.slice(0, 4);
 
   const go = (delta: number) => {
-    const next = shiftMonth(activeMonth, delta);
+    const next = shiftMonth(activeMonth, delta, MONTHS);
     if (next) onChange(next);
   };
   const goRef = useRef(go);

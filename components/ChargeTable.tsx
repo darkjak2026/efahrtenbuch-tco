@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { MONTHS, shiftMonth, vehicleShortLabel } from "@/lib/constants";
+import { shiftMonth, vehicleShortLabel } from "@/lib/constants";
 import {
   completionMessage,
   durationToMinutes,
@@ -15,6 +15,7 @@ import {
   parseNum,
   reichweiteColorClass,
   rowKmDriven,
+  visibleMonths,
 } from "@/lib/data";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import ConfettiBurst from "./ConfettiBurst";
@@ -44,6 +45,7 @@ export default function ChargeTable({
 
   const rows = data.months[activeMonth] || [];
   const totals = monthTotals(data, activeMonth);
+  const MONTHS = visibleMonths(data);
   const allMax = Math.max(1, ...MONTHS.map((m) => monthTotals(data, m.key).kwh));
   const pct = Math.round((totals.kwh / allMax) * 100);
   const activeMonthLabel = MONTHS.find((m) => m.key === activeMonth)?.label ?? activeMonth;
@@ -149,7 +151,7 @@ export default function ChargeTable({
     const dx = e.changedTouches[0].clientX - t0.x;
     const dy = e.changedTouches[0].clientY - t0.y;
     if (Math.abs(dx) > 70 && Math.abs(dx) > 1.5 * Math.abs(dy)) {
-      const next = shiftMonth(activeMonth, dx < 0 ? 1 : -1);
+      const next = shiftMonth(activeMonth, dx < 0 ? 1 : -1, MONTHS);
       if (next) setActiveMonth(next);
     }
   };

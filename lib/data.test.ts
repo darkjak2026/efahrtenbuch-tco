@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { defaultData, emptyRow, leasingKm, monthCosts, monthKmDriven } from "./data";
+import { dateRangeMax, defaultData, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -101,4 +101,25 @@ test("Leasing-km-Countdown ohne km-Stand und ohne Übergabedatum", () => {
   assert.equal(l.rest, null);
   assert.equal(l.anteilZeit, null);
   assert.equal(l.startKmGeschaetzt, true);
+});
+test("Leasingende und sichtbare Monate: 28.11.2025 + 36 Monate -> bis November 2028", () => {
+  const d = dataWith([]);
+  d.vehicles.t03.start = "2025-11-28";
+  d.vehicles.t03.leasingMonate = 36;
+  assert.equal(leaseLastMonth(d, "t03"), "2028-11");
+  assert.equal(visibleMonths(d).at(-1)?.key, "2028-11");
+  assert.equal(dateRangeMax(d), "2028-11-30");
+});
+
+test("sichtbare Monate reichen bis zum späteren Leasingende, ohne Übergabedatum bis Oktober 2028", () => {
+  const d = dataWith([]);
+  d.vehicles.t03.start = "";
+  d.vehicles.b10.start = "";
+  assert.equal(visibleMonths(d).at(-1)?.key, "2028-10");
+  d.vehicles.t03.start = "2025-10-16";
+  d.vehicles.b10.start = "2026-07-01";
+  assert.equal(leaseLastMonth(d, "t03"), "2028-10");
+  assert.equal(leaseLastMonth(d, "b10"), "2029-06");
+  assert.equal(visibleMonths(d).at(-1)?.key, "2029-06");
+  assert.equal(visibleMonths(d)[0].key, "2026-07");
 });

@@ -1,5 +1,5 @@
-import { MONTHS, DEFAULT_CARDS } from "./constants";
-import type { AppData, ChargeRow, Investition, RecurringCost, VehicleKey } from "./types";
+import { MONTHS, DEFAULT_CARDS, LAST_MONTH_FALLBACK, monthLastDay } from "./constants";
+import type { AppData, ChargeRow, Investition, MonthMeta, RecurringCost, VehicleKey } from "./types";
 
 export function emptyRow(): ChargeRow {
   return {
@@ -245,6 +245,32 @@ export function leasingKm(data: AppData, key: VehicleKey, today: Date = new Date
   const anteilGefahren = gefahren !== null && inklusiveKm > 0 ? gefahren / inklusiveKm : null;
   const planAbweichung = gefahren !== null && anteilZeit !== null ? Math.round(gefahren - inklusiveKm * anteilZeit) : null;
   return { inklusiveKm, gefahren, rest, anteilGefahren, anteilZeit, planAbweichung, startKmGeschaetzt, ende };
+}
+
+// Last month inside a vehicle's lease: the month of (Übergabe + Laufzeit - 1 Tag).
+// 28.11.2025 + 36 Monate -> 28.11.2028 -> letzter Leasingmonat 2028-11.
+export function leaseLastMonth(data: AppData, key: VehicleKey): string | null {
+  const v = data.vehicles[key];
+  if (!v.start) return null;
+  const end = new Date(v.start);
+  if (isNaN(end.getTime())) return null;
+  end.setMonth(end.getMonth() + (parseNum(v.leasingMonate) || 36));
+  end.setDate(end.getDate() - 1);
+  return isoLocalDate(end).slice(0, 7);
+}
+
+// Months shown in the app: from the start of recording up to the later of the
+// two lease ends (clamped to the stored range).
+export function visibleMonths(data: AppData): MonthMeta[] {
+  const ends = (["b10", "t03"] as VehicleKey[]).map((k) => leaseLastMonth(data, k)).filter((x): x is string => !!x);
+  const last = ends.length ? ends.sort().at(-1)! : LAST_MONTH_FALLBACK;
+  const list = MONTHS.filter((m) => m.key <= last);
+  return list.length ? list : MONTHS.slice(0, 1);
+}
+
+export function dateRangeMax(data: AppData): string {
+  const list = visibleMonths(data);
+  return monthLastDay(list[list.length - 1].key);
 }
 
 export function householdRecurring(data: AppData): number {

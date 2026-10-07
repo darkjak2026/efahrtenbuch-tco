@@ -30,17 +30,24 @@ function generateMonths(startYear: number, startMonth: number, endYear: number, 
   return out;
 }
 
-// Erfassungsstart (Juli 2026) bis zum Ende des 36-monatigen Leasingzeitraums (Oktober 2028).
-export const MONTHS: MonthMeta[] = generateMonths(2026, 7, 2028, 10);
+// Speicherbereich: Erfassungsstart (Juli 2026) bis Ende 2029 - deckt beide
+// Leasingverträge ab. Angezeigt wird davon nur der Teil bis zum spätesten
+// Leasingende (visibleMonths in lib/data.ts, berechnet aus Übergabedatum +
+// Laufzeit); ohne Übergabedatum bis LAST_MONTH_FALLBACK.
+export const MONTHS: MonthMeta[] = generateMonths(2026, 7, 2029, 12);
+export const LAST_MONTH_FALLBACK = "2028-10";
 
-// Datumsgrenzen des unterstützten Zeitraums, z.B. als min/max an <input type="date">
-// - verhindert Tippfehler wie ein falsches Jahr, die sonst still im aktuell
-// offenen Monats-Tab statt im (ungültigen) Zieldatum landen würden.
+// Last calendar day of a month key, as "JJJJ-MM-TT" (local, no UTC shift).
+export function monthLastDay(key: string): string {
+  const [y, m] = key.split("-").map(Number);
+  return `${key}-${String(new Date(y, m, 0).getDate()).padStart(2, "0")}`;
+}
+
+// Datumsgrenzen, z.B. als min/max an <input type="date"> - verhindert Tippfehler
+// wie ein falsches Jahr, die sonst still im aktuell offenen Monat landen würden.
+// Für Ladevorgänge gilt die engere Grenze dateRangeMax(data) aus lib/data.ts.
 export const DATE_RANGE_MIN = `${MONTHS[0].key}-01`;
-export const DATE_RANGE_MAX = (() => {
-  const [y, m] = MONTHS[MONTHS.length - 1].key.split("-").map(Number);
-  return new Date(y, m, 0).toISOString().slice(0, 10);
-})();
+export const DATE_RANGE_MAX = monthLastDay(MONTHS[MONTHS.length - 1].key);
 
 // Today's month key, clamped into the supported range — used as the default active tab.
 export function currentMonthKey(): string {
@@ -51,10 +58,10 @@ export function currentMonthKey(): string {
   return key;
 }
 
-// Month key `delta` months away, or null outside the supported range.
-export function shiftMonth(key: string, delta: number): string | null {
-  const i = MONTHS.findIndex((m) => m.key === key);
-  const next = MONTHS[i + delta];
+// Month key `delta` months away within `list`, or null outside it.
+export function shiftMonth(key: string, delta: number, list: MonthMeta[] = MONTHS): string | null {
+  const i = list.findIndex((m) => m.key === key);
+  const next = list[i + delta];
   return i === -1 || !next ? null : next.key;
 }
 

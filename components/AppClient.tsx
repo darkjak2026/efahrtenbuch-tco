@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { clearStoredPin, fetchData, getStoredPin, postData, storePin } from "@/lib/client-api";
-import { defaultData } from "@/lib/data";
+import { defaultData, visibleMonths } from "@/lib/data";
 import { generateTestData } from "@/lib/testData";
 import type { AppData, ChargeRow } from "@/lib/types";
 import PinGate from "./PinGate";
@@ -252,7 +252,7 @@ export default function AppClient() {
         </section>
 
         <section className="split-section history">
-          <MonthNav activeMonth={activeMonth} onChange={setActiveMonth} />
+          <MonthNav activeMonth={activeMonth} months={visibleMonths(data)} onChange={setActiveMonth} />
           <ChargeTable
             data={data}
             activeMonth={activeMonth}

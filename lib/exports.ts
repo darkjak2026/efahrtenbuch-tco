@@ -1,7 +1,7 @@
 "use client";
 
 import { MONTHS, vehicleFullLabel } from "./constants";
-import { computeMonthStatement, fmtEUR, fmtNum, householdStats, parseNum, vehicleStats, migrate } from "./data";
+import { computeMonthStatement, fmtEUR, fmtNum, householdStats, parseNum, vehicleStats, migrate, visibleMonths } from "./data";
 import type { AppData, MonthMeta } from "./types";
 
 // Excel worksheet names must be unique and are truncated at 31 chars. The month range
@@ -134,7 +134,7 @@ export function exportXlsx(data: AppData, testMode = false): boolean {
   const XLSX = window.XLSX;
   const wb = XLSX.utils.book_new();
 
-  MONTHS.forEach((m) => {
+  visibleMonths(data).forEach((m) => {
     const rows = data.months[m.key] || [];
     const sheetData = [
       ["Datum", "Fahrzeug", "Ladekarte", "Ladestation", "Reichweite vorher km", "Reichweite nachher km", "Dauer", "kWh", "Preis €", "km-Stand"],
@@ -160,7 +160,7 @@ export function exportXlsx(data: AppData, testMode = false): boolean {
   const overviewData: (string | number)[][] = [
     ["Monat", "kWh", "Ladekosten €", "Fixkosten €", "Investitionen €", "Gesamtkosten €", "km B10", "km T03", "€/km Haushalt"],
   ];
-  MONTHS.forEach((m) => {
+  visibleMonths(data).forEach((m) => {
     const st = computeMonthStatement(data, m.key);
     overviewData.push([
       `${st.label} ${st.jahr}`,
