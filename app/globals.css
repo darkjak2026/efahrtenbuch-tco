@@ -49,15 +49,46 @@ summary {
   outline-offset: 2px;
 }
 
+/* Kopf in zwei Hälften: B10 links, t03 rechts (wie die TCO-Karten darunter),
+   in der Mitte weich ineinander überblendet. */
 header.top {
-  background-image: url("/header-banner.png"), linear-gradient(120deg, var(--plum-deep), var(--plum) 60%, var(--glacier-deep));
-  background-size: cover, cover;
-  background-position: center, center;
-  background-color: var(--plum-deep);
+  background: linear-gradient(90deg, #b392bd, #a9bfd9 50%, #c9dced);
   color: #fff;
   padding: clamp(14px, 3vw, 20px) clamp(16px, 4vw, 48px);
+  min-height: clamp(110px, 16vw, 210px);
   position: relative;
   overflow: hidden;
+}
+.header-cars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.header-car {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 58%;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.header-car-b10 {
+  left: 0;
+  background-image: url("/header-b10.webp");
+  background-position: 55% 62%;
+  -webkit-mask-image: linear-gradient(90deg, #000 72%, transparent);
+  mask-image: linear-gradient(90deg, #000 72%, transparent);
+}
+.header-car-t03 {
+  right: 0;
+  background-image: url("/header-t03.png");
+  background-position: 45% 60%;
+  -webkit-mask-image: linear-gradient(270deg, #000 72%, transparent);
+  mask-image: linear-gradient(270deg, #000 72%, transparent);
+}
+header.top h1 {
+  position: relative;
+  z-index: 1;
 }
 header.top::after {
   content: "";

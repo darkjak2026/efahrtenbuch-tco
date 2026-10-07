@@ -234,6 +234,10 @@ export default function AppClient() {
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" strategy="afterInteractive" />
 
       <header className="top">
+        <div className="header-cars" aria-hidden="true">
+          <span className="header-car header-car-b10" />
+          <span className="header-car header-car-t03" />
+        </div>
         <h1>
           <img src="/header-icon.ico" alt="" className="header-icon" />
           TCO - Leapmotor
