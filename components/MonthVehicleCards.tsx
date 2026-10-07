@@ -56,12 +56,12 @@ export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; m
         {c.gesamt > 0 &&
           PARTS.map((p) => <i key={p.key} className={p.cls} style={{ width: `${(c[p.key] / c.gesamt) * 100}%` }} />)}
       </div>
-      <div className="mvc-facts">
-        <span>{fmtNum(s.kwh, 1)} kWh</span>
-        <span>{minutesToDuration(s.min)} h</span>
-      </div>
       {open ? (
         <div className="mvc-detail">
+          <div className="mvc-facts">
+            <span>{fmtNum(s.kwh, 1)} kWh</span>
+            <span>{minutesToDuration(s.min)} h</span>
+          </div>
           {PARTS.map((p) => (
             <div key={p.key}>
               <span>
@@ -76,7 +76,7 @@ export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; m
           </div>
         </div>
       ) : (
-        <div className="mvc-more">Kosten anzeigen ▸</div>
+        <div className="mvc-more">Details ▸</div>
       )}
     </button>
   );

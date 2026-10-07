@@ -165,6 +165,8 @@ section.tco {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+  /* jede Karte klappt für sich auf, die andere behält ihre Höhe */
+  align-items: start;
 }
 .tco-card {
   border-radius: 12px;
@@ -2623,17 +2625,23 @@ section.split-section .tco-card {
   color: var(--danger);
 }
 .lkm-bar {
+  /* Tank: klar abgegrenzt, mit Innenschatten wie eine Vertiefung */
   position: relative;
-  height: 10px;
+  height: 14px;
   margin-top: 6px;
+  padding: 2px;
   border-radius: 999px;
-  background: var(--plum-deep);
+  background: #110e17;
+  border: 1px solid color-mix(in srgb, var(--ink-soft) 35%, transparent);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.85), inset 0 -1px 2px rgba(255, 255, 255, 0.06);
   overflow: visible;
 }
 .lkm-used {
   display: block;
   height: 100%;
   border-radius: 999px;
+  /* Füllung leicht plastisch: Lichtkante oben, Schatten unten */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -2px 3px rgba(0, 0, 0, 0.3);
 }
 .lkm-b10 .lkm-used {
   background: var(--b10);

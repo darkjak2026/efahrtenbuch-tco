@@ -59,10 +59,10 @@ function TcoCard({
         ODO: <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b>
       </div>
       {kmStand === 0 && <div className="warn">Noch kein km-Stand erfasst — €/km folgt automatisch.</div>}
-      {countdown}
       <button type="button" className="tco-toggle" onClick={() => setOpen((v) => !v)}>
         {open ? "Details ausblenden ▾" : "Details anzeigen ▸"}
       </button>
+      {open && countdown}
       {open && (
         <div className="sub-grid">
           {rows.map((r) => (
