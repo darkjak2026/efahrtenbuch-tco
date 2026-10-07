@@ -366,6 +366,97 @@ export function monthKmDriven(data: AppData, monthKey: string): MonthKm {
   return { perVehicle, total: known.length > 0 ? known.reduce((s, n) => s + n, 0) : null };
 }
 
+export interface VehicleMonthCosts {
+  laden: number;
+  leasing: number;
+  versicherung: number;
+  abos: number; // wiederkehrende Kosten: eigene voll, "beide" zur Hälfte
+  invest: number; // Monatsrate (Betrag / 36) der eigenen Investitionen
+  gesamt: number;
+  km: number | null;
+  ladenKm: number | null;
+  tcoKm: number | null;
+}
+
+export interface MonthCosts {
+  perVehicle: Record<VehicleKey, VehicleMonthCosts>;
+  // Kosten ohne Fahrzeugzuordnung (Abos/Investitionen "Haushalt") - nur im Haushaltswert.
+  haushaltOnly: number;
+  gesamt: number;
+  // Only when both vehicles have a km value for the month: otherwise one car's
+  // costs would be divided by the other car's km.
+  tcoKm: number | null;
+  ladenKm: number | null;
+}
+
+function investRateInMonth(betrag: number, datum: string, monthKey: string): number {
+  if (!datum) return 0;
+  const rate = monthDiff(datum.slice(0, 7), monthKey);
+  return rate >= 0 && rate < INVEST_AMORTIZATION_MONTHS ? betrag / INVEST_AMORTIZATION_MONTHS : 0;
+}
+
+// Monthly TCO per vehicle (Monatsübersicht): fixed costs count in full for every
+// month from their start date on (no day-proration, same as the PDF statement).
+export function monthCosts(data: AppData, monthKey: string): MonthCosts {
+  const [y, m] = monthKey.split("-").map(Number);
+  const lastDay = isoLocalDate(new Date(y, m, 0));
+  const km = monthKmDriven(data, monthKey).perVehicle;
+  const rows = data.months[monthKey] || [];
+  const perVehicle = {} as Record<VehicleKey, VehicleMonthCosts>;
+  (["b10", "t03"] as VehicleKey[]).forEach((v) => {
+    const veh = data.vehicles[v];
+    const active = !!veh.start && veh.start <= lastDay;
+    const laden = rows.filter((r) => r.fahrzeug === v).reduce((s, r) => s + parseNum(r.preis), 0);
+    const leasing = active ? parseNum(veh.leasing) : 0;
+    const versicherung = active ? parseNum(veh.versicherung) : 0;
+    const abos = data.recurringCosts
+      .filter((r) => r.fahrzeug === v || r.fahrzeug === "beide")
+      .filter((r) => {
+        const start = r.start || veh.start || data.erfassungStart;
+        return !!start && start <= lastDay;
+      })
+      .reduce((s, r) => s + parseNum(r.betrag) * (r.fahrzeug === "beide" ? 0.5 : 1), 0);
+    const invest = data.investitionen
+      .filter((i) => i.fahrzeug === v)
+      .reduce((s, i) => s + investRateInMonth(parseNum(i.betrag), i.datum, monthKey), 0);
+    const gesamt = laden + leasing + versicherung + abos + invest;
+    const k = km[v];
+    perVehicle[v] = {
+      laden,
+      leasing,
+      versicherung,
+      abos,
+      invest,
+      gesamt,
+      km: k,
+      ladenKm: k ? laden / k : null,
+      tcoKm: k ? gesamt / k : null,
+    };
+  });
+  const haushaltOnly =
+    data.recurringCosts
+      .filter((r) => !r.fahrzeug)
+      .filter((r) => {
+        const start = r.start || data.erfassungStart;
+        return !!start && start <= lastDay;
+      })
+      .reduce((s, r) => s + parseNum(r.betrag), 0) +
+    data.investitionen
+      .filter((i) => i.fahrzeug !== "b10" && i.fahrzeug !== "t03")
+      .reduce((s, i) => s + investRateInMonth(parseNum(i.betrag), i.datum, monthKey), 0);
+  const gesamt = perVehicle.b10.gesamt + perVehicle.t03.gesamt + haushaltOnly;
+  const kmB = perVehicle.b10.km;
+  const kmT = perVehicle.t03.km;
+  const kmBoth = kmB !== null && kmT !== null && kmB + kmT > 0 ? kmB + kmT : null;
+  return {
+    perVehicle,
+    haushaltOnly,
+    gesamt,
+    tcoKm: kmBoth ? gesamt / kmBoth : null,
+    ladenKm: kmBoth ? (perVehicle.b10.laden + perVehicle.t03.laden) / kmBoth : null,
+  };
+}
+
 export interface MonthStatementFixItem {
   label: string;
   betrag: number;

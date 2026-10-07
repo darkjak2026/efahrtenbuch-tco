@@ -14,7 +14,7 @@
     ["Fixkosten & Investitionen", "Erfassung von Leasingraten, Versicherung, Anschaffungen (abgeschrieben) und Abos je Fahrzeug oder Haushalt"],
     ["Export", "PDF- und Excel-Export der Monats- und Gesamtübersicht (SheetJS/jsPDF im Client)"],
     ["Zugriffsschutz", "Gemeinsamer Haushalts-PIN (kein Login pro Person), Daten liegen zentral in Upstash Redis"],
-    ["Monatsübersicht", "Je Monat: geladene Energie, Ladekosten, Ladezeit, gefahrene km (Summe und je Auto) und ein Balken im Vergleich zum stärksten Monat"],
+    ["Monatsübersicht", "Je Monat und Auto: TCO je km und Laden je km, gefahrene km, Kostenaufteilung (Laden, Leasing, Versicherung, Abos, Investitionsrate) zum Aufklappen; dazu Energie, Ladekosten, Ladezeit, Haushalts-TCO je km und ein Balken im Vergleich zum stärksten Monat"],
     ["Entwicklerbereich", "Versteckt hinter 5x Antippen der Versionsnummer: Notizblock mit Diktat, Wünsche (bearbeiten, löschen, exportieren, als erledigt abhaken), Versionsverlauf, Richtlinie der Benennung, Tastenkürzel, Kurzanleitung für Entwickler und der Bauplan (technischer Aufbau als Schiff)"]
   ],
   "hosting": [
@@ -74,7 +74,8 @@
     ["07.10.2026", "2.26.00", "Neu: Im 'Nach'-Bereich steht 'geladene kWh' jetzt als erstes Feld und der Cursor springt beim Öffnen direkt hinein (Wunsch aus Notizen vom 01.10.2026 umgesetzt). Beim Bearbeiten zeigt das Stunden-Feld der Dauer '0' statt leer zu bleiben (Wunsch aus Notizen vom 07.10.2026 umgesetzt)."],
     ["07.10.2026", "2.26.00", "Behoben: Die km im Monat zählten eine Ladung am letzten Tag des Monats nicht mit (Zeitzonen-Verschiebung); betraf auch die km-Angaben im PDF/Excel-Monatsauszug."],
     ["07.10.2026", "2.26.00", "Neu: Entwicklerbereich nach dem neuen Standard umgebaut: Zugang über 5x Antippen der Versionsnummer, Notizblock mit Diktat per Mikrofon (wenn der Browser es kann) und Speichern per Klick oder Strg+Enter, Wünsche mit Bearbeiten/Löschen (mit Rückfrage) und Exportieren, eingeklappter Versionsverlauf (Ver. | Datum | Art | Kurzbeschreibung), Richtlinie der Benennung, Tastenkürzel, 'Schließen' über volle Breite. Ein ungespeicherter Entwurf geht beim Schließen nicht verloren. Die Versionsnummer hat nur noch eine Quelle (dieses Änderungsprotokoll) und das neue Format 2.26.00."],
-    ["07.10.2026", "2.26.00", "Neu: 'Bauplan eFahrtenbuch' im Entwicklerbereich: der technische Aufbau der App erklärt an einem Schiff (antippbare Grafik, mitlaufende Bauteile-Leiste, Beschreibung, Bauteile, Glossar, Kopieren-Knöpfe). Inhalt in docs/technisch/bauplan.json. Das Monitoring folgt mit dem Umzug auf den eigenen Server."]
+    ["07.10.2026", "2.26.00", "Neu: 'Bauplan eFahrtenbuch' im Entwicklerbereich: der technische Aufbau der App erklärt an einem Schiff (antippbare Grafik, mitlaufende Bauteile-Leiste, Beschreibung, Bauteile, Glossar, Kopieren-Knöpfe). Inhalt in docs/technisch/bauplan.json. Das Monitoring folgt mit dem Umzug auf den eigenen Server."],
+    ["07.10.2026", "2.27.00", "Neu: Monatsübersicht umgebaut (Variante B aus den Mockups): je Auto eine Karte in seiner Farbe (B10 lila, t03 hellblau) mit den neuen Kennzahlen 'TCO je km' (alle Kosten des Monats geteilt durch die gefahrenen km) und 'Laden je km' (nur Ladekosten je km), gefahrenen km und einem Balken, woraus sich die Kosten zusammensetzen. Antippen klappt die Euro-Beträge auf; beide Karten lassen sich unabhängig nebeneinander aufklappen. Darunter Energie, Ladekosten und Ladezeit mit Aufteilung je Auto sowie der TCO je km für den Haushalt (nur wenn beide Autos km haben). Abos 'Beide, 50/50' zählen je zur Hälfte, Kosten ohne Fahrzeug nur im Haushaltswert."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [

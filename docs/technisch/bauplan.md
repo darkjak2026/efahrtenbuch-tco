@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 07.10.2026 | 19:35
+Stand der Dokumentation: 07.10.2026 | 20:43
 
 ## Teil 1 – Beschreibung der App
 
@@ -16,7 +16,7 @@ Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern kon
 
 ### 1.2 Aktueller Funktionsumfang und Features
 
-Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand (ODO), Ladekarte, €/kWh, Standort per GPS) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Daraus entstehen die €/km-Kennzahl je Auto, eine Monatsübersicht mit Energie, Kosten, Ladezeit und gefahrenen km sowie PDF- und Excel-Exporte. Dazu kommen Fixkosten, Investitionen (über 36 Monate verteilt), Ladekarten, ein Testmodus mit erfundenen Daten und dieser Entwicklerbereich.
+Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand (ODO), Ladekarte, €/kWh, Standort per GPS) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Daraus entstehen die €/km-Kennzahl je Auto, eine Monatsübersicht mit je einer Karte pro Auto (TCO je km, Ladekosten je km, gefahrene km, Kostenaufteilung) sowie PDF- und Excel-Exporte. Dazu kommen Fixkosten, Investitionen (über 36 Monate verteilt), Ladekarten, ein Testmodus mit erfundenen Daten und dieser Entwicklerbereich.
 
 ### 1.3 Backup, Datensicherung, Datenschutz
 

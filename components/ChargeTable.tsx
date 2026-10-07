@@ -11,17 +11,16 @@ import {
   isChargeIncomplete,
   isEmptyRow,
   maybeAutofillPreis,
-  minutesToDuration,
   monthKeyFromDate,
-  monthKmDriven,
   monthTotals,
   parseNum,
   reichweiteColorClass,
   rowKmDriven,
 } from "@/lib/data";
-import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
+import type { AppData, ChargeRow } from "@/lib/types";
 import ConfettiBurst from "./ConfettiBurst";
 import EntryFormModal from "./EntryFormModal";
+import MonthVehicleCards from "./MonthVehicleCards";
 
 export default function ChargeTable({
   data,
@@ -44,7 +43,6 @@ export default function ChargeTable({
 
   const rows = data.months[activeMonth] || [];
   const totals = monthTotals(data, activeMonth);
-  const monthKm = monthKmDriven(data, activeMonth);
   const allMax = Math.max(1, ...MONTHS.map((m) => monthTotals(data, m.key).kwh));
   const pct = Math.round((totals.kwh / allMax) * 100);
   const activeMonthLabel = MONTHS.find((m) => m.key === activeMonth)?.label ?? activeMonth;
@@ -81,28 +79,8 @@ export default function ChargeTable({
   return (
     <>
       <div className="summary-row">
-        <div className="stat">
-          <div className="label">Geladene Energie</div>
-          <div className="value">{fmtNum(totals.kwh)} kWh</div>
-        </div>
-        <div className="stat">
-          <div className="label">Ladekosten</div>
-          <div className="value">{fmtEUR(totals.preis)}</div>
-        </div>
-        <div className="stat">
-          <div className="label">Ladezeit gesamt</div>
-          <div className="value">{minutesToDuration(totals.minutes)} h</div>
-        </div>
-        <div className="stat stat-wide">
-          <div className="label">Gefahrene km</div>
-          <div className="value">{monthKm.total !== null ? `${fmtNum(monthKm.total, 0)} km` : "–"}</div>
-          <div className="stat-split">
-            {(["t03", "b10"] as VehicleKey[]).map((v) => (
-              <span key={v}>
-                {vehicleShortLabel(v)}: {monthKm.perVehicle[v] !== null ? `${fmtNum(monthKm.perVehicle[v]!, 0)} km` : "–"}
-              </span>
-            ))}
-          </div>
+        <div className="summary-cards">
+          <MonthVehicleCards data={data} monthKey={activeMonth} />
         </div>
         <div className="bar-wrap">
           <div className="label">{activeMonthLabel} im Verhältnis zu den anderen Monaten</div>

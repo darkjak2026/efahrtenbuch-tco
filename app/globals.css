@@ -16,6 +16,9 @@
   --range-green: #8bc34a;
   --range-peak: #ffc107;
   --violet: #b79ae8;
+  /* Fahrzeugfarben (bisher nur in .dot.b10 / .dot.t03) */
+  --b10: #b98fcb;
+  --t03: #8fc6e0;
   --radius: 10px;
   --focus: #d8cbf2;
 }
@@ -758,20 +761,242 @@ section.panel {
   font-weight: 600;
   color: var(--accent);
 }
-.stat-wide {
+/* ---- Monatsübersicht: Fahrzeugkarten (Variante B) ---- */
+.summary-cards {
   grid-column: 1 / -1;
+}
+.mvc-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  /* jede Karte klappt für sich auf, die andere behält ihre Höhe */
+  align-items: start;
+}
+.mvc-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  border: 1.5px solid;
+  cursor: pointer;
+  min-width: 0;
+}
+.mvc-card-b10 {
+  border-color: var(--b10);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--b10) 18%, var(--lav)), var(--lav) 70%);
+}
+.mvc-card-t03 {
+  border-color: var(--t03);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--t03) 18%, var(--lav)), var(--lav) 70%);
+}
+.mvc-b10 {
+  color: var(--b10);
+}
+.mvc-t03 {
+  color: var(--t03);
+}
+.mvc-name {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 700;
+  font-size: 14.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mvc-code {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+.mvc-hero {
+  white-space: nowrap;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.05;
+  margin-top: 6px;
+}
+.mvc-hero small {
+  display: block;
+  margin-top: 2px;
+}
+.mvc-hero small,
+.mvc-sub span {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.mvc-sub {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+.mvc-missing {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 11px !important;
+  color: var(--danger) !important;
+}
+.mvc-stack {
+  display: flex;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 9px;
+  background: var(--plum-deep);
+}
+.mvc-stack i {
+  display: block;
+  height: 100%;
+}
+.seg-laden {
+  background: var(--teal);
+}
+.seg-leasing {
+  background: var(--plum);
+}
+.seg-vers {
+  background: var(--range-yellow);
+}
+.seg-abos {
+  background: var(--danger);
+}
+.seg-invest {
+  background: var(--range-green);
+}
+.mvc-more {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 7px;
+}
+.mvc-detail {
+  margin-top: 8px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+}
+.mvc-detail > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 3px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.mvc-detail > div > span:last-child {
+  white-space: nowrap;
+}
+.mvc-detail > div > span:first-child {
+  color: var(--ink-soft);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mvc-detail i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+.mvc-detail .mvc-detail-sum {
+  border-bottom: none;
+  font-weight: 700;
+}
+.mvc-detail .mvc-detail-sum > span:first-child {
+  color: var(--ink);
+}
+.mvc-legend {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  column-gap: 10px;
+  gap: 4px 10px;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 8px;
 }
-.stat-wide .label {
-  flex-basis: 100%;
+.mvc-legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 4px;
 }
-.stat-split {
+.mvc-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+.mvc-chip {
+  background: var(--lav);
+  border-radius: 8px;
+  padding: 7px 8px;
+  min-width: 0;
+}
+.mvc-chip .label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.mvc-chip-val {
+  display: block;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 2px;
+}
+.mvc-chip-split span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mvc-chip-split {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mvc-house {
   display: flex;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
+  background: var(--plum-deep);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.mvc-house .label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.mvc-house-val {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.mvc-house-val small {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.mvc-note {
+  margin: 6px 2px 0;
   font-size: 11px;
+  font-style: italic;
   color: var(--ink-soft);
 }
 .bar-wrap {
