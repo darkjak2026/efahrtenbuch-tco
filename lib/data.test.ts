@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { defaultData, emptyRow, monthCosts, monthKmDriven } from "./data";
+import { defaultData, emptyRow, leasingKm, monthCosts, monthKmDriven } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -75,4 +75,30 @@ test("Monats-TCO je Auto: Laden + Leasing + Versicherung + Abos (beide = Hälfte
   assert.equal(t.ladenKm, 0.05);
   assert.equal(c.haushaltOnly, 17); // Abo C 7 + Wallbox 360/36
   assert.equal(c.tcoKm, null); // B10 ohne km -> kein Haushaltswert
+});
+
+test("Leasing-km-Countdown: Freikilometer, Rest, Abweichung vom Plan", () => {
+  const d = dataWith([row("2026-10-01", "t03", 15000)]);
+  d.vehicles.t03.start = "2025-10-01";
+  d.vehicles.t03.freiKmProJahr = 13000;
+  d.vehicles.t03.leasingMonate = 36;
+  d.vehicles.t03.kmBeiLeasingbeginn = 10;
+  const l = leasingKm(d, "t03", new Date("2026-10-01T12:00:00"));
+  assert.equal(l.inklusiveKm, 39000);
+  assert.equal(l.gefahren, 14990);
+  assert.equal(l.rest, 24010);
+  assert.equal(l.ende, "2028-10-01");
+  assert.ok(l.anteilZeit! > 0.33 && l.anteilZeit! < 0.34);
+  assert.ok(l.planAbweichung! > 1900 && l.planAbweichung! < 2100); // ~13.000 km Plan nach einem Jahr
+  assert.equal(l.startKmGeschaetzt, false);
+});
+
+test("Leasing-km-Countdown ohne km-Stand und ohne Übergabedatum", () => {
+  const d = dataWith([]);
+  d.vehicles.b10.freiKmProJahr = 15000;
+  const l = leasingKm(d, "b10");
+  assert.equal(l.inklusiveKm, 45000);
+  assert.equal(l.rest, null);
+  assert.equal(l.anteilZeit, null);
+  assert.equal(l.startKmGeschaetzt, true);
 });

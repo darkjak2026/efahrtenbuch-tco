@@ -11,13 +11,13 @@ import TcoPanel from "./TcoPanel";
 import FixedCostsPanel from "./FixedCostsPanel";
 import CardsPanel from "./CardsPanel";
 import InvestmentsPanel from "./InvestmentsPanel";
-import MonthTabs from "./MonthTabs";
+import MonthNav from "./MonthNav";
 import ChargeTable from "./ChargeTable";
 import AddEntryFab from "./AddEntryFab";
 import ExportPanel from "./ExportPanel";
 import Footer from "./Footer";
 import Collapsible from "./Collapsible";
-import { PlugIcon, CardIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon, InfoIcon } from "./Icons";
+import { CardIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon, InfoIcon } from "./Icons";
 import { currentMonthKey } from "@/lib/constants";
 
 type Status = "gate" | "loading" | "ready";
@@ -245,30 +245,23 @@ export default function AppClient() {
       </header>
 
       <main>
-        <section className="tco">
+        {/* Zweigeteilte Ansicht: links alles zum B10, rechts zum t03. Nur die
+            Monatsnavigation schwebt über beiden Hälften. */}
+        <section className="split-section">
           <TcoPanel data={data} />
         </section>
 
-        <section className="tco history-toggle-wrap">
-          <div className="collapsible">
-            <div className="collapsible-toggle collapsible-toggle-static">
-              <PlugIcon /> Lade-Historie
-            </div>
-            <div className="collapsible-body">
-              <MonthTabs activeMonth={activeMonth} onChange={setActiveMonth} />
-              <section className="panel">
-                <ChargeTable
-                  data={data}
-                  activeMonth={activeMonth}
-                  updateData={updateData}
-                  setActiveMonth={setActiveMonth}
-                  showToast={showToast}
-                  celebrateRow={celebrateRow}
-                  onEntryCompleted={celebrateCompletion}
-                />
-              </section>
-            </div>
-          </div>
+        <section className="split-section history">
+          <MonthNav activeMonth={activeMonth} onChange={setActiveMonth} />
+          <ChargeTable
+            data={data}
+            activeMonth={activeMonth}
+            updateData={updateData}
+            setActiveMonth={setActiveMonth}
+            showToast={showToast}
+            celebrateRow={celebrateRow}
+            onEntryCompleted={celebrateCompletion}
+          />
         </section>
 
         <section className="tco fixed-panel-card">
@@ -334,6 +327,17 @@ export default function AppClient() {
             <p className="about-text">
               Die Summe wird geteilt durch den Gesamt-km-Stand (höchster bekannter Wert aus Stichtag-km
               und erfassten km-Ständen) — daraus ergibt sich der €/km-TCO-Wert oben in den Kacheln.
+            </p>
+            <p className="about-text">
+              Darunter zählt der Leasing-Countdown die Freikilometer herunter (Freikilometer pro Jahr ×
+              Laufzeit, minus gefahrene km seit Übergabe). Der Strich im Balken zeigt, wo ihr zeitanteilig
+              stehen dürftet; „über Plan“ heißt, ihr fahrt mehr, als gleichmäßig verteilt vorgesehen.
+            </p>
+            <p className="about-text">
+              In der Lade-Historie (links B10, rechts t03; Monat per ◀ ▶, Wischen oder Antippen des
+              Monatsnamens) gilt der TCO je km nur für den gewählten Monat: alle Kosten dieses Monats geteilt
+              durch die im Monat gefahrenen km. Abos „Beide (50/50)“ zählen je zur Hälfte, Kosten ohne
+              Fahrzeug nur im Haushaltswert.
             </p>
           </Collapsible>
         </section>

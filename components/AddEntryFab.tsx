@@ -48,11 +48,11 @@ export default function AddEntryFab({
   return (
     <>
       <div className="fab-group">
-        {(Object.keys(VEHICLES) as VehicleKey[]).map((key) => (
+        {(["b10", "t03"] as VehicleKey[]).map((key) => (
           <button
             type="button"
             key={key}
-            className="fab"
+            className={`fab fab-${key}`}
             title={`Ladevorgang für ${VEHICLES[key].nickname} (${key.toUpperCase()}) eintragen`}
             onClick={() => setOpenVehicle(key)}
           >

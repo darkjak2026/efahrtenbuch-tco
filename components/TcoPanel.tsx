@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { fmtEUR, fmtNum, vehicleStats } from "@/lib/data";
 import { VEHICLES } from "@/lib/constants";
 import type { AppData, VehicleKey } from "@/lib/types";
+import LeasingCountdown from "./LeasingCountdown";
 
 function VehicleName({ vehicleKey }: { vehicleKey: VehicleKey }) {
   const { nickname, official } = VEHICLES[vehicleKey];
@@ -27,6 +28,7 @@ function TcoCard({
   tco,
   months,
   extraRows,
+  countdown,
 }: {
   title: React.ReactNode;
   dotClass: string;
@@ -34,6 +36,7 @@ function TcoCard({
   tco: number;
   months: number;
   extraRows: TcoRow[];
+  countdown?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const kmPreis = kmStand > 0 ? tco / kmStand : null;
@@ -56,6 +59,7 @@ function TcoCard({
         ODO: <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b>
       </div>
       {kmStand === 0 && <div className="warn">Noch kein km-Stand erfasst — €/km folgt automatisch.</div>}
+      {countdown}
       <button type="button" className="tco-toggle" onClick={() => setOpen((v) => !v)}>
         {open ? "Details ausblenden ▾" : "Details anzeigen ▸"}
       </button>
@@ -86,6 +90,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           kmStand={b10.kmStand}
           tco={b10.tco}
           months={b10.months}
+          countdown={<LeasingCountdown data={data} vehicle="b10" />}
           extraRows={[
             { label: "Ladekosten", value: fmtEUR(b10.ladekosten) },
             { label: "Leasing+Vers.", value: fmtEUR(b10.leasingKosten + b10.versicherungKosten) },
@@ -99,6 +104,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           kmStand={t03.kmStand}
           tco={t03.tco}
           months={t03.months}
+          countdown={<LeasingCountdown data={data} vehicle="t03" />}
           extraRows={[
             { label: "Ladekosten", value: fmtEUR(t03.ladekosten) },
             { label: "Leasing+Vers.", value: fmtEUR(t03.leasingKosten + t03.versicherungKosten) },

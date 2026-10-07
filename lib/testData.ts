@@ -95,8 +95,8 @@ export function generateTestData(): AppData {
     _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
-      b10: { leasing: 331.51, versicherung: 78.4, start: "2026-07-01", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.b10.startKm, stichtagLadekosten: 120 },
-      t03: { leasing: 149.0, versicherung: 81.83, start: "2025-10-16", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.t03.startKm, stichtagLadekosten: 696 },
+      b10: { leasing: 331.51, versicherung: 78.4, start: "2026-07-01", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.b10.startKm, stichtagLadekosten: 120, freiKmProJahr: 15000, leasingMonate: 36, kmBeiLeasingbeginn: 0 },
+      t03: { leasing: 149.0, versicherung: 81.83, start: "2025-10-16", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.t03.startKm, stichtagLadekosten: 696, freiKmProJahr: 13000, leasingMonate: 36, kmBeiLeasingbeginn: 0 },
     },
     recurringCosts: [
       { anbieter: "Aral pulse", zweck: "Schnellladen-Abo", fahrzeug: "t03", betrag: "2.99", start: "2026-07-01" },

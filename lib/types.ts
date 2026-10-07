@@ -39,6 +39,11 @@ export interface VehicleFixedCosts {
   stichtag: string;
   stichtagKm: string | number;
   stichtagLadekosten: string | number;
+  // Leasing-km-Countdown: Freikilometer pro Jahr, Laufzeit in Monaten und der
+  // km-Stand bei Übergabe (leer = 0, also Neuwagen).
+  freiKmProJahr: string | number;
+  leasingMonate: string | number;
+  kmBeiLeasingbeginn: string | number;
 }
 
 export interface FeatureRequestEntry {

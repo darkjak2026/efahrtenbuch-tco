@@ -69,6 +69,39 @@ export default function FixedCostsPanel({
             />
           </div>
           <div className="field-row">
+            <label htmlFor="b10_freiKmProJahr">🛣️ Freikilometer / Jahr (Leasing)</label>
+            <input
+              type="number"
+              step="100"
+              id="b10_freiKmProJahr"
+              min="0"
+              value={data.vehicles.b10.freiKmProJahr}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.freiKmProJahr = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="b10_leasingMonate">⏱️ Leasinglaufzeit in Monaten</label>
+            <input
+              type="number"
+              step="1"
+              id="b10_leasingMonate"
+              min="0"
+              value={data.vehicles.b10.leasingMonate}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.leasingMonate = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="b10_kmBeiLeasingbeginn">📟 km-Stand bei Übergabe (leer = 0)</label>
+            <input
+              type="number"
+              step="1"
+              id="b10_kmBeiLeasingbeginn"
+              min="0"
+              value={data.vehicles.b10.kmBeiLeasingbeginn}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.kmBeiLeasingbeginn = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
             <label htmlFor="b10_stichtag">🏁 Stichtag (Startwerte)</label>
             <input
               type="date"
@@ -135,6 +168,39 @@ export default function FixedCostsPanel({
               id="t03_start"
               value={data.vehicles.t03.start}
               onChange={(e) => updateData((d) => { d.vehicles.t03.start = e.target.value; })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_freiKmProJahr">🛣️ Freikilometer / Jahr (Leasing)</label>
+            <input
+              type="number"
+              step="100"
+              id="t03_freiKmProJahr"
+              min="0"
+              value={data.vehicles.t03.freiKmProJahr}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.freiKmProJahr = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_leasingMonate">⏱️ Leasinglaufzeit in Monaten</label>
+            <input
+              type="number"
+              step="1"
+              id="t03_leasingMonate"
+              min="0"
+              value={data.vehicles.t03.leasingMonate}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.leasingMonate = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_kmBeiLeasingbeginn">📟 km-Stand bei Übergabe (leer = 0)</label>
+            <input
+              type="number"
+              step="1"
+              id="t03_kmBeiLeasingbeginn"
+              min="0"
+              value={data.vehicles.t03.kmBeiLeasingbeginn}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.kmBeiLeasingbeginn = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">

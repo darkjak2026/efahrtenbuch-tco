@@ -51,6 +51,13 @@ export function currentMonthKey(): string {
   return key;
 }
 
+// Month key `delta` months away, or null outside the supported range.
+export function shiftMonth(key: string, delta: number): string | null {
+  const i = MONTHS.findIndex((m) => m.key === key);
+  const next = MONTHS[i + delta];
+  return i === -1 || !next ? null : next.key;
+}
+
 // Today as an ISO date string in local time (not UTC, unlike Date#toISOString).
 export function todayStr(): string {
   const now = new Date();

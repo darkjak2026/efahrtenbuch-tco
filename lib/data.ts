@@ -45,8 +45,8 @@ export function defaultData(): AppData {
     _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
-      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "" },
-      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696 },
+      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "", freiKmProJahr: 15000, leasingMonate: 36, kmBeiLeasingbeginn: "" },
+      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696, freiKmProJahr: 13000, leasingMonate: 36, kmBeiLeasingbeginn: "" },
     },
     recurringCosts: [emptyRecurring()],
     erfassungStart: "2026-07-01",
@@ -206,6 +206,47 @@ export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
   return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmStand, kmCount: kms.length, months };
 }
 
+// Local calendar date as "JJJJ-MM-TT" - Date#toISOString would shift a local
+// midnight back into the previous day (UTC) for German time zones.
+function isoLocalDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export interface LeasingKm {
+  inklusiveKm: number; // Freikilometer über die ganze Laufzeit
+  gefahren: number | null; // seit Übergabe (null: noch kein km-Stand)
+  rest: number | null; // negativ = Mehrkilometer
+  anteilGefahren: number | null; // 0..1+ der Freikilometer
+  anteilZeit: number | null; // 0..1 der Laufzeit (null: kein Übergabedatum)
+  planAbweichung: number | null; // gefahren minus zeitanteilige Freikilometer
+  startKmGeschaetzt: boolean; // kmBeiLeasingbeginn leer -> mit 0 gerechnet
+  ende: string | null; // "JJJJ-MM-TT"
+}
+
+// Freikilometer-Countdown je Fahrzeug: wie viele der vertraglich enthaltenen
+// km sind schon gefahren, wie viele bleiben, und liegt man über/unter dem
+// zeitanteiligen Plan (gleichmäßige Verteilung über die Laufzeit).
+export function leasingKm(data: AppData, key: VehicleKey, today: Date = new Date()): LeasingKm {
+  const v = data.vehicles[key];
+  const monate = parseNum(v.leasingMonate) || 36;
+  const inklusiveKm = Math.round((parseNum(v.freiKmProJahr) * monate) / 12);
+  const kmStand = vehicleStats(data, key).kmStand;
+  const startKmGeschaetzt = v.kmBeiLeasingbeginn === "" || v.kmBeiLeasingbeginn === null || v.kmBeiLeasingbeginn === undefined;
+  const gefahren = kmStand > 0 ? Math.max(0, kmStand - parseNum(v.kmBeiLeasingbeginn)) : null;
+  const rest = gefahren !== null ? inklusiveKm - gefahren : null;
+  let anteilZeit: number | null = null;
+  let ende: string | null = null;
+  if (v.start) {
+    anteilZeit = Math.min(1, monthsElapsed(v.start, today) / monate);
+    const e = new Date(v.start);
+    e.setMonth(e.getMonth() + monate);
+    ende = isoLocalDate(e);
+  }
+  const anteilGefahren = gefahren !== null && inklusiveKm > 0 ? gefahren / inklusiveKm : null;
+  const planAbweichung = gefahren !== null && anteilZeit !== null ? Math.round(gefahren - inklusiveKm * anteilZeit) : null;
+  return { inklusiveKm, gefahren, rest, anteilGefahren, anteilZeit, planAbweichung, startKmGeschaetzt, ende };
+}
+
 export function householdRecurring(data: AppData): number {
   return data.recurringCosts
     .filter((r) => !r.fahrzeug)
@@ -320,12 +361,6 @@ export function rowKmDriven(data: AppData, row: ChargeRow): number | null {
   if (prevKm === null) return null;
   const driven = rowKm - prevKm;
   return driven >= 0 ? driven : null;
-}
-
-// Local calendar date as "JJJJ-MM-TT" - Date#toISOString would shift a local
-// midnight back into the previous day (UTC) for German time zones.
-function isoLocalDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 // Lowest ODO reading of a vehicle dated inside the given month (rows + Stichtag

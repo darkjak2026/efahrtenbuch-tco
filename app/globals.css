@@ -2376,3 +2376,325 @@ select {
   gap: 10px;
   margin-top: 16px;
 }
+
+/* ==== Zweigeteilte Ansicht (v2.28.00): links B10, rechts t03 ==== */
+body {
+  /* Die beiden Hälften gehen in der Mitte fließend ineinander über. */
+  background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--b10) 20%, var(--bg)) 0%,
+      color-mix(in srgb, var(--b10) 11%, var(--bg)) 38%,
+      color-mix(in srgb, var(--t03) 11%, var(--bg)) 62%,
+      color-mix(in srgb, var(--t03) 20%, var(--bg)) 100%
+    ),
+    var(--bg);
+  background-attachment: fixed;
+}
+section.split-section {
+  margin-bottom: 20px;
+}
+section.split-section .tco-card {
+  background: rgba(23, 20, 31, 0.55);
+  border: 1px solid var(--line);
+}
+
+/* Schwebende Monatsleiste (nach Wochenstimme) */
+.month-nav-wrap {
+  position: sticky;
+  top: 8px;
+  z-index: 60;
+  margin: 0 -4px 14px;
+}
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--b10), color-mix(in srgb, var(--b10) 50%, var(--t03)) 50%, var(--t03));
+  color: var(--bg);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.month-nav-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--bg);
+  font-size: 18px;
+  cursor: pointer;
+}
+.month-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
+}
+.month-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.month-nav-label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--bg);
+  cursor: pointer;
+  padding: 2px 0;
+  font: inherit;
+}
+.month-nav-kicker {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.month-nav-month {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.month-nav-month small {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  opacity: 0.8;
+}
+.month-picker {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: calc(100% + 6px);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+}
+.month-picker-year + .month-picker-year {
+  margin-top: 8px;
+}
+.month-picker-y {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.month-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+.month-picker-grid button {
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--lav);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.month-picker-grid button.active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+/* Lade-Historie in zwei Spalten */
+.hist-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: start;
+  touch-action: pan-y;
+}
+.hist-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.hist-col .entry-card {
+  padding: 7px 8px;
+}
+.hist-col .entry-card-top {
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  font-size: 11.5px;
+}
+.hist-col-b10 .entry-card {
+  border-color: color-mix(in srgb, var(--b10) 45%, var(--line));
+}
+.hist-col-t03 .entry-card {
+  border-color: color-mix(in srgb, var(--t03) 45%, var(--line));
+}
+.hist-col .entry-list-empty {
+  padding: 10px 4px;
+  font-size: 12px;
+}
+.hist-unassigned {
+  margin-top: 12px;
+}
+.hist-unassigned-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+.mvc-facts {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 7px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}
+.mvc-house-wrap {
+  margin-top: 14px;
+}
+.mvc-house {
+  display: block;
+  background: rgba(23, 20, 31, 0.7);
+  border: 1px solid var(--line);
+}
+.mvc-house-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.mvc-house-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 8px 0 10px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+.mvc-house-facts b {
+  color: var(--accent);
+}
+.mvc-house-caption {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+/* Leasing-km-Countdown in den TCO-Karten */
+.lkm {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px dashed var(--line);
+}
+.lkm-head {
+  display: flex;
+  flex-direction: column;
+}
+.lkm-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+.lkm-rest {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.lkm-rest small {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.lkm-rest.lkm-over {
+  color: var(--danger);
+}
+.lkm-bar {
+  position: relative;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--plum-deep);
+  overflow: visible;
+}
+.lkm-used {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.lkm-b10 .lkm-used {
+  background: var(--b10);
+}
+.lkm-t03 .lkm-used {
+  background: var(--t03);
+}
+/* Markierung: so weit dürfte man zeitanteilig sein */
+.lkm-plan {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+  border-radius: 1px;
+}
+.lkm-caption {
+  margin-top: 4px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}
+.lkm-plan-text {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.lkm-plan-ok {
+  color: var(--teal);
+}
+.lkm-plan-over {
+  color: var(--danger);
+}
+.lkm-end {
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+.lkm-hint {
+  font-size: 10.5px;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin-top: 3px;
+}
+
+/* Schnellwahl: B10 unten links, t03 unten rechts - auf der Seite ihres Autos */
+.fab-group {
+  left: 16px;
+  right: 16px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+}
+.fab-group .fab {
+  pointer-events: auto;
+  color: var(--bg);
+}
+.fab-group .fab-b10 {
+  background: var(--b10);
+}
+.fab-group .fab-t03 {
+  background: var(--t03);
+}
