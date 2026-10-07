@@ -2706,3 +2706,135 @@ section.split-section .tco-card {
 .fab-group .fab-t03 {
   background: var(--t03);
 }
+
+/* ==== Lade-Ring (Kostenaufteilung je Auto, v2.30.00) ==== */
+.cring {
+  display: block;
+  width: 100%;
+  max-width: 190px;
+  height: auto;
+  margin: 6px auto 0;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+}
+.cring-hit,
+.cring-center {
+  cursor: pointer;
+}
+.cring-v {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.cring-s {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 7.5px;
+  fill: var(--ink-soft);
+}
+.cring-empty {
+  margin: 10px 0 4px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ink-soft);
+  text-align: center;
+}
+.mvc-card {
+  cursor: default;
+}
+button.mvc-more {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  margin-top: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.mvc-detail svg {
+  vertical-align: -1px;
+  margin-right: 3px;
+}
+.mvc-legend svg {
+  vertical-align: -2px;
+  margin-right: 3px;
+}
+
+/* Statistik-Blatt */
+.fab-modal.cstat {
+  max-width: 460px;
+  background: var(--panel);
+}
+.cstat-b10 {
+  border-color: var(--b10);
+}
+.cstat-t03 {
+  border-color: var(--t03);
+}
+.cstat h3 {
+  margin: 0 0 2px;
+}
+.cstat-sub {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.cstat-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 40px;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 0;
+  border-top: 1px dashed var(--line);
+}
+.cstat-ic {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cstat-txt {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  min-width: 0;
+}
+.cstat-txt b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.cstat-t {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.cstat-trend {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.cstat-trend > span {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--lav);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cstat-trend small {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}

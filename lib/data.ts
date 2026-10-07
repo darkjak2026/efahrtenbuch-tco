@@ -518,6 +518,86 @@ export function monthCosts(data: AppData, monthKey: string): MonthCosts {
   };
 }
 
+export const COST_KEYS = ["laden", "leasing", "versicherung", "abos", "invest"] as const;
+export type CostKey = (typeof COST_KEYS)[number];
+
+export interface CostStat {
+  key: CostKey;
+  eur: number;
+  pct: number; // Anteil an den Monatskosten des Autos, 0..1
+  prevEur: number | null;
+  prevPct: number | null;
+  prevMonth: string | null;
+  minEur: number;
+  minEurMonth: string;
+  maxEur: number;
+  maxEurMonth: string;
+  minPct: number;
+  minPctMonth: string;
+  maxPct: number;
+  maxPctMonth: string;
+  constant: boolean; // Betrag in allen Monaten gleich (Leasing, Versicherung)
+  dev: number | null; // Abweichung vom Ø der letzten 3 Vormonate, z.B. 0.12 = +12 %
+  deg: number; // Trendpfeil: 0 = gleich, +10..+90 = teurer, -10..-90 = günstiger
+}
+
+// Trendpfeil in 10°-Stufen: je 5 % Abweichung 10° steiler, höchstens 90°,
+// unter ±2,5 % waagerecht ("gleich").
+export function trendDegrees(dev: number | null): number {
+  if (dev === null || Math.abs(dev) < 0.025) return 0;
+  return Math.max(-90, Math.min(90, Math.round(dev / 0.05) * 10));
+}
+
+// Statistik je Kostenart für den Lade-Ring: aktueller Monat, Vormonat, Min/Max
+// (Betrag und Anteil getrennt, jeweils mit Monat) über alle bisherigen Monate
+// des sichtbaren Zeitraums, Trend gegen den Ø der letzten 3 Vormonate. Monate,
+// in denen für das Auto noch gar keine Kosten anfallen, zählen nicht mit.
+export function costStats(data: AppData, vehicle: VehicleKey, monthKey: string): Record<CostKey, CostStat> {
+  const hist = visibleMonths(data)
+    .map((m) => m.key)
+    .filter((k) => k <= monthKey)
+    .map((k) => ({ k, c: monthCosts(data, k).perVehicle[vehicle] }))
+    .filter((h) => h.c.gesamt > 0 || h.k === monthKey);
+  const cur = hist[hist.length - 1];
+  const prev = hist.slice(0, -1);
+  const out = {} as Record<CostKey, CostStat>;
+  for (const key of COST_KEYS) {
+    const eurs = hist.map((h) => h.c[key]);
+    const pcts = hist.map((h) => (h.c.gesamt > 0 ? h.c[key] / h.c.gesamt : 0));
+    const pick = (arr: number[], better: (a: number, b: number) => boolean) =>
+      arr.reduce((best, v, i) => (better(v, arr[best]) ? i : best), 0);
+    const minE = pick(eurs, (a, b) => a < b);
+    const maxE = pick(eurs, (a, b) => a > b);
+    const minP = pick(pcts, (a, b) => a < b);
+    const maxP = pick(pcts, (a, b) => a > b);
+    const last3 = prev.slice(-3).map((h) => h.c[key]);
+    const avg = last3.length ? last3.reduce((s, v) => s + v, 0) / last3.length : 0;
+    const eur = cur.c[key];
+    const dev = avg > 0 ? (eur - avg) / avg : null;
+    const p = prev[prev.length - 1];
+    out[key] = {
+      key,
+      eur,
+      pct: pcts[pcts.length - 1],
+      prevEur: p ? p.c[key] : null,
+      prevPct: p ? (p.c.gesamt > 0 ? p.c[key] / p.c.gesamt : 0) : null,
+      prevMonth: p ? p.k : null,
+      minEur: eurs[minE],
+      minEurMonth: hist[minE].k,
+      maxEur: eurs[maxE],
+      maxEurMonth: hist[maxE].k,
+      minPct: pcts[minP],
+      minPctMonth: hist[minP].k,
+      maxPct: pcts[maxP],
+      maxPctMonth: hist[maxP].k,
+      constant: eurs[minE] === eurs[maxE],
+      dev,
+      deg: trendDegrees(dev),
+    };
+  }
+  return out;
+}
+
 export interface MonthStatementFixItem {
   label: string;
   betrag: number;

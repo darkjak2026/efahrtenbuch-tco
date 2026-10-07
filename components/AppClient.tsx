@@ -339,6 +339,13 @@ export default function AppClient() {
               durch die im Monat gefahrenen km. Abos „Beide (50/50)“ zählen je zur Hälfte, Kosten ohne
               Fahrzeug nur im Haushaltswert.
             </p>
+            <p className="about-text">
+              Der Ring je Auto zeigt, woraus die Monatskosten bestehen (Stecker = Laden, Bank = Leasing,
+              Schild = Versicherung, € mit Uhr = Abos, Werkzeugkasten = Investitionen). Die Pfeile daneben zeigen
+              den Trend gegenüber dem Durchschnitt der letzten 3 Monate (waagerecht = gleich, je 5 % 10° steiler,
+              hoch = teurer). Ein Segment antippen zeigt dessen Wert in der Mitte, die Mitte antippen öffnet die
+              Statistik mit Vormonat, Minimum und Maximum.
+            </p>
           </Collapsible>
         </section>
 

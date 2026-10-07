@@ -1,22 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { VEHICLES } from "@/lib/constants";
-import { durationToMinutes, fmtEUR, fmtNum, minutesToDuration, monthCosts, parseNum } from "@/lib/data";
+import { MONTHS, VEHICLES } from "@/lib/constants";
+import { COST_KEYS, costStats, durationToMinutes, fmtEUR, fmtNum, minutesToDuration, monthCosts, parseNum } from "@/lib/data";
 import type { AppData, VehicleKey } from "@/lib/types";
+import { COST_META, CostIcon } from "./CostIcons";
+import CostRing, { CostStatsSheet } from "./CostRing";
 
-// Monatsübersicht (Variante B, Mockup vom 07.10.2026), split for the two-column
+const monthLabelOf = (key: string) => `${MONTHS.find((m) => m.key === key)?.label ?? key} ${key.slice(0, 4)}`;
+
+// Monatsübersicht (Variante B, Mockup vom 07.10.2026; Kostengrafik als Lade-Ring,
+// Statistik-Mockup Idee 4), split for the two-column
 // layout: one VehicleMonthCard at the top of each vehicle column (own open
 // state, so both can be expanded side by side) and a full-width
 // HouseholdMonthSummary below the columns.
 
-const PARTS = [
-  { key: "laden", label: "Laden", short: "Laden", cls: "seg-laden" },
-  { key: "leasing", label: "Leasing", short: "Leasing", cls: "seg-leasing" },
-  { key: "versicherung", label: "Versicherung", short: "Versich.", cls: "seg-vers" },
-  { key: "abos", label: "Abos", short: "Abos", cls: "seg-abos" },
-  { key: "invest", label: "Investitionen", short: "Invest.", cls: "seg-invest" },
-] as const;
 
 const perKm = (n: number | null) => (n === null ? "–" : fmtNum(n, 3));
 
@@ -31,15 +29,12 @@ function monthSums(data: AppData, monthKey: string, v: VehicleKey | null) {
 
 export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; monthKey: string; vehicle: VehicleKey }) {
   const [open, setOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
   const c = monthCosts(data, monthKey).perVehicle[vehicle];
   const s = monthSums(data, monthKey, vehicle);
+  const stats = costStats(data, vehicle, monthKey);
   return (
-    <button
-      type="button"
-      className={`mvc-card mvc-card-${vehicle}`}
-      aria-expanded={open}
-      onClick={() => setOpen((o) => !o)}
-    >
+    <div className={`mvc-card mvc-card-${vehicle}`}>
       <div className={`mvc-name mvc-${vehicle}`}>
         {VEHICLES[vehicle].nickname} <span className="mvc-code">{vehicle === "b10" ? "B10" : "t03"}</span>
       </div>
@@ -49,25 +44,28 @@ export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; m
       <div className="mvc-sub">
         {perKm(c.ladenKm)} <span>€/km Laden</span>
       </div>
-      <div className="mvc-sub">
-        {c.km === null ? <span className="mvc-missing">km-Stand fehlt</span> : <>{fmtNum(c.km, 0)} <span>km</span></>}
-      </div>
-      <div className="mvc-stack" aria-hidden="true">
-        {c.gesamt > 0 &&
-          PARTS.map((p) => <i key={p.key} className={p.cls} style={{ width: `${(c[p.key] / c.gesamt) * 100}%` }} />)}
-      </div>
-      {open ? (
+      {c.km === null && (
+        <div className="mvc-sub">
+          <span className="mvc-missing">km-Stand fehlt</span>
+        </div>
+      )}
+      {/* key: a new month starts in the rest state again */}
+      <CostRing key={monthKey} costs={c} stats={stats} km={c.km} onOpenStats={() => setStatsOpen(true)} />
+      <button type="button" className="mvc-more" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        {open ? "Details ▾" : "Details ▸"}
+      </button>
+      {open && (
         <div className="mvc-detail">
           <div className="mvc-facts">
             <span>{fmtNum(s.kwh, 1)} kWh</span>
             <span>{minutesToDuration(s.min)} h</span>
           </div>
-          {PARTS.map((p) => (
-            <div key={p.key}>
+          {COST_KEYS.map((k) => (
+            <div key={k}>
               <span>
-                <i className={p.cls} /> {p.short}
+                <CostIcon k={k} size={11} color={COST_META[k].color} /> {COST_META[k].short}
               </span>
-              <span>{fmtEUR(c[p.key])}</span>
+              <span>{fmtEUR(c[k])}</span>
             </div>
           ))}
           <div className="mvc-detail-sum">
@@ -75,10 +73,18 @@ export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; m
             <span>{fmtEUR(c.gesamt)}</span>
           </div>
         </div>
-      ) : (
-        <div className="mvc-more">Details ▸</div>
       )}
-    </button>
+      {statsOpen && (
+        <CostStatsSheet
+          title={`${VEHICLES[vehicle].nickname} · Statistik ${monthLabelOf(monthKey)}`}
+          vehicle={vehicle}
+          monthKey={monthKey}
+          stats={stats}
+          gesamt={c.gesamt}
+          onClose={() => setStatsOpen(false)}
+        />
+      )}
+    </div>
   );
 }
 
@@ -98,12 +104,13 @@ export function HouseholdMonthSummary({
   return (
     <div className="mvc-house-wrap">
       <div className="mvc-legend">
-        {PARTS.map((p) => (
-          <span key={p.key}>
-            <i className={p.cls} />
-            {p.label}
+        {COST_KEYS.map((k) => (
+          <span key={k}>
+            <CostIcon k={k} size={12} color={COST_META[k].color} />
+            {COST_META[k].label}
           </span>
         ))}
+        <span>· Ring antippen = Details, Mitte = Statistik</span>
       </div>
       <div className="mvc-house">
         <div className="mvc-house-head">

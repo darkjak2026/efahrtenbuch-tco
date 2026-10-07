@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dateRangeMax, defaultData, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
+import { costStats, dateRangeMax, defaultData, trendDegrees, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -122,4 +122,37 @@ test("sichtbare Monate reichen bis zum späteren Leasingende, ohne Übergabedatu
   assert.equal(leaseLastMonth(d, "b10"), "2029-06");
   assert.equal(visibleMonths(d).at(-1)?.key, "2029-06");
   assert.equal(visibleMonths(d)[0].key, "2026-07");
+});
+test("Trendpfeil: 10°-Stufen je 5 %, unter 2,5 % waagerecht, höchstens 90°", () => {
+  assert.equal(trendDegrees(null), 0);
+  assert.equal(trendDegrees(0.02), 0);
+  assert.equal(trendDegrees(0.05), 10);
+  assert.equal(trendDegrees(-0.12), -20);
+  assert.equal(trendDegrees(3), 90);
+});
+
+test("Kostenstatistik: Vormonat, Min/Max mit Monat, Trend gegen Ø der 3 Vormonate", () => {
+  const d = dataWith([
+    { ...row("2026-07-10", "t03", 1000), preis: "100" },
+    { ...row("2026-08-10", "t03", 2000), preis: "200" },
+    { ...row("2026-09-10", "t03", 3000), preis: "150" },
+    { ...row("2026-10-10", "t03", 4000), preis: "180" },
+  ]);
+  d.vehicles.t03.start = "2026-07-01";
+  d.vehicles.t03.leasing = 100;
+  d.vehicles.t03.versicherung = "";
+  d.recurringCosts = [];
+  d.investitionen = [];
+  const s = costStats(d, "t03", "2026-10");
+  assert.equal(s.laden.eur, 180);
+  assert.equal(s.laden.prevEur, 150);
+  assert.equal(s.laden.prevMonth, "2026-09");
+  assert.equal(s.laden.minEur, 100);
+  assert.equal(s.laden.minEurMonth, "2026-07");
+  assert.equal(s.laden.maxEur, 200);
+  assert.equal(s.laden.maxEurMonth, "2026-08");
+  assert.equal(s.laden.deg, 40); // 180 gegen Ø 150 = +20 % -> 4 Stufen à 10°
+  assert.equal(s.leasing.constant, true);
+  assert.equal(s.leasing.deg, 0);
+  assert.equal(s.leasing.maxPctMonth, "2026-07"); // 100/200 = 50 % war der höchste Anteil
 });
