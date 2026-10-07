@@ -1,0 +1,256 @@
+{
+  "app": "eFahrtenbuch",
+  "stand": "07.10.2026 | 19:35",
+  "beschreibung": {
+    "kurz": "Das eFahrtenbuch ist ein gemeinsames Ladeprotokoll für die zwei E-Autos der Familie Liese-Held (Leapmotor B10 „BIO-Leapy“ und T03 „Leapy“). Aus jedem Ladevorgang und den Fixkosten rechnet es laufend aus, was ein gefahrener Kilometer wirklich kostet ([TCO](g:tco)). Die App läuft im Handy-Browser, die Daten liegen zentral in einem gemieteten [Lagerhaus](b:lagerhaus).",
+    "ausgangslage_ziel": "Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern konnte. Ziel war, dass beide Haushaltsmitglieder vom eigenen Handy aus Ladevorgänge eintragen und dieselben Zahlen sehen. Deshalb wurde die App am 05.07.2026 auf [Next.js](g:nextjs) umgebaut, bekam einen gemeinsamen Speicher ([Redis](g:redis) bei Upstash) und einen [Liegeplatz](b:liegeplatz) bei [Vercel](g:vercel). Bewusst klein gehalten: ein gemeinsamer [PIN](g:pin) statt Benutzerkonten, ein einziger Datensatz statt Datenbanktabellen.",
+    "funktionsumfang": "Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand ([ODO](g:odo)), Ladekarte, €/kWh, Standort per [GPS](b:boje)) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Daraus entstehen die €/km-Kennzahl je Auto, eine Monatsübersicht mit Energie, Kosten, Ladezeit und gefahrenen km sowie PDF- und Excel-Exporte. Dazu kommen Fixkosten, Investitionen (über 36 Monate verteilt), Ladekarten, ein Testmodus mit erfundenen Daten und dieser Entwicklerbereich.",
+    "backup_datenschutz": "Ein automatisches [Backup](b:rettungsboot) gibt es nicht: gesichert wird nur per Hand über „Exportieren aller Daten“ als [JSON](g:json)-Datei aufs Gerät. Die Daten (Ladeorte mit Koordinaten, km-Stände, Kosten) liegen bei Upstash; OFFEN: in welcher Region (EU/USA) und mit welchem Auftragsverarbeitungsvertrag ([AVV](g:avv)). Zugang nur mit dem Haushalts-[PIN](g:pin), der im [Tresor](b:tresor) liegt. Beim GPS-Abruf gehen die Koordinaten an Open Charge Map und OpenStreetMap ([Funk](b:funk)).",
+    "abhaengigkeiten": "Vercel (Hosting und [Stapellauf](g:deploy)), Upstash (Datenspeicher), GitHub (Quellcode), Open Charge Map und Nominatim/OpenStreetMap (Ladestation und Adresse zum Standort), cdnjs (lädt die Excel- und PDF-Bausteine nach). Fällt Vercel oder Upstash aus, steht die App; fallen die anderen aus, fehlen nur Komfortfunktionen.",
+    "herausforderungen": {
+      "vergangenheit": "Am ersten Tag (05.07.2026) entstanden über 50 Änderungen in Folge, vor allem am Eingabeformular; mehrere Bedienideen (Schieberegler, Drehrad für die Dauer) wurden gebaut und wieder verworfen. Fehler, die erst im Alltag auffielen: der Excel-Export stürzte über den Jahreswechsel ab, die Preisautomatik blieb nach dem ersten Rechnen hängen, eine km-Schätzformel kopierte nur alte Werte. Zwei Stresstests im September 2026 fanden u. a. sich gegenseitig überschreibende Speicherungen von zwei Handys; seitdem gibt es eine Konfliktprüfung ([optimistisches Sperren](g:optimistic-locking)).",
+      "gegenwart": "Es gibt kein automatisches Backup und keine Überwachung (Monitoring): niemand merkt es aktiv, wenn Vercel oder Upstash Fehler melden. Datenschutzfelder im Projekt-Pass (DSGVO, Speicherort, AVV) sind noch leer. Für den BIO-Leapy fehlen noch Stichtag-Werte, daher zeigt er noch keine €/km.",
+      "zukunft": "Geplant ist der Umzug auf den eigenen netcup-Server: eigener Rumpf statt Liegeplatz, eigene Datenbank statt fremdem Lagerhaus, nächtliches Backup und das Monitoring (Teil 3) als systemd-Timer. Der eine große Datensatz wächst bis Leasingende (Oktober 2028) auf geschätzt einige hundert Ladevorgänge – unkritisch, aber jedes Speichern schickt den ganzen Datensatz. Regelmäßig nötig: Abhängigkeiten aktualisieren (Next.js, React) und die Datenschutzangaben nachziehen."
+    }
+  },
+  "schiff": [
+    {
+      "id": "bruecke",
+      "name": "Brücke",
+      "it": "Frontend (Benutzeroberfläche)",
+      "technik": "Next.js 16, React 19, TypeScript, eigene CSS-Datei",
+      "ort": "geraet",
+      "vorhanden": true,
+      "text": "Die Brücke ist alles, was man auf dem Handy sieht und antippt: Kacheln, Lade-Historie, Erfassungsformular, dieser Entwicklerbereich. Gebaut mit [React](g:react) in [Next.js](g:nextjs); die Seite wird einmal geladen und läuft dann im Browser. Beim Öffnen holt sie den ganzen Datensatz über das [Sprachrohr](b:sprachrohr) und speichert jede Änderung nach 0,8 Sekunden Ruhe automatisch zurück. Den PIN merkt sie sich im Browser ([localStorage](g:localstorage))."
+    },
+    {
+      "id": "maschinenraum",
+      "name": "Maschinenraum",
+      "it": "Geschäftslogik",
+      "technik": "lib/data.ts (reine Rechenfunktionen)",
+      "ort": "geraet",
+      "vorhanden": true,
+      "text": "Ungewöhnlich für ein Schiff: der Maschinenraum sitzt direkt hinter der [Brücke](b:bruecke) auf dem Handy. Alle Rechnungen – [TCO](g:tco), €/km, gefahrene km pro Monat, Abschreibung der Investitionen – laufen im Browser, nicht auf einem Server. Das hält die Serverseite winzig, heißt aber auch: jedes Gerät rechnet selbst. Die Rechenfunktionen haben keine Nebenwirkungen und sind mit automatischen Tests abgesichert."
+    },
+    {
+      "id": "sprachrohr",
+      "name": "Sprachrohr",
+      "it": "API-Schicht (1 Endpunkt)",
+      "technik": "app/api/data/route.ts – GET und POST /api/data",
+      "ort": "extern",
+      "vorhanden": true,
+      "text": "Über genau eine feste Befehlsleitung ([Endpunkt](g:endpunkt)) spricht die Brücke mit dem Lagerhaus: „gib mir alles“ (GET) und „speichere alles“ (POST). Jede Anfrage muss den [PIN](g:pin) mitbringen, sonst kommt nichts heraus. Beim Speichern wird geprüft, ob inzwischen jemand anderes gespeichert hat ([optimistisches Sperren](g:optimistic-locking)); dann gibt es eine Warnung statt stillem Überschreiben."
+    },
+    {
+      "id": "beiboot",
+      "name": "Beiboot",
+      "it": "Serverless-Funktion",
+      "technik": "Vercel Functions (Node.js)",
+      "ort": "extern",
+      "vorhanden": true,
+      "text": "Es gibt keinen dauernd laufenden Server. Stattdessen läuft bei jeder Anfrage ans [Sprachrohr](b:sprachrohr) kurz ein Beiboot aus ([Serverless](g:serverless)), prüft den PIN, holt oder schreibt den Datensatz im [Lagerhaus](b:lagerhaus) und legt wieder an. Vorteil: kein eigener Server zu warten. Nachteil: die erste Anfrage nach längerer Pause kann etwas länger dauern (Kaltstart)."
+    },
+    {
+      "id": "lagerhaus",
+      "name": "Lagerhaus am Kai",
+      "it": "Datenbank (Key-Value-Speicher)",
+      "technik": "Upstash Redis, 1 Schlüssel „ladeprotokoll:2026“",
+      "ort": "extern",
+      "vorhanden": true,
+      "text": "Alle Daten liegen in einem gemieteten Lagerhaus neben dem Schiff: [Redis](g:redis) beim Anbieter Upstash. Dort gibt es keine Tabellen, sondern genau ein Fach (Schlüssel) mit dem kompletten Datensatz als [JSON](g:json): Ladevorgänge aller Monate, Fixkosten, Investitionen, Ladekarten, Wünsche aus dem Entwicklerbereich. Fehlen nach einem Update Felder, ergänzt die App sie beim Laden (Migration in lib/data.ts). OFFEN: Region des Lagerhauses (EU oder USA)."
+    },
+    {
+      "id": "funk",
+      "name": "Funkmast",
+      "it": "Externe APIs",
+      "technik": "Open Charge Map, Nominatim (OpenStreetMap), cdnjs",
+      "ort": "extern",
+      "vorhanden": true,
+      "text": "Per Funk fragt die Brücke drei fremde Stationen direkt aus dem Browser: Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, [Reverse Geocoding](g:reverse-geocoding)) und cdnjs ([CDN](g:cdn)), das die Excel- und PDF-Bausteine liefert. Keine davon braucht einen Schlüssel. Fällt eine aus, bleibt die App benutzbar – es fehlt nur der Komfort."
+    },
+    {
+      "id": "boje",
+      "name": "Boje",
+      "it": "Externe Datenquelle: Standort des Handys",
+      "technik": "Browser-Geolocation (GPS)",
+      "ort": "geraet",
+      "vorhanden": true,
+      "text": "Die Boje ist das GPS des Handys ([Geolocation](g:geolocation)). Beim Erfassen eines Ladevorgangs liest die App den Standort – automatisch nur, wenn die Erlaubnis schon früher erteilt wurde, sonst per Knopf. Mit den Koordinaten wird über den [Funkmast](b:funk) die Ladesäule bzw. Adresse gesucht. Funktioniert nur über eine sichere Verbindung (HTTPS)."
+    },
+    {
+      "id": "ladekran",
+      "name": "Ladekran",
+      "it": "Datenimport",
+      "technik": "„Sicherung wiederherstellen“ (JSON-Datei)",
+      "ort": "geraet",
+      "vorhanden": true,
+      "text": "Mit dem Ladekran hebt man eine früher exportierte Sicherung ([JSON](g:json)-Datei) wieder an Bord. Die App prüft dabei die Form der Datei und verwirft unbekannte Monate, statt sie unsichtbar mitzuschleppen. Danach wird der Datensatz wie jede Änderung ins [Lagerhaus](b:lagerhaus) gespeichert – er ersetzt den bisherigen Stand."
+    },
+    {
+      "id": "tresor",
+      "name": "Tresor",
+      "it": "Umgebungsvariablen / Geheimnisse",
+      "technik": "Vercel-Projekteinstellungen, lokal .env.local",
+      "ort": "extern",
+      "vorhanden": true,
+      "text": "Im Tresor liegen drei Geheimnisse als [Umgebungsvariablen](g:umgebungsvariable): der Haushalts-[PIN](g:pin) und die Zugangsdaten zum [Lagerhaus](b:lagerhaus) (Adresse und Schlüssel). Sie stehen in den Projekteinstellungen bei Vercel und für die Entwicklung in einer lokalen Datei, die nie zu GitHub hochgeladen wird. Nur das [Beiboot](b:beiboot) kann sie lesen, die Brücke nie."
+    },
+    {
+      "id": "logbuch",
+      "name": "Logbuch",
+      "it": "Logs (Fehler- und Ereignisprotokolle)",
+      "technik": "Vercel-Laufzeitprotokolle",
+      "ort": "extern",
+      "vorhanden": true,
+      "text": "Das Logbuch führt Vercel automatisch: jede Anfrage ans Beiboot und jeder Fehler landet dort. Es wird aber von niemandem regelmäßig gelesen und nur kurz aufbewahrt. Eine eigene Auswertung (Monitoring, Teil 3) gibt es noch nicht – sie kommt mit dem Umzug auf den eigenen Server."
+    },
+    {
+      "id": "rettungsboot",
+      "name": "Rettungsboot",
+      "it": "Backup",
+      "technik": "manueller JSON-Export „Exportieren aller Daten“",
+      "ort": "geraet",
+      "vorhanden": true,
+      "text": "Das Rettungsboot muss man selbst zu Wasser lassen: „Exportieren aller Daten“ lädt den kompletten Datensatz als [JSON](g:json)-Datei aufs Handy. Ein automatisches, regelmäßiges [Backup](g:backup) gibt es nicht; geht beim Anbieter des [Lagerhauses](b:lagerhaus) etwas verloren, ist nur die letzte Handsicherung da. Mit dem [Ladekran](b:ladekran) kommt eine Sicherung zurück."
+    },
+    {
+      "id": "werft",
+      "name": "Werft",
+      "it": "Entwicklung und Deployment",
+      "technik": "GitHub (darkjak2026/efahrtenbuch-tco), Claude Code, Vercel-Auto-Deploy",
+      "ort": "werkzeug",
+      "vorhanden": true,
+      "text": "In der Werft wird gebaut: der Quellcode liegt bei [GitHub](g:github), geschrieben wird mit Claude Code auf dem PC. Jeder Upload auf den Hauptzweig (master) löst bei Vercel automatisch einen [Stapellauf](g:deploy) aus: die App wird neu gebaut und ist eine Minute später live. Vorher laufen lokal Tests, Typprüfung ([TypeScript](g:typescript)) und Lint."
+    },
+    {
+      "id": "liegeplatz",
+      "name": "Liegeplatz bei Vercel",
+      "it": "Hosting (gemietet)",
+      "technik": "Vercel, Adresse efahrtenbuch-tco.vercel.app",
+      "ort": "extern",
+      "vorhanden": true,
+      "text": "Das Schiff hat keinen eigenen Rumpf auf eigenem Grund, sondern einen gemieteten Liegeplatz bei [Vercel](g:vercel). Vercel liefert die Seite aus, stellt die sichere Verbindung (HTTPS) und lässt die [Beiboote](b:beiboot) laufen. Eine eigene Domain gibt es nicht. Geplant ist der Umzug in den eigenen Hafen (netcup-Server)."
+    },
+    {
+      "id": "uboot",
+      "name": "U-Boot",
+      "it": "Hintergrund-Jobs",
+      "technik": "–",
+      "ort": "server",
+      "vorhanden": false,
+      "text": "Kein U-Boot an Bord: es laufen keine geplanten Hintergrundaufgaben (Cron-Jobs). Nichts passiert, solange niemand die App öffnet."
+    }
+  ],
+  "glossar": [
+    {
+      "id": "tco",
+      "begriff": "TCO (Total Cost of Ownership)",
+      "erklaerung": "Alle Kosten eines Autos zusammen – Laden, Leasing, Versicherung, Anschaffungen, Abos –, hier geteilt durch die gefahrenen Kilometer."
+    },
+    {
+      "id": "odo",
+      "begriff": "ODO (Odometer)",
+      "erklaerung": "Der Gesamt-Kilometerstand des Autos. Wird bei jedem Ladevorgang von Hand eingetragen."
+    },
+    {
+      "id": "nextjs",
+      "begriff": "Next.js",
+      "erklaerung": "Baukasten für Webseiten auf Basis von React; liefert Seite und Server-Endpunkte aus einem Projekt."
+    },
+    {
+      "id": "react",
+      "begriff": "React",
+      "erklaerung": "Bibliothek, mit der die Oberfläche aus kleinen Bausteinen (Komponenten) zusammengesetzt wird."
+    },
+    {
+      "id": "typescript",
+      "begriff": "TypeScript",
+      "erklaerung": "JavaScript mit Typprüfung: findet viele Tippfehler im Code, bevor die App überhaupt läuft."
+    },
+    {
+      "id": "redis",
+      "begriff": "Redis",
+      "erklaerung": "Sehr schneller Speicher, der Daten unter einem Namen (Schlüssel) ablegt, ohne Tabellen (Key-Value-Speicher)."
+    },
+    {
+      "id": "vercel",
+      "begriff": "Vercel",
+      "erklaerung": "Anbieter, der Next.js-Apps hostet und bei jedem Code-Upload automatisch neu ausliefert."
+    },
+    {
+      "id": "serverless",
+      "begriff": "Serverless",
+      "erklaerung": "Server-Code, der nur bei Bedarf kurz gestartet wird, statt dauernd auf einem eigenen Rechner zu laufen."
+    },
+    {
+      "id": "endpunkt",
+      "begriff": "Endpunkt (Endpoint)",
+      "erklaerung": "Eine feste Adresse auf dem Server, die eine bestimmte Anfrage beantwortet, hier /api/data."
+    },
+    {
+      "id": "json",
+      "begriff": "JSON",
+      "erklaerung": "Einfaches Textformat für strukturierte Daten; lesbar für Mensch und Maschine."
+    },
+    {
+      "id": "pin",
+      "begriff": "PIN",
+      "erklaerung": "Gemeinsame Geheimzahl des Haushalts. Ersetzt Benutzerkonten: wer den PIN kennt, sieht und ändert alles."
+    },
+    {
+      "id": "optimistic-locking",
+      "begriff": "Optimistisches Sperren (Optimistic Locking)",
+      "erklaerung": "Jeder Datenstand trägt eine Zählnummer. Wer mit einer veralteten Nummer speichern will, wird abgewiesen – so überschreiben sich zwei Handys nicht still."
+    },
+    {
+      "id": "localstorage",
+      "begriff": "localStorage",
+      "erklaerung": "Kleiner Speicher im Browser, nur auf diesem einen Gerät. Hier für PIN und Notiz-Entwurf."
+    },
+    {
+      "id": "umgebungsvariable",
+      "begriff": "Umgebungsvariable",
+      "erklaerung": "Einstellung, die dem Programm von außen mitgegeben wird, statt im Code zu stehen – der übliche Ort für Passwörter und Schlüssel."
+    },
+    {
+      "id": "geolocation",
+      "begriff": "Geolocation",
+      "erklaerung": "Standortabfrage des Browsers (GPS, WLAN, Mobilfunk); braucht die Erlaubnis der Nutzerin bzw. des Nutzers."
+    },
+    {
+      "id": "reverse-geocoding",
+      "begriff": "Reverse Geocoding",
+      "erklaerung": "Aus Koordinaten eine lesbare Adresse machen (Straße, PLZ, Ort)."
+    },
+    {
+      "id": "cdn",
+      "begriff": "CDN (Content Delivery Network)",
+      "erklaerung": "Netz von Servern, das häufig gebrauchte Dateien (hier Programmbausteine) schnell ausliefert."
+    },
+    {
+      "id": "deploy",
+      "begriff": "Deployment (Stapellauf)",
+      "erklaerung": "Eine neue Version bauen und live schalten."
+    },
+    {
+      "id": "github",
+      "begriff": "GitHub",
+      "erklaerung": "Online-Ablage für Quellcode mit vollständiger Versionsgeschichte (Git)."
+    },
+    {
+      "id": "backup",
+      "begriff": "Backup",
+      "erklaerung": "Sicherungskopie der Daten, aus der man nach einem Verlust den alten Stand wiederherstellen kann."
+    },
+    {
+      "id": "avv",
+      "begriff": "AVV (Auftragsverarbeitungsvertrag)",
+      "erklaerung": "Vertrag nach DSGVO mit einem Dienstleister, der personenbezogene Daten im eigenen Auftrag speichert oder verarbeitet."
+    }
+  ],
+  "offen": [
+    "OFFEN: Region des Upstash-Lagerhauses (EU oder USA) und Stand des AVV.",
+    "OFFEN: Monitoring (Teil 3) – folgt mit dem Umzug auf den netcup-Server (Entscheidung vom 07.10.2026).",
+    "OFFEN: kein automatisches Backup, nur die Handsicherung."
+  ]
+}

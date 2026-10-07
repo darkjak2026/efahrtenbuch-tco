@@ -322,6 +322,50 @@ export function rowKmDriven(data: AppData, row: ChargeRow): number | null {
   return driven >= 0 ? driven : null;
 }
 
+// Local calendar date as "JJJJ-MM-TT" - Date#toISOString would shift a local
+// midnight back into the previous day (UTC) for German time zones.
+function isoLocalDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Lowest ODO reading of a vehicle dated inside the given month (rows + Stichtag
+// baseline) - the starting point for a vehicle's very first logged month, when
+// there is no reading from before the month to subtract from.
+function firstKmInMonth(data: AppData, vehicleKey: VehicleKey, monthKey: string): number | null {
+  const kms: number[] = [];
+  allRows(data).forEach((r) => {
+    if (r.fahrzeug === vehicleKey && r.datum.startsWith(monthKey) && parseNum(r.km) > 0) kms.push(parseNum(r.km));
+  });
+  const veh = data.vehicles[vehicleKey];
+  if (typeof veh.stichtag === "string" && veh.stichtag.startsWith(monthKey) && parseNum(veh.stichtagKm) > 0) {
+    kms.push(parseNum(veh.stichtagKm));
+  }
+  return kms.length > 0 ? Math.min(...kms) : null;
+}
+
+export interface MonthKm {
+  perVehicle: Record<VehicleKey, number | null>;
+  // Sum over the vehicles with a known value; null only when none is known.
+  total: number | null;
+}
+
+// Km driven per vehicle within a month: last ODO reading up to the month's last
+// day minus the last reading before the month (or, for a vehicle's first month,
+// its first reading inside the month).
+export function monthKmDriven(data: AppData, monthKey: string): MonthKm {
+  const [y, m] = monthKey.split("-").map(Number);
+  const lastDay = isoLocalDate(new Date(y, m, 0));
+  const prevLastDay = isoLocalDate(new Date(y, m - 1, 0));
+  const perVehicle = {} as Record<VehicleKey, number | null>;
+  (["b10", "t03"] as VehicleKey[]).forEach((v) => {
+    const end = vehicleKmWindowUpTo(data, v, lastDay);
+    const start = vehicleKmWindowUpTo(data, v, prevLastDay) ?? firstKmInMonth(data, v, monthKey);
+    perVehicle[v] = start !== null && end !== null && end >= start ? end - start : null;
+  });
+  const known = Object.values(perVehicle).filter((n): n is number => n !== null);
+  return { perVehicle, total: known.length > 0 ? known.reduce((s, n) => s + n, 0) : null };
+}
+
 export interface MonthStatementFixItem {
   label: string;
   betrag: number;
@@ -348,19 +392,12 @@ export function computeMonthStatement(data: AppData, monthKey: string): MonthSta
   const meta = MONTHS.find((m) => m.key === monthKey)!;
   const rows = data.months[monthKey] || [];
   const [y, m] = monthKey.split("-").map(Number);
-  const lastDayDate = new Date(y, m, 0);
-  const lastDay = lastDayDate.toISOString().slice(0, 10);
-  const prevLastDay = new Date(y, m - 1, 0).toISOString().slice(0, 10);
+  const lastDay = isoLocalDate(new Date(y, m, 0));
 
   const kwh = rows.reduce((s, r) => s + parseNum(r.kwh), 0);
   const ladekosten = rows.reduce((s, r) => s + parseNum(r.preis), 0);
 
-  const kmInfo = {} as Record<VehicleKey, number | null>;
-  (["b10", "t03"] as VehicleKey[]).forEach((v) => {
-    const start = vehicleKmWindowUpTo(data, v, prevLastDay);
-    const end = vehicleKmWindowUpTo(data, v, lastDay);
-    kmInfo[v] = start !== null && end !== null && end >= start ? end - start : null;
-  });
+  const kmInfo = monthKmDriven(data, monthKey).perVehicle;
   const kmCombined = kmInfo.b10 !== null && kmInfo.t03 !== null ? kmInfo.b10 + kmInfo.t03 : null;
 
   const fixcosts: MonthStatementFixItem[] = [];

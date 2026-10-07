@@ -164,6 +164,13 @@ export default function EntryFormModal({
     setActiveSection("vor");
   };
 
+  // "Nach" starts with the kWh field (the number read off the charger first) -
+  // whenever that section opens, the cursor lands right in it.
+  const kwhInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (activeSection === "nach") kwhInputRef.current?.focus();
+  }, [activeSection]);
+
   const options = cardOptions.includes(form.karte) || !form.karte ? cardOptions : [...cardOptions, form.karte];
 
   // Last known odometer reading for a given vehicle, excluding this very entry
@@ -465,6 +472,18 @@ export default function EntryFormModal({
             <div className="field-row-pair">
               <div className="field-col">
                 <label>
+                  <BoltIcon /> geladene kWh
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  ref={kwhInputRef}
+                  value={form.kwh}
+                  onChange={(e) => patch({ kwh: e.target.value.replace(/-/g, "") })}
+                />
+              </div>              <div className="field-col">
+                <label>
                   <RoadIcon /> Reichweite neu
                 </label>
                 <input
@@ -483,7 +502,11 @@ export default function EntryFormModal({
                 </label>
                 <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
               </div>
-              <div className="field-col">
+
+            </div>
+          ) : (
+            <>
+              <div className="field-row">
                 <label>
                   <BoltIcon /> geladene kWh
                 </label>
@@ -491,14 +514,11 @@ export default function EntryFormModal({
                   type="number"
                   step="0.01"
                   min="0"
+                  ref={kwhInputRef}
                   value={form.kwh}
                   onChange={(e) => patch({ kwh: e.target.value.replace(/-/g, "") })}
                 />
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="field-row">
+              </div>              <div className="field-row">
                 <label>
                   <RoadIcon /> Reichweite neu
                 </label>
@@ -524,7 +544,7 @@ export default function EntryFormModal({
                     min="0"
                     max="999"
                     placeholder="Std"
-                    value={durHours || ""}
+                    value={durHours}
                     onChange={(e) => setDuration(Number(e.target.value) || 0, durMinutes)}
                   />
                   <span>:</span>
@@ -540,18 +560,7 @@ export default function EntryFormModal({
                   />
                 </div>
               </div>
-              <div className="field-row">
-                <label>
-                  <BoltIcon /> geladene kWh
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={form.kwh}
-                  onChange={(e) => patch({ kwh: e.target.value.replace(/-/g, "") })}
-                />
-              </div>
+
             </>
           )}
           {preisProKwhTarif > 0 ? (

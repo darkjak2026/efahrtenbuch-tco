@@ -1,13 +1,14 @@
 {
   "name": "efahrtenbuch-tco",
-  "version": "2.25.0",
+  "version": "2.26.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test \"**/*.test.ts\""
+    "test": "node --import tsx --test \"**/*.test.ts\"",
+    "bauplan": "tsx scripts/bauplan.ts"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.0",

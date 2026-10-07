@@ -1,15 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import packageJson from "../package.json";
 import type { AppData } from "@/lib/types";
-import InfoOverlay from "./InfoOverlay";
+import { TOOL_VERSION } from "@/lib/version";
+import DevArea from "./DevArea";
 
 const LAUNCH_DATE = "2026-07-05";
-// Rapid clicks/taps on the footer line within this window count toward the
-// Easter-egg trigger; a pause longer than this resets the count to zero.
+// CLAUDE-Allgemein 6.1: 5 taps on the version number open the Entwicklerbereich;
+// a pause of more than 2 s between taps starts the count over.
 const TRIGGER_CLICKS = 5;
-const TRIGGER_WINDOW_MS = 1600;
+const TRIGGER_RESET_MS = 2000;
 
 function formatGerman(isoDate: string): string {
   const [y, m, d] = isoDate.split("-");
@@ -24,28 +24,29 @@ export default function Footer({
   updateData: (fn: (d: AppData) => void) => void;
 }) {
   const buildDate = process.env.NEXT_PUBLIC_BUILD_DATE || LAUNCH_DATE;
-  const [infoOpen, setInfoOpen] = useState(false);
-  const clickTimes = useRef<number[]>([]);
+  const [devOpen, setDevOpen] = useState(false);
+  const count = useRef(0);
+  const lastClick = useRef(0);
 
-  const handleTrigger = () => {
+  const handleVersionClick = () => {
     const now = Date.now();
-    clickTimes.current = clickTimes.current.filter((t) => now - t < TRIGGER_WINDOW_MS);
-    clickTimes.current.push(now);
-    if (clickTimes.current.length >= TRIGGER_CLICKS) {
-      clickTimes.current = [];
-      setInfoOpen(true);
+    count.current = now - lastClick.current > TRIGGER_RESET_MS ? 1 : count.current + 1;
+    lastClick.current = now;
+    if (count.current >= TRIGGER_CLICKS) {
+      count.current = 0;
+      setDevOpen(true);
     }
   };
 
   return (
     <>
       <footer className="app-footer">
-        <button type="button" className="app-footer-trigger" onClick={handleTrigger}>
-          © Jakobus Claudius Digitalensis | {formatGerman(LAUNCH_DATE)} – {formatGerman(buildDate)} | v
-          {packageJson.version}
-        </button>
+        <span className="app-footer-version" onClick={handleVersionClick}>
+          v{TOOL_VERSION}
+        </span>{" "}
+        — Jakobus Claudius Digitalensis (+KI-Claude) · {formatGerman(LAUNCH_DATE)} – {formatGerman(buildDate)}
       </footer>
-      {infoOpen && <InfoOverlay data={data} updateData={updateData} onClose={() => setInfoOpen(false)} />}
+      {devOpen && <DevArea data={data} updateData={updateData} onClose={() => setDevOpen(false)} />}
     </>
   );
 }

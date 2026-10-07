@@ -1,0 +1,4 @@
+# Binärdateien nie an den Zeilenenden umschreiben (autocrlf)
+*.pdf binary
+*.png binary
+*.ico binary
