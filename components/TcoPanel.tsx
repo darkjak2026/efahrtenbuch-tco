@@ -47,7 +47,9 @@ function TcoCard({
     ...extraRows,
   ];
   return (
-    <div className={"tco-card" + (dotClass === "house" ? " house" : "")}>
+    <div className="tco-col">
+      {dotClass !== "house" && <div className={`tco-car tco-car-${dotClass}`} aria-hidden="true" />}
+    <div className={"tco-card tco-card-" + dotClass + (dotClass === "house" ? " house" : "")}>
       <div className="name">
         <i className={`dot ${dotClass}`} style={{ width: 9, height: 9 }} />
         {title}
@@ -73,6 +75,7 @@ function TcoCard({
           ))}
         </div>
       )}
+    </div>
     </div>
   );
 }

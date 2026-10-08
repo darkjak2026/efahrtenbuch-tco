@@ -233,24 +233,22 @@ export default function AppClient() {
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="afterInteractive" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" strategy="afterInteractive" />
 
-      <header className="top">
-        <div className="header-cars" aria-hidden="true">
-          <span className="header-car header-car-b10" />
-          <span className="header-car header-car-t03" />
-        </div>
+      {/* Heller Kopfbereich: links B10, rechts t03, jedes Auto steht auf seiner
+          Karte; der helle Hintergrund reicht bis zur Mitte der Monatsleiste. */}
+      <header className="top hero">
         <h1>
           <img src="/header-icon.ico" alt="" className="header-icon" />
           TCO - Leapmotor
         </h1>
+        <div className="hero-inner">
+          <TcoPanel data={data} />
+        </div>
       </header>
 
       <main>
         {/* Zweigeteilte Ansicht: links alles zum B10, rechts zum t03. Nur die
-            Monatsnavigation schwebt über beiden Hälften. */}
-        <section className="split-section">
-          <TcoPanel data={data} />
-        </section>
-
+            Monatsnavigation schwebt über beiden Hälften (Kante zum Kopfbereich
+            genau in ihrer Mitte). */}
         <section className="split-section history">
           <MonthNav activeMonth={activeMonth} months={visibleMonths(data)} onChange={setActiveMonth} />
           <ChargeTable
@@ -340,11 +338,12 @@ export default function AppClient() {
               Fahrzeug nur im Haushaltswert.
             </p>
             <p className="about-text">
-              Der Ring je Auto zeigt, woraus die Monatskosten bestehen (Stecker = Laden, Bank = Leasing,
-              Schild = Versicherung, € mit Uhr = Abos, Werkzeugkasten = Investitionen). Die Pfeile daneben zeigen
-              den Trend gegenüber dem Durchschnitt der letzten 3 Monate (waagerecht = gleich, je 5 % 10° steiler,
-              hoch = teurer). Ein Segment antippen zeigt dessen Wert in der Mitte, die Mitte antippen öffnet die
-              Statistik mit Vormonat, Minimum und Maximum.
+              Die Ringe je Auto zeigen, woraus die Monatskosten bestehen: jede Kostenart hat ihren eigenen Ring
+              (Stecker = Laden, Bank = Leasing, Schild = Versicherung, € mit Uhr = Abos, Werkzeugkasten =
+              Investitionen), die Länge ist ihr Anteil. Der Pfeil am Ende zeigt den Trend gegenüber dem
+              Durchschnitt der letzten 3 Monate (waagerecht = gleich, je 5 % 10° steiler, hoch = teurer). Einen
+              Ring antippen zeigt seine Werte, das ⓘ in der Mitte öffnet die Statistik mit Vormonat, Minimum und
+              Maximum.
             </p>
           </Collapsible>
         </section>

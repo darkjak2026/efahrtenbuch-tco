@@ -44,13 +44,11 @@ export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; m
       <div className="mvc-sub">
         {perKm(c.ladenKm)} <span>€/km Laden</span>
       </div>
-      {c.km === null && (
-        <div className="mvc-sub">
-          <span className="mvc-missing">km-Stand fehlt</span>
-        </div>
-      )}
-      {/* key: a new month starts in the rest state again */}
-      <CostRing key={monthKey} costs={c} stats={stats} km={c.km} onOpenStats={() => setStatsOpen(true)} />
+      <div className="mvc-sub">
+        {c.km === null ? <span className="mvc-missing">km-Stand fehlt</span> : <>{fmtNum(c.km, 0)} <span>km</span></>}
+      </div>
+      {/* key: a new month starts without a highlighted ring again */}
+      <CostRing key={monthKey} costs={c} stats={stats} onOpenStats={() => setStatsOpen(true)} />
       <button type="button" className="mvc-more" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
         {open ? "Details ▾" : "Details ▸"}
       </button>
@@ -110,7 +108,7 @@ export function HouseholdMonthSummary({
             {COST_META[k].label}
           </span>
         ))}
-        <span>· Ring antippen = Details, Mitte = Statistik</span>
+        <span>· Ring antippen = Werte, ⓘ in der Mitte = Statistik</span>
       </div>
       <div className="mvc-house">
         <div className="mvc-house-head">

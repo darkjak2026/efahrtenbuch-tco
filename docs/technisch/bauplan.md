@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 07.10.2026 | 21:57
+Stand der Dokumentation: 08.10.2026 | 06:34
 
 ## Teil 1 – Beschreibung der App
 
@@ -16,7 +16,7 @@ Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern kon
 
 ### 1.2 Aktueller Funktionsumfang und Features
 
-Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand (ODO), Ladekarte, €/kWh, Standort per GPS) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Die Oberfläche ist zweigeteilt (links B10, rechts t03): oben €/km und ein Countdown der Leasing-Freikilometer je Auto, darunter die Lade-Historie mit schwebender Monatsleiste und je Auto einer Monatskarte (TCO je km, Ladekosten je km, gefahrene km und ein Kostenring mit Trendpfeilen; antippen zeigt Vormonat, Minimum und Maximum). Dazu PDF- und Excel-Exporte. Dazu kommen Fixkosten, Investitionen (über 36 Monate verteilt), Ladekarten, ein Testmodus mit erfundenen Daten und dieser Entwicklerbereich.
+Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand (ODO), Ladekarte, €/kWh, Standort per GPS) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Die Oberfläche ist zweigeteilt (links B10, rechts t03): oben €/km und ein Countdown der Leasing-Freikilometer je Auto, darunter die Lade-Historie mit schwebender Monatsleiste und je Auto einer Monatskarte (TCO je km, Ladekosten je km, gefahrene km und Fitnessringe je Kostenart mit Trendpfeilen; antippen zeigt Vormonat, Minimum und Maximum). Dazu PDF- und Excel-Exporte. Dazu kommen Fixkosten, Investitionen (über 36 Monate verteilt), Ladekarten, ein Testmodus mit erfundenen Daten und dieser Entwicklerbereich.
 
 ### 1.3 Backup, Datensicherung, Datenschutz
 

@@ -2395,9 +2395,21 @@ body {
 section.split-section {
   margin-bottom: 20px;
 }
+/* Oberer Bereich ohne dunkle Fläche: Karten durchscheinend in Fahrzeugfarbe,
+   kein dunkler Rand mehr am Übergang zum Kopfbild. */
 section.split-section .tco-card {
-  background: rgba(23, 20, 31, 0.55);
-  border: 1px solid var(--line);
+  background: transparent;
+  border: 1.5px solid var(--line);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+section.split-section .tco-card-b10 {
+  border-color: color-mix(in srgb, var(--b10) 70%, transparent);
+  background: linear-gradient(170deg, color-mix(in srgb, var(--b10) 22%, transparent), color-mix(in srgb, var(--b10) 6%, transparent) 70%);
+}
+section.split-section .tco-card-t03 {
+  border-color: color-mix(in srgb, var(--t03) 70%, transparent);
+  background: linear-gradient(170deg, color-mix(in srgb, var(--t03) 22%, transparent), color-mix(in srgb, var(--t03) 6%, transparent) 70%);
 }
 
 /* Schwebende Monatsleiste (nach Wochenstimme) */
@@ -2837,4 +2849,114 @@ button.mvc-more {
   font-size: 9.5px;
   color: var(--ink-soft);
   white-space: nowrap;
+}
+
+/* Fitnessringe (v2.31.00) */
+.cring-i {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  font-style: italic;
+  fill: var(--ink-soft);
+  pointer-events: none;
+}
+.cring-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px 6px;
+  margin-top: 4px;
+  padding: 5px 7px;
+  border: 1px solid;
+  border-radius: 8px;
+  background: rgba(23, 20, 31, 0.5);
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}
+.cring-info b {
+  color: var(--ink);
+}
+.cring-info-t {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cring-info-p {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ==== Heller Kopfbereich bis zur Mitte der Monatsleiste (v2.31.00) ====
+   Links B10, rechts t03: jedes Auto steht auf seiner eigenen Karte. Die
+   Hintergrundfarben greifen die Studio-Hintergründe der beiden Fotos auf. */
+:root {
+  --nav-half: 28px; /* halbe Höhe der Monatsleiste */
+}
+header.top.hero {
+  min-height: 0;
+  padding: 14px clamp(16px, 4vw, 48px) calc(var(--nav-half) + 18px);
+  background: linear-gradient(90deg, #b597c0 0%, #b9a5cc 40%, #bccbdf 60%, #d6e3ef 100%);
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 6px auto 0;
+}
+.hero .tco-vehicle-row {
+  align-items: end;
+}
+.hero .tco-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.tco-car {
+  height: clamp(84px, 24vw, 220px);
+  margin: 0 -6px -10px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* Ränder weich in den Hintergrund auslaufen lassen, unten steht das Auto auf der Karte */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent),
+    linear-gradient(to bottom, transparent, #000 24%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent),
+    linear-gradient(to bottom, transparent, #000 24%);
+  mask-composite: intersect;
+}
+.tco-car-b10 {
+  background-image: url("/header-b10.webp");
+  background-position: 52% 93%;
+}
+.tco-car-t03 {
+  background-image: url("/header-t03.png");
+  background-position: 50% 86%;
+}
+.hero .tco-card {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 10px 24px rgba(23, 20, 31, 0.35);
+}
+.hero .tco-card-b10 {
+  border: 1.5px solid var(--b10);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--b10) 40%, var(--lav)), var(--lav) 80%);
+}
+.hero .tco-card-t03 {
+  border: 1.5px solid var(--t03);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--t03) 40%, var(--lav)), var(--lav) 80%);
+}
+main {
+  margin-top: 0;
+}
+/* Monatsleiste sitzt mit ihrer Mitte genau auf der Kante zum hellen Bereich */
+section.split-section.history {
+  margin-top: calc(-1 * var(--nav-half));
+  position: relative;
+  z-index: 2;
 }
