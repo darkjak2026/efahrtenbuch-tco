@@ -3070,3 +3070,45 @@ section.split-section.history {
 .wk-body {
   padding: 0 5px 6px;
 }
+
+/* Umzugshinweis auf der alten Adresse */
+.moved-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+.moved-box {
+  max-width: 420px;
+  text-align: center;
+  background: var(--panel);
+  border: 1.5px solid var(--accent);
+  border-radius: 16px;
+  padding: 24px 20px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+.moved-box h1 {
+  font-size: 20px;
+  margin: 0 0 10px;
+}
+.moved-box p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.moved-link {
+  display: inline-block;
+  margin: 8px 0 4px;
+  min-height: 44px;
+  line-height: 44px;
+  padding: 0 22px;
+  border-radius: 12px;
+  background: var(--plum);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+.moved-hint {
+  font-size: 12.5px !important;
+}

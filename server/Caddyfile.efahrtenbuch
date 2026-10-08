@@ -1,0 +1,16 @@
+# eFahrtenbuch TCO: Next.js-Server auf 127.0.0.1:8020. Liegt als
+# /etc/caddy/efahrtenbuch.caddy und wird per "import efahrtenbuch.caddy" eingebunden
+# (siehe setup_server.sh); VitalCoach und VoiceNotes bleiben unberührt.
+# __HOST__ ersetzt setup_server.sh durch efahrtenbuch.<IP>.nip.io (aus dem VitalCoach-Block).
+__HOST__ {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(self), microphone=(self), camera=()"
+		-X-Powered-By
+	}
+	reverse_proxy 127.0.0.1:8020
+}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppData, setAppData } from "@/lib/redis";
+import { getAppData, setAppData, storageKind } from "@/lib/store";
 
 function isAuthorized(req: NextRequest): boolean {
   const pin = process.env.LADEPROTOKOLL_PIN;
@@ -27,6 +27,11 @@ export async function POST(req: NextRequest) {
   // into overwriting the household's real data with defaults.
   if (!body || typeof body !== "object" || Array.isArray(body) || typeof body.months !== "object") {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
+  }
+  // Alte Adresse nach dem Umzug: nichts mehr annehmen, sonst gingen Einträge verloren.
+  if (storageKind() === "redis") {
+    const current = await getAppData();
+    if (current.movedTo) return NextResponse.json({ error: "moved", movedTo: current.movedTo }, { status: 410 });
   }
   const result = await setAppData(body);
   if (!result.ok) {

@@ -45,3 +45,6 @@ next-env.d.ts
 
 # claude code local state
 .claude/
+
+# Deploy-Paket für den eigenen Server (server/deploy.sh)
+/.deploy/

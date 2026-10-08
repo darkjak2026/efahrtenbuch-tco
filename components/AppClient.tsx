@@ -210,6 +210,25 @@ export default function AppClient() {
     );
   }
 
+  // Umgezogen: die alte Adresse zeigt nur noch den Weg zur neuen.
+  if (!testMode && data.movedTo) {
+    const url = /^https:\/\/[a-z0-9.-]+(\/[^\s"<>]*)?$/i.test(data.movedTo) ? data.movedTo : null;
+    return (
+      <div className="moved-screen">
+        <div className="moved-box">
+          <h1>Das eFahrtenbuch ist umgezogen</h1>
+          <p>Ab jetzt läuft die App auf dem eigenen Server. Hier lässt sich nichts mehr speichern.</p>
+          {url && (
+            <a className="moved-link" href={url}>
+              Zur neuen Adresse
+            </a>
+          )}
+          <p className="moved-hint">Bitte dort ein neues Lesezeichen anlegen und den PIN einmal neu eingeben.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {testMode && (

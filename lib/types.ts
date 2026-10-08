@@ -70,6 +70,11 @@ export interface AppData {
   investitionen: Investition[];
   months: Record<string, ChargeRow[]>;
   featureRequests: FeatureRequestEntry[];
+  // Umzug: gesetzt im alten Speicher (Upstash/Vercel), sobald die App auf den
+  // eigenen Server umgezogen ist - die alte Adresse zeigt dann nur noch einen
+  // Hinweis mit Link und nimmt keine Änderungen mehr an. Steht bewusst im
+  // Datensatz (hinter dem PIN) und nicht im öffentlichen Code.
+  movedTo?: string;
 }
 
 export interface MonthMeta {

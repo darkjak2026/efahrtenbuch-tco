@@ -1,0 +1,65 @@
+[Unit]
+Description=eFahrtenbuch TCO (Next.js, abgeschottet)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+# Eigener Systembenutzer ohne Anmeldung (CLAUDE-Allgemein Abschnitt 12): ein
+# kompromittierter Dienst erreicht weder VitalCoach/VoiceNotes noch sudo.
+User=efahrtenbuch
+Group=efahrtenbuch
+# current -> releases/<Zeitstempel>: setup_server.sh testet jeden neuen Stand auf
+# Port 8021 und schaltet erst dann die Verknüpfung um.
+WorkingDirectory=/opt/efahrtenbuch/current
+EnvironmentFile=/etc/efahrtenbuch/efahrtenbuch.env
+Environment=NODE_ENV=production
+Environment=PORT=8020
+Environment=HOSTNAME=127.0.0.1
+Environment=NEXT_TELEMETRY_DISABLED=1
+ExecStart=/usr/bin/node /opt/efahrtenbuch/current/server.js
+Restart=on-failure
+RestartSec=5
+
+# --- Abschottung (Sandbox), wie VoiceNotes ---
+# Der Dienst schreibt keine Dateien; der Code gehört root.
+# Bewusst NICHT gesetzt: MemoryDenyWriteExecute (Node/V8 erzeugt Maschinencode
+# zur Laufzeit und würde sonst nicht starten).
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+UMask=0077
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+SystemCallErrorNumber=EPERM
+# Netz: nur Loopback (Postgres 127.0.0.1:5432, Caddy davor). Die App braucht
+# keinen Weg ins Internet - Ladestationssuche und Adressen laufen im Browser.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressDeny=any
+IPAddressAllow=localhost
+SocketBindAllow=tcp:8020
+SocketBindDeny=any
+# Sicherungen, Caddy-Admin-Socket und die anderen Apps ausblenden ("-" = darf fehlen)
+InaccessiblePaths=/var/backups -/run/caddy -/opt/vitalcoach-backend -/opt/voicenotes-backend -/var/www
+MemoryMax=384M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target
