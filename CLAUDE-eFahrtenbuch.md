@@ -2,7 +2,7 @@
 
 **Projekt:** eFahrtenbuch TCO (Familie Liese-Held)
 **Urheber:** Jakobus Claudius Digitalensis (+KI-Claude)
-**Version:** 2026-10-08|1.1.00 (SemVer+CalVer) – Abschnitt 3: eigener Server statt Vercel
+**Version:** 2026-10-08|1.2.00 (SemVer+CalVer) – Abschnitt 4: Monitoring läuft; Abschnitt 1: Datensatz in Postgres
 **Datei:** `CLAUDE-eFahrtenbuch.md` (fester Name, geladen über die Weiche `CLAUDE.md`)
 **Änderungen gegenüber der Vorfassung:** Die alte `CLAUDE.md` war eine Kopie des früheren allgemeinen
 Regelwerks (Stand 2026-09-01|1.4.01). Sie ist ersetzt durch die Weiche `CLAUDE.md` und diese Projektdatei.
@@ -21,7 +21,7 @@ Bei Widerspruch gilt diese Datei.
   liegen historisch bedingt in der Projektwurzel. Die App liest das Changelog direkt aus `projekt-pass.json`.
   PDF erzeugen (von der Projektwurzel aus): `python Doku/build_pdf.py projekt-pass.json PROJEKT-PASS.pdf`
 - **Notizen im Entwicklerbereich liegen auf dem Server (6.4):** Die Wünsche stehen im gemeinsamen
-  Datensatz (`data.featureRequests` in Upstash Redis), damit sie auf allen Geräten gleich sind (Entscheidung
+  Datensatz (`data.featureRequests`, seit 08.10.2026 in Postgres auf dem eigenen Server), damit sie auf allen Geräten gleich sind (Entscheidung
   des Urhebers vom 07.10.2026). Nur der ungespeicherte Entwurf liegt im `localStorage` unter
   `efahrtenbuch_notizblock_v2_entwurf`. Gespeichertes Zeitformat `JJJJ-MM-TT||HH:MM`, angezeigt als
   `TT.MM.JJJJ HH:MM`.
@@ -62,6 +62,10 @@ Bei Widerspruch gilt diese Datei.
   bearbeiten.
 - Neue Fachbegriffe ins Glossar aufnehmen und verlinken (`[Text](g:id)`, Bauteile `[Text](b:id)`).
 - Erledigte `OFFEN:`-Punkte auflösen, neue Lücken als `OFFEN:` eintragen.
-- Wichtige Ereignisse als Meilenstein für das Monitoring eintragen (Monitoring folgt mit dem Umzug auf
-  netcup).
+- Wichtige Ereignisse als Meilenstein für das Monitoring eintragen (`meilensteine` in `bauplan.json`,
+  Datum `JJJJ-MM-TT`, zeitlich sortiert – ein Test prüft das).
+- Monitoring (seit 2.37.00): Messung in `lib/monitoring.ts`, Abfrage `/api/status` (PIN), Timer
+  `server/efahrtenbuch-snapshot.*` (23:50 und bei jedem Deploy). Neue Kennzahl = Spalte in
+  `metrics_history` (Schema, `COLS`, Retention) und Anzeige in `components/MonitoringView.tsx`.
+  Nach einem Deploy kurz in den Bauplan schauen (Sicherung OK, Fehler 0).
 - Keine Geheimnisse in den Bauplan schreiben.
