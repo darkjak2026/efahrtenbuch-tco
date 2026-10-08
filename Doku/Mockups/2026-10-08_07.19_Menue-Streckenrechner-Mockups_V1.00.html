@@ -1,0 +1,324 @@
+<!doctype html>
+<!--
+Projekt: eFahrtenbuch TCO
+Urheber: Jakobus Claudius Digitalensis (+KI-Claude)
+Version: 2026-10-08|1.00 (Mockup, kein Produktivcode)
+Datei: 2026-10-08_07.19_Menue-Streckenrechner-Mockups_V1.00.html
+Inhalt: (1) Menü nach VitalCoach-Vorbild mit Übersicht, Statistik, Historie, Einstellungen
+        und Gliederung aller bisherigen Funktionen; (2) fünf Vorschläge für einen
+        Streckenrechner (km-Preis × Distanz). Alle Zahlen sind Beispielwerte.
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menü und Streckenrechner – Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #17141f; --panel: #221e2c; --ink: #ede9f5; --ink-soft: #a89fbf; --plum: #7a63b0;
+    --plum-deep: #2a2038; --accent: #d8cbf2; --lav: #2c2740; --line: #3a3548; --teal: #4caf94;
+    --danger: #e2664a; --yellow: #f0d84a; --green: #8bc34a; --b10: #b98fcb; --t03: #8fc6e0;
+    --mono: "JetBrains Mono", monospace; --head: "Space Grotesk", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--b10) 20%, var(--bg)), color-mix(in srgb, var(--b10) 11%, var(--bg)) 38%, color-mix(in srgb, var(--t03) 11%, var(--bg)) 62%, color-mix(in srgb, var(--t03) 20%, var(--bg))) fixed, var(--bg); }
+  button, input { font: inherit; color: inherit; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-family: var(--head); color: var(--accent); font-size: 22px; margin: 0 0 4px; }
+  .lead { color: var(--ink-soft); font-size: 13.5px; line-height: 1.55; margin: 0 0 14px; max-width: 840px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; align-items: center; }
+  .bar .lbl { font-size: 12px; color: var(--ink-soft); margin-right: 4px; }
+  .bar button { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--panel); color: var(--ink-soft); font-weight: 600; font-size: 13px; cursor: pointer; }
+  .bar button[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 390px 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 880px) { .layout { grid-template-columns: 1fr; } .phone { margin: 0 auto; } }
+  .notes { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; font-size: 13.5px; line-height: 1.6; }
+  .notes h2 { font-family: var(--head); font-size: 16px; color: var(--accent); margin: 0 0 6px; }
+  .notes h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); margin: 16px 0 4px; }
+  .notes ul { margin: 0; padding-left: 18px; }
+  .plus { color: var(--teal); } .minus { color: var(--danger); }
+  .sample { display: inline-block; font-size: 11px; color: var(--yellow); border: 1px solid color-mix(in srgb, var(--yellow) 40%, transparent); border-radius: 999px; padding: 2px 8px; margin-bottom: 10px; }
+  table.map { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.map th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  table.map td { padding: 6px 4px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  table.map td:first-child { white-space: nowrap; font-weight: 700; }
+
+  /* Handy */
+  .phone { position: relative; width: 100%; max-width: 390px; height: 760px; border: 2px solid var(--line); border-radius: 28px; overflow: hidden; background: var(--bg); box-shadow: 0 20px 60px rgba(0,0,0,.45); display: flex; flex-direction: column; }
+  .screen { flex: 1; overflow-y: auto; padding: 0 10px 18px; background: linear-gradient(90deg, color-mix(in srgb, var(--b10) 18%, var(--bg)), color-mix(in srgb, var(--t03) 18%, var(--bg))); }
+  .hero { margin: 0 -10px 10px; padding: 12px 12px 14px; background: linear-gradient(90deg, #b597c0, #b9a5cc 40%, #bccbdf 60%, #d6e3ef); }
+  .hero h2 { margin: 0; font-family: var(--head); font-size: 18px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.85); }
+  .scr-title { font-family: var(--head); font-size: 17px; color: var(--accent); margin: 14px 2px 8px; }
+  .tco2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .tc { border-radius: 12px; padding: 8px 10px; border: 1.5px solid; }
+  .tc.b10 { border-color: var(--b10); background: linear-gradient(165deg, color-mix(in srgb, var(--b10) 40%, var(--lav)), var(--lav) 80%); }
+  .tc.t03 { border-color: var(--t03); background: linear-gradient(165deg, color-mix(in srgb, var(--t03) 40%, var(--lav)), var(--lav) 80%); }
+  .tc .n { font-family: var(--head); font-weight: 700; font-size: 13px; }
+  .tc .p { font-family: var(--mono); font-weight: 700; font-size: 18px; }
+  .tc .p small { font-size: 9.5px; color: var(--ink-soft); font-weight: 500; }
+  .tc .o { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+  .blk { border: 1px dashed color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 12px; padding: 9px 11px; margin-bottom: 8px; background: rgba(23,20,31,.45); }
+  .blk b { display: block; font-size: 12.5px; margin-bottom: 2px; }
+  .blk span { font-size: 11px; color: var(--ink-soft); line-height: 1.45; display: block; }
+  .blk.new { border-color: var(--teal); }
+  .blk.new b::after { content: " NEU"; font-size: 9px; color: var(--teal); letter-spacing: .08em; }
+  .note-inc { font-size: 11.5px; color: var(--danger); border: 1px solid var(--danger); border-radius: 10px; padding: 7px 10px; margin-bottom: 8px; background: color-mix(in srgb, var(--danger) 12%, transparent); }
+
+  /* Menüleiste nach VitalCoach */
+  .nav { position: relative; display: flex; background: #120f19; border-top: 1px solid rgba(255,255,255,.12); padding: 8px 0 10px; flex-shrink: 0; }
+  .nav button { flex: 1; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--ink-soft); padding: 2px 0; transition: transform .12s; }
+  .nav button:active { transform: scale(1.2); }
+  .nav .ico { width: 44px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 14px; transition: transform .18s, background .18s; }
+  .nav .on .ico { transform: translateY(-18px); background: #120f19; }
+  .nav svg { width: 24px; height: 24px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
+  .nav .on svg { width: 30px; height: 30px; }
+  .nav .lb { font-size: 9.5px; font-weight: 700; margin-top: -2px; }
+  .nav .on { color: var(--accent); }
+  .nav .on .lb { transform: translateY(-12px); }
+  .nav .dt { width: 5px; height: 5px; border-radius: 50%; margin-top: -10px; }
+  .nav .on .dt { background: var(--accent); }
+
+  /* Streckenrechner (gemeinsam) */
+  .calc { border-radius: 16px; padding: 12px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 10px 24px rgba(0,0,0,.35); }
+  .calc h4 { margin: 0 0 8px; font-family: var(--head); font-size: 14px; color: var(--accent); display: flex; align-items: center; gap: 6px; }
+  .calc h4 svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--plum-deep); border-radius: 10px; padding: 3px; gap: 3px; margin: 8px 0; }
+  .seg button { min-height: 32px; border: none; border-radius: 8px; background: none; font-size: 11.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--lav); color: var(--ink); }
+  .kmin { display: flex; align-items: center; gap: 8px; }
+  .kmin input[type=number] { width: 100%; min-height: 44px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--lav); padding: 0 12px; font-family: var(--mono); font-size: 20px; font-weight: 700; }
+  .kmin span { font-family: var(--mono); color: var(--ink-soft); }
+  input[type=range] { width: 100%; accent-color: var(--accent); margin: 10px 0 2px; }
+  .res { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .r { border-radius: 12px; padding: 8px 10px; border: 1.5px solid; }
+  .r.b10 { border-color: var(--b10); background: color-mix(in srgb, var(--b10) 16%, var(--lav)); }
+  .r.t03 { border-color: var(--t03); background: color-mix(in srgb, var(--t03) 16%, var(--lav)); }
+  .r .n { font-size: 11px; font-weight: 700; }
+  .r.b10 .n { color: var(--b10); } .r.t03 .n { color: var(--t03); }
+  .r .v { font-family: var(--mono); font-size: 21px; font-weight: 800; margin-top: 2px; }
+  .r .f { font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); }
+  .r.win { box-shadow: 0 0 0 2px var(--teal); }
+  .r .win-t { font-size: 9.5px; color: var(--teal); font-weight: 700; }
+  .chk { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+  .chk input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+  /* 2 Taxameter */
+  .taxi { border-radius: 14px; background: #0b0a0f; border: 2px solid #2b2733; padding: 12px; box-shadow: inset 0 2px 10px rgba(0,0,0,.8); }
+  .taxi .lcd { font-family: var(--mono); font-size: 34px; font-weight: 800; color: #ffb347; text-shadow: 0 0 10px rgba(255,179,71,.55); text-align: right; letter-spacing: .04em; }
+  .taxi .lcd small { font-size: 14px; }
+  .taxi .row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: #c9a36a; margin-top: 4px; }
+  .taxi .tag { display: inline-block; background: #ffb347; color: #0b0a0f; font-weight: 800; font-size: 10px; letter-spacing: .1em; padding: 2px 8px; border-radius: 4px; }
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+  .pad button { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--lav); font-family: var(--mono); font-size: 18px; font-weight: 700; cursor: pointer; }
+  .carsel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .carsel button { min-height: 36px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--lav); font-weight: 700; font-size: 12px; cursor: pointer; }
+  .carsel button.b10[aria-pressed="true"] { border-color: var(--b10); color: var(--b10); }
+  .carsel button.t03[aria-pressed="true"] { border-color: var(--t03); color: var(--t03); }
+
+  /* 3 Lieblingsstrecken */
+  .fav { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; padding: 8px; border-radius: 12px; background: var(--lav); margin-top: 6px; border: 1px solid var(--line); }
+  .fav .em { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: var(--plum-deep); font-size: 15px; }
+  .fav .t { font-weight: 700; font-size: 12.5px; }
+  .fav .k { font-family: var(--mono); font-size: 10.5px; color: var(--ink-soft); }
+  .fav .c { text-align: right; font-family: var(--mono); font-size: 11px; line-height: 1.35; }
+  .fav .c .b10c { color: var(--b10); } .fav .c .t03c { color: var(--t03); }
+  .addfav { width: 100%; min-height: 40px; margin-top: 8px; border-radius: 12px; border: 1.5px dashed var(--line); background: none; color: var(--ink-soft); cursor: pointer; }
+
+  /* 4 Von A nach B */
+  .ab input { width: 100%; min-height: 40px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--lav); padding: 0 10px; font-size: 13px; margin-top: 6px; }
+  .route { position: relative; height: 120px; border-radius: 12px; margin-top: 8px; overflow: hidden; background: radial-gradient(circle at 30% 40%, #2d2a3a, #1b1824); border: 1px solid var(--line); }
+  .route svg { width: 100%; height: 100%; }
+  .route .lbl { position: absolute; font-size: 10px; font-weight: 700; background: rgba(23,20,31,.85); border-radius: 6px; padding: 2px 6px; }
+  .hint { font-size: 10.5px; color: var(--ink-soft); font-style: italic; margin-top: 6px; }
+
+  /* 5 Kosten teilen */
+  .people { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
+  .people button.p { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--lav); cursor: pointer; font-size: 18px; }
+  .people .pp { flex: 1; text-align: center; font-family: var(--mono); font-size: 13px; }
+  .share { margin-top: 10px; border-radius: 12px; padding: 10px; background: color-mix(in srgb, var(--teal) 12%, var(--lav)); border: 1px solid color-mix(in srgb, var(--teal) 50%, transparent); font-size: 12.5px; line-height: 1.5; }
+  .share .big { font-family: var(--mono); font-size: 22px; font-weight: 800; color: var(--teal); }
+  .copy { width: 100%; min-height: 40px; margin-top: 8px; border: none; border-radius: 10px; background: var(--plum); color: #fff; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Menü und Streckenrechner – Vorschläge</h1>
+  <p class="lead">Unten im Handy läuft die <b>Menüleiste nach VitalCoach-Vorbild</b> (Übersicht · Statistik · Historie · Einstellungen): Der aktive Punkt hebt sich nach oben ab und leuchtet. Tippe die Menüpunkte an, um die vorgeschlagene Gliederung zu sehen. Der neue <b>Streckenrechner</b> sitzt in der Übersicht – darüber wählst Du eine der fünf Varianten.</p>
+  <div class="bar" id="calcsw"></div>
+  <div class="layout">
+    <div class="phone"><div class="screen" id="screen"></div><nav class="nav" id="nav"></nav></div>
+    <aside class="notes" id="notes"></aside>
+  </div>
+</div>
+
+<script>
+// ---------- Beispielwerte ----------
+const PRICE = { b10: { tco: 0.512, laden: 0.112 }, t03: { tco: 0.322, laden: 0.092 } };
+const NAME = { b10: "BIO-Leapy", t03: "Leapy" };
+const nf = (n, d = 2) => n.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d });
+
+let st = { tab: "uebersicht", calc: "c1", km: 145, basis: "tco", rt: false, car: "t03", taxi: "145", people: 3, from: "Halle (Saale)", to: "Weimar" };
+
+const ICON = {
+  uebersicht: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
+  statistik: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  historie: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2M22 12h-1.5"/>',
+  einstellungen: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/>',
+  route: '<circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/>',
+};
+const svg = (k, sw = 1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+const TABS = [["uebersicht", "Übersicht"], ["statistik", "Statistik"], ["historie", "Historie"], ["einstellungen", "Einstellungen"]];
+
+const dist = () => st.km * (st.rt ? 2 : 1);
+const cost = (car, km = dist(), basis = st.basis) => PRICE[car][basis] * km;
+const basisSeg = () => `<div class="seg"><button data-basis="tco" aria-pressed="${st.basis === "tco"}">Vollkosten (TCO)</button><button data-basis="laden" aria-pressed="${st.basis === "laden"}">nur Laden</button></div>`;
+const result = (km = dist()) => {
+  const b = cost("b10", km), t = cost("t03", km), win = b <= t ? "b10" : "t03";
+  const r = (c, v) => `<div class="r ${c} ${c === win ? "win" : ""}"><div class="n">${NAME[c]}</div><div class="v">${nf(v)} €</div><div class="f">${nf(km, 0)} km × ${nf(PRICE[c][st.basis], 3)} €</div>${c === win ? '<div class="win-t">günstiger ✓</div>' : ""}</div>`;
+  return `<div class="res">${r("b10", b)}${r("t03", t)}</div>`;
+};
+
+// ---------- Fünf Streckenrechner ----------
+const CALC = {
+  c1: {
+    name: "1 · Schnellrechner",
+    notes: `<h2>1 · Schnellrechner</h2><p>Kilometer eintippen oder mit dem Schieberegler einstellen, das Ergebnis steht sofort für <b>beide Autos nebeneinander</b> – das günstigere ist grün markiert. Umschalter <b>Vollkosten (TCO)</b> oder <b>nur Laden</b>, Häkchen für Hin- und Rückfahrt.</p><h3>Vorteile</h3><ul class="plus"><li>Am schnellsten, kein Zusatzdienst nötig</li><li>Beantwortet nebenbei „welches Auto nehmen?“</li></ul><h3>Nachteile</h3><ul class="minus"><li>Distanz muss man kennen</li></ul>`,
+    render: () => `<div class="calc"><h4>${svg("route", 2)} Was kostet die Strecke?</h4>
+      <div class="kmin"><input type="number" min="0" id="km" value="${st.km}"><span>km</span></div>
+      <input type="range" min="1" max="800" id="kmr" value="${st.km}">
+      <label class="chk"><input type="checkbox" id="rt" ${st.rt ? "checked" : ""}> Hin- und Rückfahrt (${nf(dist(), 0)} km)</label>
+      ${basisSeg()}${result()}</div>`,
+  },
+  c2: {
+    name: "2 · Taxameter",
+    notes: `<h2>2 · Taxameter</h2><p>Ein Augenzwinkern: Der Rechner sieht aus wie ein Taxameter mit leuchtender Anzeige. Auto wählen, km auf dem Ziffernblock tippen – der Betrag läuft hoch. Darunter klein der km-Preis und die Strecke.</p><h3>Vorteile</h3><ul class="plus"><li>Spielerisch, bleibt im Kopf</li><li>Große Tasten, gut einhändig bedienbar</li></ul><h3>Nachteile</h3><ul class="minus"><li>Immer nur ein Auto gleichzeitig</li></ul>`,
+    render: () => {
+      const km = Number(st.taxi || 0), v = PRICE[st.car][st.basis] * km;
+      return `<div class="calc"><h4>${svg("route", 2)} Fahrpreis-Anzeige</h4>
+        <div class="taxi"><span class="tag">${st.car === "b10" ? "B10" : "t03"} · ${st.basis === "tco" ? "TCO" : "STROM"}</span>
+          <div class="lcd" id="lcd">${nf(v)} <small>€</small></div>
+          <div class="row"><span>${nf(km, 0)} km</span><span>${nf(PRICE[st.car][st.basis], 3)} €/km</span></div></div>
+        <div class="carsel"><button class="b10" data-car="b10" aria-pressed="${st.car === "b10"}">BIO-Leapy</button><button class="t03" data-car="t03" aria-pressed="${st.car === "t03"}">Leapy</button></div>
+        ${basisSeg()}
+        <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9, "C", 0, "⌫"].map((d) => `<button data-pad="${d}">${d}</button>`).join("")}</div></div>`;
+    },
+  },
+  c3: {
+    name: "3 · Lieblingsstrecken",
+    notes: `<h2>3 · Lieblingsstrecken</h2><p>Häufige Strecken werden einmal mit Namen und km gespeichert (Arbeit, Oma, Ostsee …). Jede Zeile zeigt sofort die Kosten für beide Autos, immer mit dem aktuellen km-Preis. Antippen öffnet den Schnellrechner mit dieser Strecke.</p><h3>Vorteile</h3><ul class="plus"><li>Für wiederkehrende Fahrten kein Tippen mehr</li><li>Man sieht, wie sich Kosten bekannter Strecken über die Zeit ändern</li></ul><h3>Nachteile</h3><ul class="minus"><li>Strecken müssen einmal angelegt werden (neues Datenfeld)</li></ul>`,
+    render: () => {
+      const F = [["🏢", "Arbeit (hin + zurück)", 46], ["👵", "Oma in Leipzig", 82], ["🛒", "Wocheneinkauf", 14], ["🌊", "Ostsee-Urlaub", 412]];
+      return `<div class="calc"><h4>${svg("route", 2)} Lieblingsstrecken</h4>${basisSeg()}
+        ${F.map(([e, t, k]) => `<div class="fav"><span class="em">${e}</span><div><div class="t">${t}</div><div class="k">${k} km</div></div><div class="c"><span class="b10c">B10 ${nf(cost("b10", k))} €</span><br><span class="t03c">t03 ${nf(cost("t03", k))} €</span></div></div>`).join("")}
+        <button class="addfav">+ Strecke speichern</button></div>`;
+    },
+  },
+  c4: {
+    name: "4 · Von A nach B",
+    notes: `<h2>4 · Von A nach B</h2><p>Start und Ziel eingeben (oder „aktueller Standort“ per GPS), die App ermittelt die Straßenentfernung über einen Routendienst und rechnet die Kosten. Eine kleine Skizze zeigt die Strecke.</p><h3>Vorteile</h3><ul class="plus"><li>Man muss die km nicht kennen</li><li>Ideal zum Planen von Ausflügen</li></ul><h3>Nachteile</h3><ul class="minus"><li>Braucht einen zusätzlichen fremden Dienst (z. B. OpenStreetMap-Routing): Start und Ziel gehen an diesen Dienst – im Projekt-Pass als Datenfluss vermerken</li><li>Ohne Internet keine Berechnung</li></ul>`,
+    render: () => `<div class="calc ab"><h4>${svg("route", 2)} Strecke planen</h4>
+      <input id="from" value="${st.from}" aria-label="Start"><input id="to" value="${st.to}" aria-label="Ziel">
+      <div class="route"><svg viewBox="0 0 300 120"><path d="M40 90 C 90 20, 150 110, 200 50 S 260 40, 262 28" fill="none" stroke="#d8cbf2" stroke-width="3" stroke-dasharray="6 5"/><circle cx="40" cy="90" r="6" fill="#b98fcb"/><circle cx="262" cy="28" r="6" fill="#8fc6e0"/></svg>
+        <span class="lbl" style="left:10px;bottom:6px">${st.from}</span><span class="lbl" style="right:10px;top:6px">${st.to}</span></div>
+      <div class="hint">Route: ${nf(st.km, 0)} km · ca. 1 h 35 min (Beispiel)</div>
+      <label class="chk"><input type="checkbox" id="rt" ${st.rt ? "checked" : ""}> Hin- und Rückfahrt</label>
+      ${basisSeg()}${result()}</div>`,
+  },
+  c5: {
+    name: "5 · Kosten teilen",
+    notes: `<h2>5 · Kosten teilen (Fahrgemeinschaft)</h2><p>Strecke und Anzahl der Mitfahrenden einstellen – die App rechnet den Anteil pro Person und schlägt einen fertigen Text zum Kopieren vor („Unsere Fahrt nach Weimar kostet … pro Person“).</p><h3>Vorteile</h3><ul class="plus"><li>Praktisch für Mitfahrgelegenheiten und Ausflüge mit Freunden</li><li>Fair, weil Vollkosten statt nur Strom</li></ul><h3>Nachteile</h3><ul class="minus"><li>Seltener gebraucht als ein einfacher Rechner</li></ul>`,
+    render: () => {
+      const v = cost(st.car), pp = v / st.people;
+      return `<div class="calc"><h4>${svg("route", 2)} Kosten teilen</h4>
+        <div class="kmin"><input type="number" min="0" id="km" value="${st.km}"><span>km</span></div>
+        <label class="chk"><input type="checkbox" id="rt" ${st.rt ? "checked" : ""}> Hin- und Rückfahrt (${nf(dist(), 0)} km)</label>
+        <div class="carsel"><button class="b10" data-car="b10" aria-pressed="${st.car === "b10"}">BIO-Leapy</button><button class="t03" data-car="t03" aria-pressed="${st.car === "t03"}">Leapy</button></div>
+        ${basisSeg()}
+        <div class="people"><button class="p" data-pp="-1">−</button><div class="pp"><b>${st.people}</b> Personen im Auto</div><button class="p" data-pp="1">+</button></div>
+        <div class="share">Gesamt <b>${nf(v)} €</b><br>pro Person <span class="big">${nf(pp)} €</span></div>
+        <button class="copy">Text kopieren</button></div>`;
+    },
+  },
+};
+
+// ---------- Menü: Gliederung aller Funktionen ----------
+const blk = (t, s, nw = false) => `<div class="blk ${nw ? "new" : ""}"><b>${t}</b><span>${s}</span></div>`;
+const SCREENS = {
+  uebersicht: () => `<div class="hero"><h2>TCO - Leapmotor</h2>
+      <div class="tco2"><div class="tc b10"><div class="n" style="color:var(--b10)">BIO-Leapy</div><div class="p">${nf(PRICE.b10.tco, 3)} <small>€/km</small></div><div class="o">Leasing-km: 41.380 übrig</div></div>
+      <div class="tc t03"><div class="n" style="color:var(--t03)">Leapy</div><div class="p">${nf(PRICE.t03.tco, 3)} <small>€/km</small></div><div class="o">Leasing-km: 27.658 übrig</div></div></div></div>
+    <div class="note-inc">⚠ 2 Ladevorgänge unvollständig – antippen zum Ergänzen</div>
+    ${CALC[st.calc].render()}
+    <div style="height:8px"></div>
+    ${blk("Dieser Monat kurz", "Je Auto: TCO je km, km, Ladekosten – antippen springt in Statistik")}
+    ${blk("Schnellwahl B10 / t03", "Die beiden runden Knöpfe zum Erfassen eines Ladevorgangs bleiben in jedem Menüpunkt sichtbar")}`,
+  statistik: () => `<div class="scr-title">Statistik</div>
+    ${blk("Monatsleiste ◀ Oktober 2026 ▶", "Schwebend, wie bisher – gilt für die ganze Seite")}
+    ${blk("Monatskarten je Auto", "TCO je km, Laden je km, gefahrene km, Fitnessringe mit Trendpfeilen, Statistik-Blatt (Vormonat, Min/Max)")}
+    ${blk("Haushalt", "TCO je km für beide Autos, Summen, Monatsvergleich-Balken")}
+    ${blk("Leasing-Countdown im Detail", "Freikilometer je Auto, Plan-Strich, über/unter Plan, Leasingende")}
+    ${blk("TCO seit Leasingbeginn", "Die bisherigen Details der TCO-Karten (TCO/Monat, gesamt, Ladekosten, Leasing+Vers., Abos, Investitionen)")}
+    ${blk("Jahresverlauf (Idee)", "Später: Kurven über alle Monate (TCO je km, kWh, Kosten)", true)}`,
+  historie: () => `<div class="scr-title">Historie</div>
+    ${blk("Monatsleiste ◀ Oktober 2026 ▶", "Wischen und Pfeiltasten wechseln den Monat")}
+    ${blk("Zwei Spalten B10 | t03", "Ladevorgänge nach Kalenderwochen (Ladedauer | km | Kosten | kWh, Tagespunkte Mo–So), aktuelle Woche offen")}
+    ${blk("Ladevorgang bearbeiten / löschen", "Antippen öffnet den bekannten Dialog (Vor/Nach)")}
+    ${blk("Unvollständige zuerst", "Filter-Chip „nur unvollständige“", true)}
+    ${blk("Suche (Idee)", "Nach Ladestation oder Notiz suchen", true)}`,
+  einstellungen: () => `<div class="scr-title">Einstellungen</div>
+    ${blk("Fahrzeuge", "Je Auto: Leasingrate, Versicherung, Übergabedatum, Laufzeit, Freikilometer, km bei Übergabe, Stichtag + Startwerte")}
+    ${blk("Wiederkehrende Kosten", "Abos und Grundgebühren (Auto, Beide 50/50, Haushalt)")}
+    ${blk("Investitionen", "Anschaffungen, über 36 Monate verteilt")}
+    ${blk("Ladekarten", "Liste der genutzten Karten")}
+    ${blk("Lieblingsstrecken", "Für den Streckenrechner (falls Variante 3)", true)}
+    ${blk("Daten", "Exportieren (PDF, Excel, Sicherung), Sicherung wiederherstellen")}
+    ${blk("Hilfe", "Anleitung (wie bisher)")}
+    ${blk("Über die App", "Versionsnummer – 5× antippen öffnet den Entwicklerbereich (Notizen, Versionsverlauf, Bauplan)")}`,
+};
+
+function render() {
+  document.getElementById("calcsw").innerHTML = `<span class="lbl">Streckenrechner:</span>` + Object.entries(CALC).map(([k, v]) => `<button data-calc="${k}" aria-pressed="${st.calc === k}">${v.name}</button>`).join("");
+  document.getElementById("nav").innerHTML = TABS.map(([k, l]) => `<button data-tab="${k}" class="${st.tab === k ? "on" : ""}"><span class="ico">${svg(k)}</span><span class="lb">${l}</span><span class="dt"></span></button>`).join("");
+  document.getElementById("screen").innerHTML = SCREENS[st.tab]();
+  document.getElementById("notes").innerHTML = `<span class="sample">Alle Zahlen sind Beispielwerte</span>${CALC[st.calc].notes}
+    <h3>Rechnung</h3><p style="margin:0">Kosten = km-Preis × Distanz. km-Preis ist wahlweise der <b>TCO je km</b> (alle Kosten, wie oben in den Karten) oder <b>nur Laden je km</b>. Bei Hin- und Rückfahrt zählt die doppelte Distanz.</p>
+    <h3>Menü: Gliederung aller bisherigen Funktionen</h3>
+    <table class="map"><tr><th>Menüpunkt</th><th>Inhalt</th></tr>
+      <tr><td>Übersicht</td><td>Kopfbereich mit Autos und TCO je km, Leasing-km kurz, Hinweis auf unvollständige Ladevorgänge, <b>Streckenrechner</b>, dieser Monat kurz</td></tr>
+      <tr><td>Statistik</td><td>Monatskarten mit Fitnessringen und Statistik-Blatt, Haushalt, Monatsvergleich, Leasing-Countdown im Detail, TCO-Details seit Leasingbeginn</td></tr>
+      <tr><td>Historie</td><td>Monatsleiste, Ladevorgänge je Auto nach Kalenderwochen, bearbeiten/löschen</td></tr>
+      <tr><td>Einstellungen</td><td>Fahrzeuge (Fixkosten, Leasing, Freikilometer), wiederkehrende Kosten, Investitionen, Ladekarten, Export/Sicherung, Anleitung, Versionsnummer → Entwicklerbereich</td></tr></table>
+    <h3>Immer sichtbar</h3><ul><li>Menüleiste unten (wie VitalCoach: aktiver Punkt hebt sich, leuchtet, Punkt darunter; Wischen wechselt den Menüpunkt)</li><li>Schnellwahl B10 / t03 zum Erfassen – rücken über die Menüleiste</li></ul>`;
+  bind();
+}
+function bind() {
+  const km = document.getElementById("km"), kmr = document.getElementById("kmr"), rt = document.getElementById("rt");
+  if (km) km.oninput = () => { st.km = Number(km.value) || 0; refresh(); };
+  if (kmr) kmr.oninput = () => { st.km = Number(kmr.value); refresh(); };
+  if (rt) rt.onchange = () => { st.rt = rt.checked; refresh(); };
+}
+// Nur das Ergebnis neu zeichnen, damit der Cursor im Eingabefeld bleibt
+function refresh() {
+  const res = document.querySelector(".res"); if (res) res.outerHTML = result();
+  const kmr = document.getElementById("kmr"); if (kmr && document.activeElement !== kmr) kmr.value = st.km;
+  const km = document.getElementById("km"); if (km && document.activeElement !== km) km.value = st.km;
+  const chk = document.querySelector(".chk"); if (chk && st.calc !== "c4") chk.lastChild.textContent = ` Hin- und Rückfahrt (${nf(dist(), 0)} km)`;
+  const share = document.querySelector(".share"); if (share) { const v = cost(st.car); share.innerHTML = `Gesamt <b>${nf(v)} €</b><br>pro Person <span class="big">${nf(v / st.people)} €</span>`; }
+}
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-tab],[data-calc],[data-basis],[data-car],[data-pad],[data-pp]");
+  if (!t) return;
+  if (t.dataset.tab) st.tab = t.dataset.tab;
+  if (t.dataset.calc) { st.calc = t.dataset.calc; st.tab = "uebersicht"; }
+  if (t.dataset.basis) st.basis = t.dataset.basis;
+  if (t.dataset.car) st.car = t.dataset.car;
+  if (t.dataset.pp) st.people = Math.max(1, Math.min(9, st.people + Number(t.dataset.pp)));
+  if (t.dataset.pad) { const d = t.dataset.pad; st.taxi = d === "C" ? "" : d === "⌫" ? st.taxi.slice(0, -1) : (st.taxi + d).slice(0, 4); }
+  render();
+});
+render();
+</script>
+</body>
+</html>

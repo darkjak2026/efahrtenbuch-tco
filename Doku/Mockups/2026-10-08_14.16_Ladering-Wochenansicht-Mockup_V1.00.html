@@ -1,0 +1,144 @@
+<!doctype html>
+<!--
+Projekt: eFahrtenbuch TCO
+Urheber: Jakobus Claudius Digitalensis (+KI-Claude)
+Version: V1.00 (Mockup, nicht Teil der App)
+Datei: 2026-10-08_14.16_Ladering-Wochenansicht-Mockup_V1.00.html
+Inhalt: Schmaler Ring um die Tagespunkte der Wochenansicht: gelb = Ladestand vor dem Laden,
+        grün = was geladen wurde; bei 100 % ist der Ring geschlossen, der Startpunkt bleibt sichtbar.
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ladering – Wochenansicht</title>
+<style>
+  :root {
+    --bg: #17141f; --panel: #221e2c; --ink: #ede9f5; --ink-soft: #a89fbf; --line: #3a3548; --accent: #d8cbf2;
+    --plum-deep: #2a2038; --b10: #b98fcb; --t03: #8fc6e0; --vor: #f0d84a; --geladen: #5cc98a; --spur: rgba(255,255,255,.12);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, "Segoe UI", sans-serif; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 26px 0 4px; }
+  .lead, .idee { color: var(--ink-soft); font-size: 13.5px; max-width: 820px; margin: 0 0 12px; }
+  .reihe { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+
+  /* Nachbau einer Wochen-Kachel aus der Historie */
+  .wk { width: 178px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); padding: 7px 6px 8px; }
+  .wk.gross { width: 360px; padding: 12px 12px 14px; }
+  .wk-t { font-size: 11px; font-weight: 700; }
+  .wk-v { font-size: 10px; color: var(--ink-soft); font-family: ui-monospace, Consolas, monospace; margin-top: 2px; }
+  .wk-v b { color: var(--ink); }
+  .gross .wk-t { font-size: 15px; }
+  .gross .wk-v { font-size: 13px; }
+  .wk-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-top: 6px; }
+  .wk-day { display: flex; flex-direction: column; align-items: center; font-size: 8.5px; color: var(--ink-soft); }
+  .gross .wk-day { font-size: 12px; }
+
+  /* Tagespunkt mit Ladering */
+  .dot { position: relative; width: 20px; height: 20px; margin-top: 2px; }
+  .gross .dot { width: 40px; height: 40px; }
+  .dot svg { position: absolute; inset: 0; transform: rotate(-90deg); overflow: visible; }
+  .dot .kern { position: absolute; inset: 3px; border-radius: 50%; background: var(--plum-deep); display: flex; align-items: center; justify-content: center;
+               font-size: 8.5px; font-weight: 800; color: #10202a; }
+  .gross .dot .kern { inset: 6px; font-size: 14px; }
+  .dot.on .kern { background: var(--car); }
+  .t03 { --car: var(--t03); } .b10 { --car: var(--b10); }
+  .spur { fill: none; stroke: var(--spur); }
+  .vor { fill: none; stroke: var(--vor); stroke-linecap: butt; }
+  .gel { fill: none; stroke: var(--geladen); stroke-linecap: butt; }
+  .start { stroke: #fff; stroke-width: 1.2; }
+
+  .legende { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); margin: 10px 0 0; }
+  .legende i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+
+  .regler { margin-top: 14px; max-width: 380px; font-size: 13px; color: var(--ink-soft); }
+  .regler label { display: flex; justify-content: space-between; margin-top: 8px; }
+  .regler input { width: 100%; }
+  .notizen { max-width: 820px; font-size: 13px; color: var(--ink-soft); margin-top: 26px; }
+  .notizen li { margin-bottom: 5px; }
+  footer { margin-top: 24px; font-size: 12px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<h1>Ladering in der Wochenansicht</h1>
+<p class="lead">
+  Um jeden Tag mit Ladevorgang liegt ein schmaler Ring. Er startet oben (12 Uhr) und läuft im Uhrzeigersinn:
+  <b style="color:var(--vor)">gelb</b> bis zum Ladestand <b>vor</b> dem Laden, danach <b style="color:var(--geladen)">grün</b> das, was <b>geladen</b> wurde.
+  Bei 100 % ist der Ring geschlossen – der gelbe Anfang bleibt sichtbar, ein kleiner Strich markiert den Startpunkt.
+</p>
+
+<h2>So in der Historie (Originalgröße, t03 und B10)</h2>
+<div class="reihe">
+  <div class="wk t03" id="w1"></div>
+  <div class="wk b10" id="w2"></div>
+</div>
+<div class="legende">
+  <span><i style="background:var(--vor)"></i>Ladestand vor dem Laden</span>
+  <span><i style="background:var(--geladen)"></i>geladen</span>
+  <span><i style="background:var(--spur)"></i>Rest bis 100 %</span>
+</div>
+
+<h2>Vergrößert</h2>
+<p class="idee">Mo: von 25 % auf 80 %. Mi: von 12 % auf 100 % (Ring geschlossen, Start bleibt sichtbar). Sa: zwei Ladevorgänge am selben Tag – zwei Ringe ineinander, außen der erste.</p>
+<div class="reihe"><div class="wk gross t03" id="w3"></div></div>
+
+<h2>Zum Ausprobieren</h2>
+<div class="reihe">
+  <div class="wk gross b10" id="w4" style="width:200px"></div>
+  <div class="regler">
+    <label>Ladestand vor dem Laden <b id="lv">20 %</b></label><input type="range" id="rv" min="0" max="100" value="20">
+    <label>Ladestand nach dem Laden <b id="ln">80 %</b></label><input type="range" id="rn" min="0" max="100" value="80">
+  </div>
+</div>
+
+<ul class="notizen">
+  <li><b>Woher kommt der Ladestand in %?</b> Erfasst werden Reichweiten in km. Der Ring rechnet sie in Prozent um: Reichweite ÷ volle Reichweite des Autos.
+    Als „volle Reichweite“ nimmt die App die typische Reichweite nach dem Laden aus euren eigenen Ladevorgängen (wie in der Planung) –
+    sie passt sich Sommer und Winter an. Alternative: ihr tragt künftig zusätzlich den Akkustand in % ein (genauer, aber ein Feld mehr).</li>
+  <li>Fehlt „Reichweite neu“ (Ladevorgang noch unvollständig), zeigt der Ring nur den gelben Teil.</li>
+  <li>Der Tagespunkt wird dafür etwas größer (20 statt 14 Pixel), die Zahl der Ladevorgänge bleibt in der Mitte.</li>
+  <li>Antippen eines Tages könnte später die genauen Werte zeigen („25 % → 80 %, +55 %“).</li>
+</ul>
+<footer>v1.00 Mockup — Jakobus Claudius Digitalensis (+KI-Claude)</footer>
+
+<script>
+// Ring(e) eines Tages als SVG. ladungen: [[vor%, nach%], ...], außen zuerst.
+function dot(ladungen, gross) {
+  const S = gross ? 40 : 20, w = gross ? 3.2 : 2, gap = gross ? 1.5 : 1;
+  let svg = "";
+  ladungen.forEach(([v, n], i) => {
+    const r = S / 2 - w / 2 - i * (w + gap);
+    const U = 2 * Math.PI * r, c = S / 2;
+    const seg = (cls, von, bis) => bis > von ? `<circle class="${cls}" cx="${c}" cy="${c}" r="${r}" stroke-width="${w}" stroke-dasharray="${U * (bis - von) / 100} ${U}" stroke-dashoffset="${-U * von / 100}"/>` : "";
+    svg += `<circle class="spur" cx="${c}" cy="${c}" r="${r}" stroke-width="${w}"/>`;
+    svg += seg("vor", 0, v) + seg("gel", v, n ?? v);
+    // Startmarke am Übergang gelb → grün
+    const a = (v / 100) * 2 * Math.PI, x1 = c + (r - w) * Math.cos(a), y1 = c + (r - w) * Math.sin(a), x2 = c + (r + w) * Math.cos(a), y2 = c + (r + w) * Math.sin(a);
+    if (n !== null && n > v) svg += `<line class="start" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${gross ? 1.6 : 1}"/>`;
+  });
+  const n = ladungen.length;
+  return `<span class="dot ${n ? "on" : ""}"><svg viewBox="0 0 ${S} ${S}">${svg}</svg><span class="kern" style="${n > 1 ? `inset:${gross ? 12 : 6}px` : ""}">${n || ""}</span></span>`;
+}
+const TAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+function woche(el, titel, werte, tage, gross) {
+  el.innerHTML = `<div class="wk-t">▸ ${titel}</div><div class="wk-v">${werte}</div>
+    <div class="wk-days">${TAGE.map((t, i) => `<span class="wk-day">${t}${dot(tage[i] || [], gross)}</span>`).join("")}</div>`;
+}
+woche(document.getElementById("w1"), "(KW 43) · 19.–25.10.", "0:55h|228km|<b>7,64€</b>|18kWh",
+  [[[25, 80]], [], [[12, 100]], [], [], [], [[40, 65]]]);
+woche(document.getElementById("w2"), "2. Woche (KW 41) · 05.–11.10.", "5:34h|886km|<b>89,81€</b>|138kWh",
+  [[[18, 90]], [], [], [[35, 100]], [], [[10, 55], [55, 92]], [[30, null]]]);
+woche(document.getElementById("w3"), "(KW 43) · 19.–25.10.", "0:55h | 228km | <b>7,64€</b> | 18kWh",
+  [[[25, 80]], [], [[12, 100]], [], [], [[10, 55], [55, 92]], [[40, 65]]], true);
+function probe() {
+  const v = +rv.value, n = Math.max(+rn.value, v);
+  lv.textContent = v + " %"; ln.textContent = n + " %";
+  woche(document.getElementById("w4"), "Probe", `${v} % → ${n} % (+${n - v} %)`, [[], [], [[v, n]], [], [], [], []], true);
+}
+const rv = document.getElementById("rv"), rn = document.getElementById("rn"), lv = document.getElementById("lv"), ln = document.getElementById("ln");
+rv.oninput = rn.oninput = probe; probe();
+</script>
+</body>
+</html>

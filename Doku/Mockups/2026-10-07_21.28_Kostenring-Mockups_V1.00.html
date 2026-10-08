@@ -1,0 +1,286 @@
+<!doctype html>
+<!--
+Projekt: eFahrtenbuch TCO
+Urheber: Jakobus Claudius Digitalensis (+KI-Claude)
+Version: 2026-10-07|1.00 (Mockup, kein Produktivcode)
+Datei: 2026-10-07_21.28_Kostenring-Mockups_V1.00.html
+Inhalt: Fünf Darstellungsformen für die Kostenaufteilung je Auto (Ring nach Vorlage),
+        mit Symbolen in den Segmenten. Alle Zahlen sind Beispielwerte (Testmodus Oktober 2026).
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kostenring – Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #17141f; --panel: #221e2c; --ink: #ede9f5; --ink-soft: #a89fbf; --plum: #7a63b0;
+    --plum-deep: #2a2038; --accent: #d8cbf2; --lav: #2c2740; --line: #3a3548; --teal: #4caf94;
+    --danger: #e2664a; --yellow: #f0d84a; --green: #8bc34a; --b10: #b98fcb; --t03: #8fc6e0;
+    --mono: "JetBrains Mono", monospace; --head: "Space Grotesk", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--b10) 20%, var(--bg)), color-mix(in srgb, var(--b10) 11%, var(--bg)) 38%, color-mix(in srgb, var(--t03) 11%, var(--bg)) 62%, color-mix(in srgb, var(--t03) 20%, var(--bg))) fixed, var(--bg); }
+  button { font: inherit; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-family: var(--head); color: var(--accent); font-size: 22px; margin: 0 0 4px; }
+  .lead { color: var(--ink-soft); font-size: 13.5px; line-height: 1.55; margin: 0 0 14px; max-width: 780px; }
+  .switch { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .switch button { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--panel); color: var(--ink-soft); font-weight: 600; font-size: 13px; cursor: pointer; }
+  .switch button[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 390px 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .phone { margin: 0 auto; } }
+  .phone { width: 100%; max-width: 390px; border: 2px solid var(--line); border-radius: 28px; padding: 16px 10px 20px; background: rgba(23,20,31,.35); box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+  .notes { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; font-size: 13.5px; line-height: 1.6; }
+  .notes h2 { font-family: var(--head); font-size: 16px; color: var(--accent); margin: 0 0 6px; }
+  .notes h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); margin: 16px 0 4px; }
+  .notes ul { margin: 0; padding-left: 18px; }
+  .plus { color: var(--teal); } .minus { color: var(--danger); }
+  .sample { display: inline-block; font-size: 11px; color: var(--yellow); border: 1px solid color-mix(in srgb, var(--yellow) 40%, transparent); border-radius: 999px; padding: 2px 8px; margin-bottom: 10px; }
+  .iconrow { display: grid; grid-template-columns: 28px 1fr; gap: 6px 10px; align-items: center; margin-top: 6px; }
+  .iconrow .ic { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #17141f; }
+
+  /* Monatsleiste + Karten wie in der App */
+  .monthbar { margin: 0 0 12px; padding: 8px; border-radius: 14px; text-align: center; color: var(--bg); background: linear-gradient(90deg, var(--b10), color-mix(in srgb, var(--b10) 50%, var(--t03)), var(--t03)); box-shadow: 0 10px 26px rgba(0,0,0,.55); font-family: var(--head); font-weight: 700; letter-spacing: .18em; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+  .card { width: 100%; text-align: left; color: var(--ink); border-radius: 12px; padding: 10px 8px 8px; border: 1.5px solid; cursor: pointer; }
+  .card.b10 { border-color: var(--b10); background: linear-gradient(160deg, color-mix(in srgb, var(--b10) 18%, var(--lav)), var(--lav) 70%); }
+  .card.t03 { border-color: var(--t03); background: linear-gradient(160deg, color-mix(in srgb, var(--t03) 18%, var(--lav)), var(--lav) 70%); }
+  .name { font-family: var(--head); font-weight: 700; font-size: 14px; }
+  .name.b10 { color: var(--b10); } .name.t03 { color: var(--t03); }
+  .hero { font-family: var(--mono); font-size: 21px; font-weight: 700; margin-top: 4px; line-height: 1.05; }
+  .hero small { display: block; font-size: 10px; color: var(--ink-soft); font-weight: 500; }
+  .sub { font-family: var(--mono); font-size: 11.5px; font-weight: 600; margin-top: 3px; }
+  .sub span { font-size: 10px; color: var(--ink-soft); font-weight: 500; }
+  .chart { display: block; width: 100%; height: auto; margin-top: 6px; overflow: visible; }
+  .more { font-size: 10.5px; color: var(--ink-soft); margin-top: 4px; }
+  .detail { margin-top: 6px; font-family: var(--mono); font-size: 10.5px; }
+  .detail div { display: flex; justify-content: space-between; gap: 4px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
+  .detail div span:first-child { font-family: Inter, sans-serif; color: var(--ink-soft); white-space: nowrap; }
+  .detail i { display: inline-block; width: 7px; height: 7px; border-radius: 2px; margin-right: 4px; }
+  .detail .hl { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .seg { cursor: pointer; transition: opacity .15s, transform .15s; }
+  .dim .seg:not(.on) { opacity: .35; }
+  .pct { font-family: var(--mono); font-weight: 700; fill: #17141f; pointer-events: none; }
+  .lbl { font-family: var(--mono); font-size: 9px; fill: var(--ink-soft); pointer-events: none; }
+  .center1 { font-family: var(--mono); font-weight: 700; fill: var(--ink); pointer-events: none; }
+  .center2 { font-family: Inter, sans-serif; font-size: 8px; fill: var(--ink-soft); pointer-events: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: center; font-size: 10.5px; color: var(--ink-soft); margin-top: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .legend svg { width: 13px; height: 13px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Kostenaufteilung als Ring – fünf Vorschläge</h1>
+  <p class="lead">Je Auto zeigt ein Ring, woraus die Monatskosten bestehen. Jedes Segment trägt ein kleines Symbol. Die Karte ist <b>nach der Grafik eingeklappt</b>, antippen zeigt die Euro-Beträge. Ein Segment antippen hebt es hervor. Oben wählst Du die Variante.</p>
+  <div class="switch" id="sw"></div>
+  <div class="layout">
+    <div class="phone" id="phone"></div>
+    <aside class="notes" id="notes"></aside>
+  </div>
+</div>
+
+<script>
+// ---------- Symbole (24er Raster, Strichzeichnung wie die App-Icons) ----------
+const ICONS = {
+  // Laden: Stecker aus der App (PlugIcon)
+  laden: '<path d="M8 3v5M16 3v5"/><path d="M6 8h12v4a6 6 0 0 1-12 0V8Z"/><path d="M12 18v3"/>',
+  // Leasing: Bank – Giebel mit Säulen
+  leasing: '<path d="M3 9.5 12 4l9 5.5"/><path d="M4 9.5h16"/><path d="M6 12v6M10 12v6M14 12v6M18 12v6"/><path d="M3.5 20.5h17"/>',
+  // Versicherung: Schild mit Haken (bewusst generisch, kein Firmenlogo)
+  vers: '<path d="M12 3 5 6v5.5c0 4.4 3 8 7 9.5 4-1.5 7-5.1 7-9.5V6l-7-3Z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
+  // Abos: Euro in einer Uhr (wiederkehrend) – Uhr mit Pfeil + €
+  abos: '<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/><path d="M14.5 9.3a3.2 3.2 0 1 0 0 5.4"/><path d="M8.6 11h4.4M8.6 13h4"/>',
+  // Investitionen: Werkzeugkasten (wie die Karte „Investitionen“ in der App)
+  invest: '<rect x="3" y="9" width="18" height="10" rx="2"/><path d="M8 9V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/><path d="M3 13h18"/><path d="M10.5 13v2.5M13.5 13v2.5"/>',
+};
+const PARTS = [
+  { key: "laden", label: "Laden", color: "#4caf94" },
+  { key: "leasing", label: "Leasing", color: "#7a63b0" },
+  { key: "vers", label: "Versicherung", color: "#f0d84a" },
+  { key: "abos", label: "Abos", color: "#e2664a" },
+  { key: "invest", label: "Investitionen", color: "#8bc34a" },
+];
+const icon = (k, x, y, s, color = "#17141f", sw = 2.2) =>
+  `<g transform="translate(${x - s / 2} ${y - s / 2}) scale(${s / 24})" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</g>`;
+
+// ---------- Beispielwerte (Testmodus, Oktober 2026) ----------
+const CARS = {
+  b10: { name: "BIO-Leapy", code: "B10", tcoKm: 1.135, ladenKm: 0.206, km: 461, costs: { laden: 95.11, leasing: 331.51, vers: 78.40, abos: 0, invest: 18.06 } },
+  t03: { name: "Leapy", code: "t03", tcoKm: 0.344, ladenKm: 0.139, km: 1249, costs: { laden: 173.51, leasing: 149.00, vers: 81.83, abos: 2.99, invest: 22.22 } },
+};
+const nf = (n, d = 2) => n.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: d });
+const segs = (car) => {
+  const total = PARTS.reduce((s, p) => s + car.costs[p.key], 0);
+  let acc = 0;
+  return PARTS.filter((p) => car.costs[p.key] > 0).map((p) => {
+    const v = car.costs[p.key], frac = v / total, a0 = acc * 360;
+    acc += frac;
+    return { ...p, v, frac, a0, a1: acc * 360, total };
+  });
+};
+const pol = (cx, cy, r, deg, sy = 1) => { const a = (deg - 90) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a) * sy]; };
+function arc(cx, cy, r0, r1, a0, a1, sy = 1, gap = 0) {
+  const g = a1 - a0 > gap * 2 ? gap : 0;
+  a0 += g; a1 -= g;
+  const large = a1 - a0 > 180 ? 1 : 0;
+  const [x0, y0] = pol(cx, cy, r1, a0, sy), [x1, y1] = pol(cx, cy, r1, a1, sy);
+  const [x2, y2] = pol(cx, cy, r0, a1, sy), [x3, y3] = pol(cx, cy, r0, a0, sy);
+  return `M${x0} ${y0} A${r1} ${r1 * sy} 0 ${large} 1 ${x1} ${y1} L${x2} ${y2} A${r0} ${r0 * sy} 0 ${large} 0 ${x3} ${y3}Z`;
+}
+const MIN_ICON = 0.07; // kleinere Segmente: Symbol außen bzw. nur in der Legende
+
+let state = { v: "v1", open: { b10: false, t03: false }, sel: { b10: null, t03: null } };
+
+// ---------- Fünf Varianten ----------
+const V = {
+  v1: {
+    name: "1 · Flacher Ring",
+    notes: `<h2>1 · Flacher Ring mit Symbolen</h2><p>Ein klarer, flacher Ring wie die Vorlage, aber ohne 3D. Die Symbole sitzen direkt im Segment, der Anteil in % steht kleinen außen daneben. In der Mitte steht der TCO je km, damit wird die Zahl darüber frei für „Laden je km“.</p>
+      <h3>Vorteile</h3><ul class="plus"><li>Sehr gut lesbar, auch auf kleinen Handys</li><li>Passt zur flachen Optik der App</li></ul><h3>Nachteile</h3><ul class="minus"><li>Am wenigsten „spektakulär“</li></ul>`,
+    draw(car, k) {
+      const cx = 80, cy = 74, r0 = 38, r1 = 64;
+      let s = "";
+      for (const g of segs(car)) {
+        const mid = (g.a0 + g.a1) / 2, [ix, iy] = pol(cx, cy, (r0 + r1) / 2, mid), [lx, ly] = pol(cx, cy, r1 + 10, mid);
+        s += `<g class="seg ${state.sel[k] === g.key ? "on" : ""}" data-seg="${k}:${g.key}"><path d="${arc(cx, cy, r0, r1, g.a0, g.a1, 1, 0.8)}" fill="${g.color}"/>`;
+        if (g.frac >= MIN_ICON) s += icon(g.key, ix, iy, 16);
+        if (g.frac >= 0.05) s += `<text class="lbl" x="${lx}" y="${ly + 3}" text-anchor="middle">${Math.round(g.frac * 100)}%</text>`;
+        s += `</g>`;
+      }
+      s += `<text class="center1" x="${cx}" y="${cy + 2}" text-anchor="middle" font-size="15">${nf(car.tcoKm, 3)}</text><text class="center2" x="${cx}" y="${cy + 14}" text-anchor="middle">€/km TCO</text>`;
+      return `<svg class="chart" viewBox="0 0 160 152">${s}</svg>`;
+    },
+  },
+  v2: {
+    name: "2 · 3D-Ring (Vorlage)",
+    notes: `<h2>2 · 3D-Ring nach Deiner Vorlage</h2><p>Der Ring liegt schräg und hat eine sichtbare Seitenwand. Die Prozentzahlen stehen groß auf dem Segment, das Symbol daneben, wie bei der Vorlage. Die Farben sind die der App.</p>
+      <h3>Vorteile</h3><ul class="plus"><li>Entspricht Deiner Vorlage, wirkt hochwertig</li><li>Große Prozentzahlen</li></ul><h3>Nachteile</h3><ul class="minus"><li>Braucht am meisten Breite; in der schmalen Spalte passen Symbol + Zahl nur bei großen Segmenten</li><li>3D verzerrt kleine Anteile optisch</li></ul>`,
+    draw(car, k) {
+      const cx = 80, cy = 58, r0 = 34, r1 = 70, sy = 0.55, depth = 14;
+      let wall = "", top = "";
+      for (const g of segs(car)) {
+        const on = state.sel[k] === g.key ? "on" : "";
+        wall += `<g class="seg ${on}" data-seg="${k}:${g.key}"><path d="${arc(cx, cy + depth, r0, r1, g.a0, g.a1, sy, 0.6)}" fill="${g.color}" style="filter:brightness(.6)"/></g>`;
+        const mid = (g.a0 + g.a1) / 2, [px, py] = pol(cx, cy, (r0 + r1) / 2 + 4, mid, sy);
+        top += `<g class="seg ${on}" data-seg="${k}:${g.key}"><path d="${arc(cx, cy, r0, r1, g.a0, g.a1, sy, 0.6)}" fill="${g.color}"/>`;
+        if (g.frac >= 0.12) top += icon(g.key, px - 11, py, 13) + `<text class="pct" x="${px + 7}" y="${py + 4}" text-anchor="middle" font-size="11">${Math.round(g.frac * 100)}%</text>`;
+        else if (g.frac >= MIN_ICON) top += icon(g.key, px, py, 12);
+        top += `</g>`;
+      }
+      // Seitenwand: untere Ebene, darüber die Oberseite
+      return `<svg class="chart" viewBox="0 0 160 110">${wall}${top}</svg><div class="sub" style="text-align:center">${nf(car.tcoKm, 3)} <span>€/km TCO</span></div>`;
+    },
+  },
+  v3: {
+    name: "3 · Tacho (Halbring)",
+    notes: `<h2>3 · Tacho – der halbe Ring</h2><p>Die Kosten bilden den Bogen eines Tachos, passend zum Auto-Thema. Die Nadel zeigt den TCO je km auf einer Skala von 0 bis 1,5 €. Der Halbring spart fast die Hälfte der Höhe, die Symbole sitzen im Bogen.</p>
+      <h3>Vorteile</h3><ul class="plus"><li>Platzsparend – wichtig, weil die Karte eingeklappt bleiben soll</li><li>Starker Auto-Bezug</li></ul><h3>Nachteile</h3><ul class="minus"><li>Die Skala der Nadel (0 bis 1,5 €/km) muss festgelegt werden; bei teuren Monaten steht sie am Anschlag</li></ul>`,
+    draw(car, k) {
+      const cx = 80, cy = 78, r0 = 42, r1 = 70;
+      let s = "";
+      for (const g of segs(car)) {
+        const a0 = -90 + g.a0 / 2, a1 = -90 + g.a1 / 2, mid = (a0 + a1) / 2;
+        const [ix, iy] = pol(cx, cy, (r0 + r1) / 2, mid);
+        s += `<g class="seg ${state.sel[k] === g.key ? "on" : ""}" data-seg="${k}:${g.key}"><path d="${arc(cx, cy, r0, r1, a0, a1, 1, 0.6)}" fill="${g.color}"/>`;
+        if (g.frac >= 0.09) s += icon(g.key, ix, iy, 15);
+        s += `</g>`;
+      }
+      const needle = Math.min(1, car.tcoKm / 1.5) * 180 - 90, [nx, ny] = pol(cx, cy, r0 - 6, needle);
+      s += `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="#ede9f5" stroke-width="2.5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="4" fill="#ede9f5"/>`;
+      s += `<text class="lbl" x="${cx - r1 + 4}" y="${cy + 12}">0</text><text class="lbl" x="${cx + r1 - 4}" y="${cy + 12}" text-anchor="end">1,5 €</text>`;
+      return `<svg class="chart" viewBox="0 0 160 94">${s}</svg>`;
+    },
+  },
+  v4: {
+    name: "4 · Lade-Ring (Segmente)",
+    notes: `<h2>4 · Lade-Ring wie eine Akkuanzeige</h2><p>Abgerundete, getrennte Segmente wie bei einer Ladestands-Anzeige. Die Symbole sitzen in kleinen runden Plaketten auf dem Ring, so bleiben sie auch auf schmalen Segmenten lesbar. In der Mitte die gefahrenen km.</p>
+      <h3>Vorteile</h3><ul class="plus"><li>Modern, passt zum E-Auto- und Lade-Thema</li><li>Symbole immer gut lesbar (Plakette)</li></ul><h3>Nachteile</h3><ul class="minus"><li>Lücken zwischen Segmenten kosten etwas Genauigkeit bei sehr kleinen Anteilen</li></ul>`,
+    draw(car, k) {
+      const cx = 80, cy = 76, r = 54, w = 14;
+      let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2a2038" stroke-width="${w}"/>`;
+      for (const g of segs(car)) {
+        const gap = g.frac > 0.03 ? 4 : 0.5, a0 = g.a0 + gap, a1 = Math.max(a0 + 0.5, g.a1 - gap);
+        const [x0, y0] = pol(cx, cy, r, a0), [x1, y1] = pol(cx, cy, r, a1), large = a1 - a0 > 180 ? 1 : 0;
+        s += `<g class="seg ${state.sel[k] === g.key ? "on" : ""}" data-seg="${k}:${g.key}"><path d="M${x0} ${y0} A${r} ${r} 0 ${large} 1 ${x1} ${y1}" fill="none" stroke="${g.color}" stroke-width="${w}" stroke-linecap="round"/>`;
+        if (g.frac >= 0.05) {
+          const [ix, iy] = pol(cx, cy, r, (g.a0 + g.a1) / 2);
+          s += `<circle cx="${ix}" cy="${iy}" r="11" fill="#17141f" stroke="${g.color}" stroke-width="2"/>` + icon(g.key, ix, iy, 13, g.color, 2);
+        }
+        s += `</g>`;
+      }
+      s += `<text class="center1" x="${cx}" y="${cy + 2}" text-anchor="middle" font-size="16">${nf(car.km, 0)}</text><text class="center2" x="${cx}" y="${cy + 14}" text-anchor="middle">km im Monat</text>`;
+      return `<svg class="chart" viewBox="0 0 160 152">${s}</svg>`;
+    },
+  },
+  v5: {
+    name: "5 · Aktivitätsringe",
+    notes: `<h2>5 · Aktivitätsringe (konzentrisch)</h2><p>Jede Kostenart bekommt ihren eigenen Ring, wie bei Fitness-Uhren. Die Länge zeigt den Anteil an den Gesamtkosten, das Symbol steht am Anfang jedes Rings. So lassen sich auch kleine Posten (Abos 1 %) noch erkennen.</p>
+      <h3>Vorteile</h3><ul class="plus"><li>Jede Kostenart klar ablesbar, auch winzige</li><li>Auto-übergreifend gut vergleichbar (gleiche Ringe links und rechts)</li></ul><h3>Nachteile</h3><ul class="minus"><li>Kein „Kuchen“ – die Summe ist weniger intuitiv als beim Ring</li></ul>`,
+    draw(car, k) {
+      const cx = 80, cy = 76, w = 9;
+      let s = "", i = 0;
+      const total = PARTS.reduce((t, p) => t + car.costs[p.key], 0);
+      for (const p of PARTS) {
+        const r = 66 - i * 12.5, frac = car.costs[p.key] / total;
+        s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${p.color}" stroke-opacity=".18" stroke-width="${w}"/>`;
+        if (frac > 0) {
+          const a1 = Math.max(4, frac * 359), [x0, y0] = pol(cx, cy, r, 0), [x1, y1] = pol(cx, cy, r, a1);
+          s += `<g class="seg ${state.sel[k] === p.key ? "on" : ""}" data-seg="${k}:${p.key}"><path d="M${x0} ${y0} A${r} ${r} 0 ${a1 > 180 ? 1 : 0} 1 ${x1} ${y1}" fill="none" stroke="${p.color}" stroke-width="${w}" stroke-linecap="round"/></g>`;
+        }
+        s += `<circle cx="${cx - 11}" cy="${cy - r}" r="6" fill="#17141f"/>` + icon(p.key, cx - 11, cy - r, 10, p.color, 2.6);
+        i++;
+      }
+      return `<svg class="chart" viewBox="0 0 160 152">${s}</svg>`;
+    },
+  },
+};
+
+function card(k) {
+  const car = CARS[k], open = state.open[k], sel = state.sel[k];
+  const total = PARTS.reduce((s, p) => s + car.costs[p.key], 0);
+  const detail = PARTS.map((p) => `<div class="${sel === p.key ? "hl" : ""}"><span><i style="background:${p.color}"></i>${p.label === "Versicherung" ? "Versich." : p.label === "Investitionen" ? "Invest." : p.label}</span><span>${nf(car.costs[p.key])} €</span></div>`).join("")
+    + `<div><span style="color:var(--ink)">Gesamt</span><span>${nf(total)} €</span></div>`;
+  const showTco = state.v !== "v1"; // v1 hat den TCO in der Ringmitte
+  return `<div class="card ${k} ${sel ? "dim" : ""}" data-card="${k}">
+    <div class="name ${k}">${car.name} <span style="font-family:var(--mono);font-size:10px;opacity:.8">${car.code}</span></div>
+    ${showTco && state.v !== "v2" ? `<div class="hero">${nf(car.tcoKm, 3)}<small>€/km TCO</small></div>` : ""}
+    <div class="sub">${nf(car.ladenKm, 3)} <span>€/km Laden</span></div>${state.v === "v4" ? "" : `<div class="sub">${nf(car.km, 0)} <span>km</span></div>`}
+    ${V[state.v].draw(car, k)}
+    ${open ? `<div class="detail">${detail}</div>` : `<div class="more">Details ▸</div>`}
+  </div>`;
+}
+
+function render() {
+  document.getElementById("sw").innerHTML = Object.entries(V).map(([k, v]) => `<button data-v="${k}" aria-pressed="${state.v === k}">${v.name}</button>`).join("");
+  document.getElementById("phone").innerHTML = `<div class="monthbar">◀ &nbsp; OKTOBER 2026 &nbsp; ▶</div>
+    <div class="cols">${card("b10")}${card("t03")}</div>
+    <div class="legend">${PARTS.map((p) => `<span><svg viewBox="0 0 24 24" fill="none" stroke="${p.color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[p.key]}</svg>${p.label}</span>`).join("")}</div>
+    <p style="font-size:11px;color:var(--ink-soft);text-align:center;margin:10px 0 0">Beispielwerte · Karte antippen = Beträge · Segment antippen = hervorheben</p>`;
+  document.getElementById("notes").innerHTML = `<span class="sample">Alle Zahlen sind Beispielwerte</span>${V[state.v].notes}
+    <h3>Symbole</h3>
+    <div class="iconrow">${PARTS.map((p) => `<span class="ic" style="background:${p.color}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#17141f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[p.key]}</svg></span><span>${{
+      laden: "Laden – Stecker aus der App",
+      leasing: "Leasing – Bank (Giebel mit Säulen)",
+      vers: "Versicherung – Schild mit Haken. Bewusst neutral statt HUK-Coburg-Logo: Das Markenzeichen dürfen wir nicht nachbauen, und bei einem Versicherungswechsel stimmt es sonst nicht mehr.",
+      abos: "Abos – € in einer Uhr mit Kreispfeil (wiederkehrend)",
+      invest: "Investitionen – Werkzeugkasten, wie die Karte „Investitionen“ in der App (Vorschlag)",
+    }[p.key]}</span>`).join("")}</div>
+    <h3>Gilt für alle Varianten</h3><ul><li>Karte eingeklappt nach der Grafik; antippen zeigt Beträge, kWh und Ladezeit</li><li>Sehr kleine Segmente (unter 7 %) bekommen kein Symbol im Segment, nur in der Legende darunter</li><li>Die TCO-Karten oben sind nach dem ODO-Stand eingeklappt (Countdown und Details per „Details anzeigen“)</li></ul>`;
+}
+
+document.addEventListener("click", (e) => {
+  const v = e.target.closest("[data-v]");
+  if (v) { state.v = v.dataset.v; state.sel = { b10: null, t03: null }; return render(); }
+  const seg = e.target.closest("[data-seg]");
+  if (seg) { const [k, key] = seg.dataset.seg.split(":"); state.sel[k] = state.sel[k] === key ? null : key; state.open[k] = true; return render(); }
+  const c = e.target.closest("[data-card]");
+  if (c) { const k = c.dataset.card; state.open[k] = !state.open[k]; if (!state.open[k]) state.sel[k] = null; render(); }
+});
+render();
+</script>
+</body>
+</html>
