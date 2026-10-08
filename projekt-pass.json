@@ -91,7 +91,8 @@
     "Wo genau die Passwörter/2FA für die Vercel- und GitHub-Accounts (darkjak2026) hinterlegt sind, ist der KI nicht bekannt - bitte von Jakob ergänzen (Passwort-Manager?).",
     "Kein automatisiertes Backup der Upstash-Redis-Daten bekannt - nur der manuelle JSON-Export in der App selbst (Exportieren aller Daten).",
     "dsgvo_status, daten_speicherort und avv_stand sind noch nicht ausgefüllt (auf Wunsch erstmal leer gelassen, siehe Doku-Update vom 01.09.2026). daten_speicherort insbesondere: welche Region nutzt die Upstash-Redis-Datenbank (EU/US)?",
-    "km-Stand bei Übergabe (Leasingbeginn) je Auto in den Fixkosten eintragen – solange leer, rechnet der Freikilometer-Countdown ab 0 km (Neuwagen). Ebenso Übergabedatum und Laufzeit prüfen (Standard 36 Monate)."
+    "km-Stand bei Übergabe (Leasingbeginn) je Auto in den Fixkosten eintragen – solange leer, rechnet der Freikilometer-Countdown ab 0 km (Neuwagen). Ebenso Übergabedatum und Laufzeit prüfen (Standard 36 Monate).",
+    "Umzug auf den netcup-Server (Entscheidungen vom 08.10.2026): Adresse efahrtenbuch.<Server-IP>.nip.io (ohne eigene Domain, Zertifikat über Caddy), Vercel-Adresse am Umzugstag sofort abschalten (keine Weiterleitung, Lesezeichen auf beiden Handys umstellen), Daten von Upstash Redis nach Postgres. Start von Phase 1 (lokale Vorbereitung) noch offen – auf Zuruf."
   ],
   "feature_requests": [
     ["01.09.2026 09:57", "test", "verworfen"],
