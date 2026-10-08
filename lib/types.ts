@@ -15,6 +15,8 @@ export interface ChargeRow {
   preis: string;
   km: string;
   notiz: string;
+  // „Akku ist voll geladen (100 %)“ bei „Reichweite neu“ (v2.39.00) – Maßstab für den Ladering
+  voll?: boolean;
 }
 
 export interface Investition {

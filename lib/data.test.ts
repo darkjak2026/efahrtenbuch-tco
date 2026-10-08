@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { costStats, dateRangeMax, defaultData, isoWeek, migrate, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
+import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, migrate, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -208,4 +208,32 @@ test("Kreditkarte heißt AdHoc Kreditkarte – in der Liste und in den Ladevorg�
   assert.equal(d.months[key][1].karte, "EWE Go");
   // wiederholbar, ohne doppelte Einträge
   assert.deepEqual(migrate(JSON.parse(JSON.stringify(d))).cardsList, ["EWE Go", "AdHoc Kreditkarte", "Zuhause"]);
+});
+
+test("Ladering: ohne Vollladung ist die höchste Reichweite neu der Maßstab", () => {
+  const d = defaultData();
+  const key = Object.keys(d.months)[0];
+  const r1 = { ...emptyRow(), datum: "2026-10-01", fahrzeug: "t03" as VehicleKey, reichweiteVorher: "50", reichweiteNachher: "200" };
+  const r2 = { ...emptyRow(), datum: "2026-10-03", fahrzeug: "t03" as VehicleKey, reichweiteVorher: "100", reichweiteNachher: "250" };
+  d.months[key] = [r1, r2];
+  assert.equal(vollReichweite(d, "t03"), 250);
+  assert.deepEqual(ladeStand(d, r1), { vor: 20, nach: 80 });
+  // ohne Haken höchstens 99 %
+  assert.deepEqual(ladeStand(d, r2), { vor: 40, nach: 99 });
+});
+
+test("Ladering: Haken voll = 100 % und Maßstab aus den letzten Vollladungen", () => {
+  const d = defaultData();
+  const key = Object.keys(d.months)[0];
+  const voll1 = { ...emptyRow(), datum: "2026-10-01", fahrzeug: "t03" as VehicleKey, reichweiteVorher: "60", reichweiteNachher: "260", voll: true };
+  const voll2 = { ...emptyRow(), datum: "2026-10-05", fahrzeug: "t03" as VehicleKey, reichweiteVorher: "30", reichweiteNachher: "240", voll: true };
+  const teil = { ...emptyRow(), datum: "2026-10-07", fahrzeug: "t03" as VehicleKey, reichweiteVorher: "50", reichweiteNachher: "150" };
+  const offen = { ...emptyRow(), datum: "2026-10-08", fahrzeug: "t03" as VehicleKey, reichweiteVorher: "125" };
+  d.months[key] = [voll1, voll2, teil, offen];
+  assert.equal(vollReichweite(d, "t03"), 250);
+  assert.deepEqual(ladeStand(d, voll2), { vor: 12, nach: 100 });
+  assert.deepEqual(ladeStand(d, teil), { vor: 20, nach: 60 });
+  assert.deepEqual(ladeStand(d, offen), { vor: 50, nach: null });
+  // Maßstab nur aus Vollladungen bis zum Tag des Ladevorgangs
+  assert.equal(vollReichweite(d, "t03", "2026-10-02"), 260);
 });

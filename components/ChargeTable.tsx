@@ -9,6 +9,7 @@ import {
   hasNachValues,
   isChargeIncomplete,
   isEmptyRow,
+  ladeStand,
   maybeAutofillPreis,
   minutesToDuration,
   monthWeeks,
@@ -24,6 +25,7 @@ import {
 } from "@/lib/data";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import ConfettiBurst from "./ConfettiBurst";
+import DayRing from "./DayRing";
 import EntryFormModal from "./EntryFormModal";
 import { HouseholdMonthSummary, VehicleMonthCard } from "./MonthVehicleCards";
 
@@ -273,20 +275,21 @@ export default function ChargeTable({
                         </span>
                         <span className="wk-days" aria-hidden="true">
                           {weekDays(w.monday).map((day, i) => {
-                            const n = own.filter(({ row }) => row.datum === day).length;
+                            const amTag = own.filter(({ row }) => row.datum === day);
+                            const n = amTag.length;
                             return (
                               <span className="wk-day" key={day}>
                                 {WEEKDAY_LABELS[i]}
-                                <span
+                                <DayRing
+                                  staende={amTag.map(({ row }) => ladeStand(data, row))}
+                                  count={n}
                                   className={
                                     "wk-dot" +
                                     (n ? " on" : "") +
                                     (day.startsWith(activeMonth) ? "" : " out") +
                                     (day === today ? " today" : "")
                                   }
-                                >
-                                  {n || ""}
-                                </span>
+                                />
                               </span>
                             );
                           })}

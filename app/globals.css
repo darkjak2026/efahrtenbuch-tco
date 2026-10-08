@@ -3044,11 +3044,12 @@ section.split-section.history {
   color: var(--ink-soft);
 }
 .wk-dot {
+  /* 20 px mit Ladering (v2.39.00); der Kern trägt Farbe und Anzahl */
+  position: relative;
   margin-top: 2px;
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--plum-deep);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3057,13 +3058,51 @@ section.split-section.history {
   font-weight: 700;
   color: var(--bg);
 }
+.wk-dot-kern {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--plum-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wk-dot-kern.zwei {
+  width: 10px;
+  height: 10px;
+  font-size: 7px;
+}
+.wk-ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+.wk-ring-spur,
+.wk-ring-vor,
+.wk-ring-gel {
+  fill: none;
+}
+.wk-ring-spur {
+  stroke: rgba(255, 255, 255, 0.14);
+}
+.wk-ring-vor {
+  stroke: var(--range-yellow);
+}
+.wk-ring-gel {
+  stroke: var(--teal);
+}
+.wk-ring-start {
+  stroke: #fff;
+  stroke-width: 1;
+}
 .wk-dot.out {
   opacity: 0.25;
 }
-.hist-col-b10 .wk-dot.on {
+.hist-col-b10 .wk-dot.on .wk-dot-kern {
   background: var(--b10);
 }
-.hist-col-t03 .wk-dot.on {
+.hist-col-t03 .wk-dot.on .wk-dot-kern {
   background: var(--t03);
 }
 .wk-dot.today {
@@ -4253,4 +4292,94 @@ section.split-section.month-view {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
+}
+
+/* Haken „Akku ist voll geladen (100 %)“ bei Reichweite neu (v2.39.00) */
+.efm-voll {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  font-size: 14px;
+  cursor: pointer;
+}
+.efm-voll.an {
+  border: 1px solid var(--teal);
+  background: color-mix(in srgb, var(--teal) 15%, transparent);
+}
+.efm-voll input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--teal);
+}
+
+/* Eingabemaske v2.39.00: Blase am Rand, Hintergrund und Leuchtrahmen erst ab dem ersten Kästchen */
+.fab-modal.efm {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0 4px 12px;
+}
+.fab-modal.efm.efm-vor,
+.fab-modal.efm.efm-nach {
+  animation: none;
+  box-shadow: none;
+}
+.efm-karte {
+  border: 2px solid var(--rahmen);
+  border-radius: 18px;
+  padding: 14px 14px 16px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--car) 30%, var(--panel)) 0%,
+    color-mix(in srgb, var(--car) 12%, var(--panel)) 50%,
+    var(--panel) 100%
+  );
+}
+.efm-vor .efm-karte {
+  animation: efm-puls 1.8s ease-in-out infinite;
+}
+.efm-nach .efm-karte {
+  animation: efm-atem 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .efm-vor .efm-karte,
+  .efm-nach .efm-karte {
+    animation: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rahmen) 22%, transparent), 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+.efm-kopf {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 12px;
+}
+.efm-car-t03 .efm-kopf {
+  flex-direction: row-reverse;
+}
+.efm-kopf .efm-plakette {
+  margin: 0;
+  flex-shrink: 0;
+}
+.fab-modal.efm .efm-kopf h3.efm-h {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  text-align: left;
+}
+.fab-modal.efm .efm-kopf h3.efm-h,
+.fab-modal.efm .efm-kopf h3.efm-h small {
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+.fab-modal.efm.efm-car-t03 .efm-kopf h3.efm-h {
+  text-align: right;
+}
+.efm-car-t03 .efm-zahl {
+  right: auto;
+  left: -6px;
 }

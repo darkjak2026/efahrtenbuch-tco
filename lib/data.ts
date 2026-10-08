@@ -186,6 +186,43 @@ export function allRows(data: AppData): ChargeRow[] {
   return out;
 }
 
+// --- Ladering (v2.39.00): Ladestand in % aus den Reichweiten ---
+// Das Auto zeigt keine Prozent, nur „voll“. Maßstab für 100 % ist daher die
+// „Reichweite neu“ der letzten (bis zu drei) als voll markierten Ladevorgänge
+// bis zu diesem Tag (passt sich Sommer/Winter an); gibt es noch keine, die
+// höchste bisher erfasste „Reichweite neu“ des Autos.
+export function vollReichweite(data: AppData, v: VehicleKey, bisDatum?: string): number | null {
+  const rows = allRows(data).filter((r) => r.fahrzeug === v && parseNum(r.reichweiteNachher) > 0);
+  const voll = rows
+    .filter((r) => r.voll && (!bisDatum || r.datum <= bisDatum))
+    .sort((a, b) => b.datum.localeCompare(a.datum))
+    .slice(0, 3);
+  const basis = voll.length ? voll : rows.filter((r) => r.voll);
+  if (basis.length) {
+    const recent = [...basis].sort((a, b) => b.datum.localeCompare(a.datum)).slice(0, 3);
+    return recent.reduce((s, r) => s + parseNum(r.reichweiteNachher), 0) / recent.length;
+  }
+  const max = Math.max(0, ...rows.map((r) => parseNum(r.reichweiteNachher)));
+  return max > 0 ? max : null;
+}
+
+// Ladestand vor/nach dem Laden in % (0–100). nach = null, solange „Reichweite neu“
+// fehlt; ohne Haken „voll“ höchstens 99 %, damit „voll“ nur echtes 100 % bedeutet.
+export function ladeStand(data: AppData, row: ChargeRow): { vor: number; nach: number | null } | null {
+  if (!row.fahrzeug) return null;
+  const full = vollReichweite(data, row.fahrzeug, row.datum);
+  const rv = parseNum(row.reichweiteVorher);
+  const rn = parseNum(row.reichweiteNachher);
+  if (row.voll) {
+    const ref = full ?? rn;
+    return { vor: ref > 0 ? Math.min(100, Math.round((rv / ref) * 100)) : 0, nach: 100 };
+  }
+  if (!full) return null;
+  const vor = Math.min(99, Math.round((rv / full) * 100));
+  const nach = rn > 0 ? Math.max(vor, Math.min(99, Math.round((rn / full) * 100))) : null;
+  return { vor, nach };
+}
+
 export interface VehicleStats {
   ladekosten: number;
   leasingKosten: number;
