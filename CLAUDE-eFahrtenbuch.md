@@ -2,7 +2,7 @@
 
 **Projekt:** eFahrtenbuch TCO (Familie Liese-Held)
 **Urheber:** Jakobus Claudius Digitalensis (+KI-Claude)
-**Version:** 2026-10-07|1.0.00 (SemVer+CalVer)
+**Version:** 2026-10-08|1.1.00 (SemVer+CalVer) – Abschnitt 3: eigener Server statt Vercel
 **Datei:** `CLAUDE-eFahrtenbuch.md` (fester Name, geladen über die Weiche `CLAUDE.md`)
 **Änderungen gegenüber der Vorfassung:** Die alte `CLAUDE.md` war eine Kopie des früheren allgemeinen
 Regelwerks (Stand 2026-09-01|1.4.01). Sie ist ersetzt durch die Weiche `CLAUDE.md` und diese Projektdatei.
@@ -38,11 +38,21 @@ Bei Widerspruch gilt diese Datei.
 
 ## 3. Prüfen und Ausliefern
 
-- Vor jedem Push: `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`.
-- Jeder Push auf `master` geht über Vercel sofort live in die Alltags-App des Haushalts. Testen ohne echte
-  Daten: `?testmode=1` an die Adresse hängen.
-- Geheimnisse (`LADEPROTOKOLL_PIN`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`) liegen nur in `.env.local` und
-  in den Vercel-Projekteinstellungen, nie im Code oder in der Doku.
+- Vor jedem Deploy: `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build`.
+- **Seit 08.10.2026 läuft die App auf dem eigenen netcup-Server** (derselbe wie VitalCoach/VoiceNotes,
+  SSH-Alias `vitalcoach`). Ausliefern vom PC in Git Bash: `bash server/deploy.sh` – Tests, Build, Upload,
+  Probelauf auf Port 8021, Umschalten, automatischer Rückweg (Vorbild VoiceNotes). Ein Push auf GitHub
+  allein ändert die Alltags-App nicht mehr.
+- Aufbau auf dem Server: Dienst `efahrtenbuch` (Systembenutzer, Sandbox, Port 8020), Code unter
+  `/opt/efahrtenbuch/releases/…`, Zugangsdaten in `/etc/efahrtenbuch/efahrtenbuch.env` (DATABASE_URL,
+  LADEPROTOKOLL_PIN), Postgres-Datenbank `efahrtenbuch_db`, Caddy-Eintrag `/etc/caddy/efahrtenbuch.caddy`,
+  nächtliche Sicherung im gemeinsamen `~/scripts/backup_db.sh` (Quelle im VitalCoach-Repo).
+- Speicher-Weiche `lib/store.ts`: mit `DATABASE_URL` Postgres, sonst Upstash (nur noch die alte Vercel-Version,
+  die per `movedTo` im Datensatz gesperrt ist und auf die neue Adresse verweist).
+- Das GitHub-Repository ist **öffentlich**: Server-IP und Adresse nie in Code oder Doku schreiben, die
+  nip.io-Adresse ermittelt `setup_server.sh` auf dem Server selbst.
+- Testen ohne echte Daten: `?testmode=1` an die Adresse hängen.
+- Geheimnisse liegen nur in `.env.local` (lokal) und in der env-Datei auf dem Server, nie im Code oder in der Doku.
 
 ## 4. Bauplan pflegen (verbindlich)
 

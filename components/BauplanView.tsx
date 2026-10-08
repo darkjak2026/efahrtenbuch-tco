@@ -20,16 +20,15 @@ const SHAPES: Record<string, { x: number; y: number; w: number; h: number; label
   werft: { x: 4, y: 8, w: 58, h: 34, label: "Werft" },
   funk: { x: 150, y: 6, w: 44, h: 40, label: "Funkmast" },
   bruecke: { x: 118, y: 50, w: 80, h: 44, label: "Brücke" },
-  maschinenraum: { x: 198, y: 64, w: 56, h: 30, label: "Maschine" },
+  maschinenraum: { x: 198, y: 104, w: 58, h: 34, label: "Maschine" },
   sprachrohr: { x: 64, y: 66, w: 54, h: 28, label: "Sprachrohr" },
   ladekran: { x: 256, y: 26, w: 44, h: 68, label: "Ladekran" },
   rettungsboot: { x: 6, y: 74, w: 54, h: 20, label: "Rettung", boat: true },
   tresor: { x: 74, y: 104, w: 58, h: 34, label: "Tresor" },
   logbuch: { x: 136, y: 104, w: 58, h: 34, label: "Logbuch" },
   boje: { x: 6, y: 168, w: 34, h: 34, label: "Boje" },
-  beiboot: { x: 176, y: 186, w: 70, h: 22, label: "Beiboot", boat: true },
-  lagerhaus: { x: 306, y: 80, w: 52, h: 58, label: "Lagerhaus" },
-  liegeplatz: { x: 300, y: 140, w: 60, h: 96, label: "Liegeplatz" },
+  laderaum: { x: 92, y: 142, w: 140, h: 24, label: "Laderaum (Datenbank)" },
+  rumpf: { x: 104, y: 178, w: 116, h: 22, label: "Rumpf (eigener Server)" },
 };
 
 const STICKY_OFFSET = 8;

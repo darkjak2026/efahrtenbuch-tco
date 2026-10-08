@@ -3,9 +3,9 @@
   "urheber": "Jakobus Claudius Digitalensis (+KI-Claude)",
   "status": "aktiv",
   "live_seit": "05.07.2026",
-  "aktualisiert": "07.10.2026",
+  "aktualisiert": "08.10.2026",
   "naechste_pruefung": "15.11.2026",
-  "absicht": "Familie Liese-Held fährt zwei Elektroautos (Leapmotor B10 'BIO-Leapy' und Leapmotor T03 'Leapy') und wollte die echten laufenden Kosten pro gefahrenem Kilometer sehen, nicht nur die Stromrechnung. Die App ist ein gemeinsames, PIN-geschütztes Ladeprotokoll: jeder Ladevorgang wird mit Ladekarte, kWh, Preis, Kilometerstand und Standort erfasst, daraus berechnet die App laufend die TCO (Total Cost of Ownership) je Fahrzeug und für den Haushalt insgesamt (Ladekosten + Leasing + Versicherung + Investitionen + wiederkehrende Kosten, geteilt durch die gefahrenen Kilometer). Ursprünglich eine statische HTML-Datei, seit 05.07.2026 als Next.js-App auf Vercel mit Upstash Redis als gemeinsamem Datenspeicher, damit beide Haushaltsmitglieder vom Handy aus eintragen können.",
+  "absicht": "Familie Liese-Held fährt zwei Elektroautos (Leapmotor B10 'BIO-Leapy' und Leapmotor T03 'Leapy') und wollte die echten laufenden Kosten pro gefahrenem Kilometer sehen, nicht nur die Stromrechnung. Die App ist ein gemeinsames, PIN-geschütztes Ladeprotokoll: jeder Ladevorgang wird mit Ladekarte, kWh, Preis, Kilometerstand und Standort erfasst, daraus berechnet die App laufend die TCO (Total Cost of Ownership) je Fahrzeug und für den Haushalt insgesamt (Ladekosten + Leasing + Versicherung + Investitionen + wiederkehrende Kosten, geteilt durch die gefahrenen Kilometer). Ursprünglich eine statische HTML-Datei, vom 05.07.2026 bis 08.10.2026 als Next.js-App auf Vercel mit Upstash Redis, seit 08.10.2026 auf dem eigenen netcup-Server (Next.js als abgeschotteter Dienst, PostgreSQL), damit beide Haushaltsmitglieder vom Handy aus eintragen können.",
   "funktionen": [
     ["Ladevorgang erfassen", "Formular pro Fahrzeug (B10/T03) mit Datum, €/kWh-Preis der Sitzung, Ladekarte, km-Stand, Ladestation (GPS-Suche + Adress-Fallback), Reichweite vorher/nachher, Dauer, kWh, Preis, Notiz; Preis wird automatisch aus kWh x dem für diese Sitzung eingetragenen €/kWh-Preis berechnet, unabhängig von der gewählten Ladekarte. Der km-Stand wird beim Öffnen automatisch geschätzt: sobald die aktuelle Restreichweite eingetragen ist, rechnet die App den letzten bekannten km-Stand plus die seither laut Reichweiten-Differenz gefahrenen Kilometer vor (Fallback: einfach der letzte bekannte km-Stand, z.B. bei der allerersten Ladung eines Fahrzeugs); eigene Eingaben werden dabei nie überschrieben. Gamification: sanfter grüner Glow am Preisfeld beim automatischen Ausfüllen, spielerische eMobilität-Erfolgsmeldung und grün pulsierender Kartenrahmen samt kleinem Konfetti-Regen in den App-Farben in der Historie, sobald eine Erfassung vervollständigt wird"],
     ["TCO-Berechnung", "Laufende €/km-Kennzahl je Fahrzeug und Haushalt aus Ladekosten, Leasing, Versicherung, Investitionen (36 Monate abgeschrieben) und wiederkehrenden Kosten. Der aktuelle km-Stand (ODO) steht direkt unter der €/km-Anzeige; die aufklappbaren Detailwerte (TCO/Monat, TCO gesamt, Ladekosten, Leasing+Versicherung, wiederkehrende Kosten, Investitionen) stehen als zweispaltige Tabelle (Bezeichnung / Wert). Darunter je Auto ein Countdown der Leasing-Freikilometer (Freikilometer/Jahr × Laufzeit minus gefahrene km seit Übergabe) mit Abweichung vom zeitanteiligen Plan"],
@@ -13,33 +13,39 @@
     ["Ladekarten & Tarife", "Verwaltung der genutzten Ladekarten; dient nur noch statistischen Zwecken, kein Euro-Tarif mehr hinterlegbar und keine Kopplung mehr an die Preisberechnung"],
     ["Fixkosten & Investitionen", "Erfassung von Leasingraten, Versicherung, Anschaffungen (abgeschrieben) und Abos je Fahrzeug oder Haushalt"],
     ["Export", "PDF- und Excel-Export der Monats- und Gesamtübersicht (SheetJS/jsPDF im Client)"],
-    ["Zugriffsschutz", "Gemeinsamer Haushalts-PIN (kein Login pro Person), Daten liegen zentral in Upstash Redis"],
+    ["Zugriffsschutz", "Gemeinsamer Haushalts-PIN (kein Login pro Person), Daten liegen zentral in PostgreSQL auf dem eigenen Server"],
     ["Monatsübersicht", "Je Monat und Auto: TCO je km und Laden je km, Kostenring mit Symbolen und Trendpfeilen (antippen: Details zur Kategorie bzw. Statistik mit Vormonat, Minimum, Maximum), aufklappbar Euro-Beträge, kWh und Ladezeit; dazu Haushalts-TCO je km, Summen und ein Balken im Vergleich zum stärksten Monat"],
     ["Entwicklerbereich", "Versteckt hinter 5x Antippen der Versionsnummer: Notizblock mit Diktat, Wünsche (bearbeiten, löschen, exportieren, als erledigt abhaken), Versionsverlauf, Richtlinie der Benennung, Tastenkürzel, Kurzanleitung für Entwickler und der Bauplan (technischer Aufbau als Schiff)"]
   ],
   "hosting": [
-    ["Haupt-Hosting", "Vercel - https://efahrtenbuch-tco.vercel.app (Projekt jakob-s-projects18/efahrtenbuch-tco)"],
-    ["Domain", "keine eigene Domain, nur die vercel.app-Subdomain"]
+    ["Haupt-Hosting", "Eigener netcup-VPS (Debian 13), derselbe Server wie VitalCoach und VoiceNotes: Next.js als systemd-Dienst unter eigenem Systembenutzer 'efahrtenbuch' mit Sandbox (Bewertung 1.1 'OK'), Code root-eigen unter /opt/efahrtenbuch, Port 8020 nur auf 127.0.0.1, Caddy als Reverse-Proxy mit automatischem HTTPS"],
+    ["Adresse", "https://efahrtenbuch.<Server-IP>.nip.io (nip.io statt eigener Domain, wie VitalCoach/VoiceNotes; genaue Adresse im Caddy-Eintrag /etc/caddy/efahrtenbuch.caddy)"],
+    ["Deploy", "Vom PC: bash server/deploy.sh (Tests, Build, Upload, Probelauf auf Port 8021, Umschalten, automatischer Rückweg)"],
+    ["Alt (bis 08.10.2026)", "Vercel - https://efahrtenbuch-tco.vercel.app zeigt nur noch einen Umzugshinweis und nimmt nichts mehr an; Abschalten durch den Urheber offen"]
   ],
   "dienste": [
-    ["Vercel", "Hosting, Build/Deploy bei jedem Push auf GitHub master", "kritisch"],
-    ["Upstash Redis (KV)", "Einziger Datenspeicher - alle Ladevorgänge, Fixkosten, Ladekarten liegen unter dem Redis-Key 'ladeprotokoll:2026'", "kritisch"],
-    ["GitHub", "Quellcode-Repository darkjak2026/efahrtenbuch-tco", "kritisch"],
-    ["Open Charge Map API", "Ladestationssuche per GPS beim Erfassen eines Ladevorgangs", "nice-to-have (Adress-Fallback ohne diesen Dienst)"],
+    ["netcup VPS", "Server für Web-App, API und Datenbank", "kritisch"],
+    ["PostgreSQL 17 (auf dem Server)", "Einziger Datenspeicher - der komplette Datensatz als JSON in efahrtenbuch_db, Tabelle app_data; eigene Rolle, nur diese darf sich verbinden", "kritisch"],
+    ["Caddy (auf dem Server)", "HTTPS-Zertifikate (Let's Encrypt) und Weiterleitung an die App", "kritisch"],
+    ["GitHub", "Quellcode-Repository darkjak2026/efahrtenbuch-tco (öffentlich - deshalb steht die Server-Adresse nicht im Code)", "kritisch"],
+    ["Open Charge Map API", "Ladestationssuche per GPS beim Erfassen eines Ladevorgangs (direkt vom Handy)", "nice-to-have (Adress-Fallback ohne diesen Dienst)"],
     ["OpenStreetMap / Nominatim", "Adress-Fallback (Straße/PLZ/Ort), wenn keine bekannte Ladestation in der Nähe gefunden wird", "nice-to-have"],
     ["SheetJS (xlsx) / jsPDF", "Client-seitig per <script> von cdnjs eingebunden, für Excel-/PDF-Export", "nice-to-have (nur Export betroffen)"],
-    ["Spracherkennung des Browsers (Web Speech API)", "Diktat im Notizblock des Entwicklerbereichs; die Sprachaufnahme geht dabei an den Browser-Hersteller (bei Chrome: Google). Ohne Unterstützung im Browser wird das Mikrofon ausgeblendet", "nice-to-have"]
+    ["Spracherkennung des Browsers (Web Speech API)", "Diktat im Notizblock des Entwicklerbereichs; die Sprachaufnahme geht dabei an den Browser-Hersteller (bei Chrome: Google). Ohne Unterstützung im Browser wird das Mikrofon ausgeblendet", "nice-to-have"],
+    ["Vercel / Upstash Redis (alt)", "Bis 08.10.2026 Hosting und Datenspeicher; Vercel zeigt nur noch den Umzugshinweis, Upstash hält den alten Stand bis zur Löschung", "abzuschalten"]
   ],
   "accounts": [
-    ["Vercel", "darkjak2026 (Team jakob-s-projects18)", "unklar - siehe offene_punkte"],
+    ["netcup VPS", "Zugang wie VitalCoach: ~/.ssh/config Alias 'vitalcoach', Benutzer jakob", "Passwort-Manager des Urhebers / SSH-Schlüssel im Windows-ssh-agent"],
+    ["Datenbank-Rolle efahrtenbuch", "Zufallspasswort, nur auf dem Server", "/etc/efahrtenbuch/efahrtenbuch.env (700/600 root)"],
+    ["App-Zugriffs-PIN (Haushalt)", "gemeinsamer PIN für Familie Liese-Held", "/etc/efahrtenbuch/efahrtenbuch.env auf dem Server, lokal .env.local"],
     ["GitHub", "darkjak2026", "unklar - siehe offene_punkte"],
-    ["Upstash Redis", "Zugangsdaten als KV_REST_API_URL/KV_REST_API_TOKEN in .env.local / Vercel Environment Variables", ".env.local (lokal) bzw. Vercel-Projekteinstellungen"],
-    ["App-Zugriffs-PIN (Haushalt)", "gemeinsamer PIN für Familie Liese-Held", "als LADEPROTOKOLL_PIN in .env.local / Vercel Environment Variables"]
+    ["Vercel (alt)", "darkjak2026 (Team jakob-s-projects18)", "unklar - siehe offene_punkte"],
+    ["Upstash Redis (alt)", "über die Vercel-Integration", "Vercel-Projekteinstellungen / .env.local"]
   ],
   "dsgvo_status": "",
-  "daten_speicherort": "",
-  "avv_stand": "",
-  "backup": "Kein automatisiertes Backup - nur manueller JSON-Export in der App selbst (Exportieren aller Daten).",
+  "daten_speicherort": "Seit 08.10.2026 auf dem eigenen netcup-VPS (Rechenzentrum in Österreich, EU): PostgreSQL, nur über localhost erreichbar, eigene Rolle. Bis 08.10.2026 bei Upstash (Region nie geklärt), dort liegt der alte Stand bis zur Löschung. GPS-Koordinaten gehen beim Erfassen direkt vom Handy an Open Charge Map und OpenStreetMap.",
+  "avv_stand": "Für den Server gilt der netcup-AV-Vertrag, den der Urheber am 05.09.2026 im Customer Control Panel abgeschlossen hat (siehe VitalCoach-Projekt-Pass); er umfasst alle Daten auf dem VPS. Für Upstash/Vercel nie geklärt - entfällt mit dem Löschen der alten Daten.",
+  "backup": "Seit 08.10.2026: nächtlich um 03:30 pg_dump von efahrtenbuch_db im gemeinsamen Sicherungsskript des Servers (~/scripts/backup_db.sh, Quelle im VitalCoach-Repo), 30 Tage unter /var/backups/vitalcoach-postgres, Abholung auf den PC durch hole_backups.ps1 (VitalCoach\\Backups). Zusätzlich der manuelle JSON-Export in der App.",
   "lizenz": "nicht zutreffend",
   "changelog": [
     ["05.07.2026", "1.0.00", "Neu: Projekt gestartet: Migration der bisherigen statischen HTML-Version zu Next.js + Upstash Redis auf Vercel; Ladeprotokoll, TCO-Berechnung, PIN-Schutz, PDF/Excel-Export aufgebaut"],
@@ -86,15 +92,16 @@
     ["08.10.2026", "2.31.00", "Design: Heller Kopfbereich bis zur Mitte der Monatsleiste – jedes Auto steht jetzt auf seiner eigenen Karte (B10 links, t03 rechts), der dunkle Hintergrund beginnt erst unter der Monatsleiste."],
     ["08.10.2026", "2.32.00", "Neu: Die Ladevorgänge eines Monats sind je Auto nach Kalenderwochen (Mo–So) gegliedert, neueste Woche oben (Variante D aus dem Wochen-Mockup, angelehnt an den Kontoauszug in VitalCoach). Jede Woche zeigt in einer Zeile Ladedauer | gefahrene km | Ladekosten (fett) | kWh und darunter sieben Tagespunkte Mo–So – farbig, wo geladen wurde (Zahl = Anzahl), der heutige Tag umrandet. Die aktuelle Woche ist aufgeklappt, die anderen per Antippen."],
     ["08.10.2026", "2.33.00", "Neu: In den Fixkosten gibt es je Auto das Feld 'Freikilometer gesamt laut Vertrag'. Ist es ausgefüllt, rechnet der Freikilometer-Countdown damit statt mit 'pro Jahr × Laufzeit'. Beim Leapy eingetragen: Leasing vom 28.11.2025 bis 28.11.2028 (36 Monate, letzte Rate am 28.10.2028), Gesamtlaufleistung 37.500 km."],
-    ["08.10.2026", "2.33.00", "Behoben: Die Leasingrate wurde ohne Ende weitergezählt. Jetzt zählen genau so viele Raten wie die Laufzeit Monate hat, ab dem Monat der Übergabe (Leapy: 36 Raten von November 2025 bis Oktober 2028, im November 2028 keine Rate mehr) – in den Monatskarten, im PDF-Monatsauszug und in den TCO-Karten oben."]
+    ["08.10.2026", "2.33.00", "Behoben: Die Leasingrate wurde ohne Ende weitergezählt. Jetzt zählen genau so viele Raten wie die Laufzeit Monate hat, ab dem Monat der Übergabe (Leapy: 36 Raten von November 2025 bis Oktober 2028, im November 2028 keine Rate mehr) – in den Monatskarten, im PDF-Monatsauszug und in den TCO-Karten oben."],
+    ["08.10.2026", "2.34.00", "Neu: Umzug auf den eigenen netcup-Server. Die App läuft dort als abgeschotteter Dienst (eigener Systembenutzer, Sandbox), die Daten liegen in PostgreSQL statt bei Upstash, mit nächtlicher Sicherung und Abholung auf den PC. Speichern von zwei Handys gleichzeitig ist jetzt echt atomar geschützt. Neue Adresse: efahrtenbuch.<Server-IP>.nip.io (PIN einmal neu eingeben, Lesezeichen anlegen); die alte Vercel-Adresse zeigt nur noch einen Umzugshinweis und nimmt nichts mehr an. Alle 31 Ladevorgänge, Fixkosten, Investitionen und Wünsche wurden übernommen und Feld für Feld verglichen."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [
     "Wo genau die Passwörter/2FA für die Vercel- und GitHub-Accounts (darkjak2026) hinterlegt sind, ist der KI nicht bekannt - bitte von Jakob ergänzen (Passwort-Manager?).",
-    "Kein automatisiertes Backup der Upstash-Redis-Daten bekannt - nur der manuelle JSON-Export in der App selbst (Exportieren aller Daten).",
-    "dsgvo_status, daten_speicherort und avv_stand sind noch nicht ausgefüllt (auf Wunsch erstmal leer gelassen, siehe Doku-Update vom 01.09.2026). daten_speicherort insbesondere: welche Region nutzt die Upstash-Redis-Datenbank (EU/US)?",
-    "Umzug auf den netcup-Server (Entscheidungen vom 08.10.2026): Adresse efahrtenbuch.<Server-IP>.nip.io (ohne eigene Domain, Zertifikat über Caddy), Vercel-Adresse am Umzugstag sofort abschalten (keine Weiterleitung, Lesezeichen auf beiden Handys umstellen), Daten von Upstash Redis nach Postgres. Start von Phase 1 (lokale Vorbereitung) noch offen – auf Zuruf.",
-    "km-Stand bei Übergabe je Auto in den Fixkosten eintragen – solange leer, rechnet der Freikilometer-Countdown ab 0 km (Neuwagen). Beim B10 fehlen außerdem Übergabedatum, Laufzeit und Freikilometer laut Vertrag (Standard: 36 Monate, 15.000 km/Jahr)."
+    "km-Stand bei Übergabe je Auto in den Fixkosten eintragen – solange leer, rechnet der Freikilometer-Countdown ab 0 km (Neuwagen). Beim B10 fehlen außerdem Übergabedatum, Laufzeit und Freikilometer laut Vertrag (Standard: 36 Monate, 15.000 km/Jahr).",
+    "Vercel-Projekt abschalten und die Upstash-Datenbank löschen (Urheber, im jeweiligen Dashboard). Die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis.",
+    "Monitoring (Bauplan Teil 3) auf dem eigenen Server einrichten: nächtlicher Schnappschuss, Statusseite.",
+    "dsgvo_status ist noch nicht bewertet (auf Wunsch leer gelassen). Speicherort und AVV sind seit dem Umzug geklärt (eigener Server, netcup-AVV)."
   ],
   "feature_requests": [
     ["01.09.2026 09:57", "test", "verworfen"],

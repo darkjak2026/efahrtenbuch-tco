@@ -1,16 +1,16 @@
 {
   "app": "eFahrtenbuch",
-  "stand": "08.10.2026 | 07:02",
+  "stand": "08.10.2026 | 08:24",
   "beschreibung": {
-    "kurz": "Das eFahrtenbuch ist ein gemeinsames Ladeprotokoll für die zwei E-Autos der Familie Liese-Held (Leapmotor B10 „BIO-Leapy“ und T03 „Leapy“). Aus jedem Ladevorgang und den Fixkosten rechnet es laufend aus, was ein gefahrener Kilometer wirklich kostet ([TCO](g:tco)). Die App läuft im Handy-Browser, die Daten liegen zentral in einem gemieteten [Lagerhaus](b:lagerhaus).",
-    "ausgangslage_ziel": "Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern konnte. Ziel war, dass beide Haushaltsmitglieder vom eigenen Handy aus Ladevorgänge eintragen und dieselben Zahlen sehen. Deshalb wurde die App am 05.07.2026 auf [Next.js](g:nextjs) umgebaut, bekam einen gemeinsamen Speicher ([Redis](g:redis) bei Upstash) und einen [Liegeplatz](b:liegeplatz) bei [Vercel](g:vercel). Bewusst klein gehalten: ein gemeinsamer [PIN](g:pin) statt Benutzerkonten, ein einziger Datensatz statt Datenbanktabellen.",
+    "kurz": "Das eFahrtenbuch ist ein gemeinsames Ladeprotokoll für die zwei E-Autos der Familie Liese-Held (Leapmotor B10 „BIO-Leapy“ und T03 „Leapy“). Aus jedem Ladevorgang und den Fixkosten rechnet es laufend aus, was ein gefahrener Kilometer wirklich kostet ([TCO](g:tco)). Die App läuft im Handy-Browser, die Daten liegen seit dem 08.10.2026 im [Laderaum](b:laderaum) des eigenen Schiffs auf dem eigenen Server ([Rumpf](b:rumpf)).",
+    "ausgangslage_ziel": "Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern konnte. Ziel war, dass beide Haushaltsmitglieder vom eigenen Handy aus Ladevorgänge eintragen und dieselben Zahlen sehen. Deshalb wurde die App am 05.07.2026 auf [Next.js](g:nextjs) umgebaut, zunächst gemietet bei [Vercel](g:vercel) mit Upstash-[Redis](g:redis) als Speicher. Am 08.10.2026 zog sie auf den eigenen Server um (Daten in der EU, eigene Sicherung, keine Abhängigkeit von zwei fremden Anbietern). Bewusst klein gehalten: ein gemeinsamer [PIN](g:pin) statt Benutzerkonten, ein einziger Datensatz.",
     "funktionsumfang": "Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand ([ODO](g:odo)), Ladekarte, €/kWh, Standort per [GPS](b:boje)) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Die Oberfläche ist zweigeteilt (links B10, rechts t03): oben €/km und ein Countdown der Leasing-Freikilometer je Auto, darunter die Lade-Historie mit schwebender Monatsleiste, Ladevorgängen nach Kalenderwochen und je Auto einer Monatskarte ([TCO](g:tco) je km, Ladekosten je km, gefahrene km und Fitnessringe je Kostenart mit Trendpfeilen; antippen zeigt Vormonat, Minimum und Maximum). Dazu PDF- und Excel-Exporte. Dazu kommen Fixkosten, Investitionen (über 36 Monate verteilt), Ladekarten, ein Testmodus mit erfundenen Daten und dieser Entwicklerbereich.",
-    "backup_datenschutz": "Ein automatisches [Backup](b:rettungsboot) gibt es nicht: gesichert wird nur per Hand über „Exportieren aller Daten“ als [JSON](g:json)-Datei aufs Gerät. Die Daten (Ladeorte mit Koordinaten, km-Stände, Kosten) liegen bei Upstash; OFFEN: in welcher Region (EU/USA) und mit welchem Auftragsverarbeitungsvertrag ([AVV](g:avv)). Zugang nur mit dem Haushalts-[PIN](g:pin), der im [Tresor](b:tresor) liegt. Beim GPS-Abruf gehen die Koordinaten an Open Charge Map und OpenStreetMap ([Funk](b:funk)).",
-    "abhaengigkeiten": "Vercel (Hosting und [Stapellauf](g:deploy)), Upstash (Datenspeicher), GitHub (Quellcode), Open Charge Map und Nominatim/OpenStreetMap (Ladestation und Adresse zum Standort), cdnjs (lädt die Excel- und PDF-Bausteine nach). Fällt Vercel oder Upstash aus, steht die App; fallen die anderen aus, fehlen nur Komfortfunktionen.",
+    "backup_datenschutz": "Jede Nacht um 03:30 sichert der Server die Datenbank mit, die Sicherungen bleiben 30 Tage und werden zusätzlich auf den PC geholt ([Rettungsboot](b:rettungsboot)); dazu kommt der Handexport als [JSON](g:json). Die Daten (Ladeorte mit Koordinaten, km-Stände, Kosten) liegen auf dem eigenen Server in Österreich (EU), ohne Auftragsverarbeiter für die Speicherung. Zugang nur mit dem Haushalts-[PIN](g:pin) aus dem [Tresor](b:tresor). Beim GPS-Abruf gehen die Koordinaten direkt vom Handy an Open Charge Map und OpenStreetMap ([Funk](b:funk)).",
+    "abhaengigkeiten": "Eigener Server bei netcup ([VPS](g:vps)) mit [Caddy](g:caddy) und [PostgreSQL](g:postgres), GitHub (Quellcode), Open Charge Map und Nominatim/OpenStreetMap (Ladestation und Adresse zum Standort), cdnjs (Excel- und PDF-Bausteine). Fällt der Server aus, steht die App; fallen die anderen aus, fehlen nur Komfortfunktionen.",
     "herausforderungen": {
       "vergangenheit": "Am ersten Tag (05.07.2026) entstanden über 50 Änderungen in Folge, vor allem am Eingabeformular; mehrere Bedienideen (Schieberegler, Drehrad für die Dauer) wurden gebaut und wieder verworfen. Fehler, die erst im Alltag auffielen: der Excel-Export stürzte über den Jahreswechsel ab, die Preisautomatik blieb nach dem ersten Rechnen hängen, eine km-Schätzformel kopierte nur alte Werte. Zwei Stresstests im September 2026 fanden u. a. sich gegenseitig überschreibende Speicherungen von zwei Handys; seitdem gibt es eine Konfliktprüfung ([optimistisches Sperren](g:optimistic-locking)).",
-      "gegenwart": "Es gibt kein automatisches Backup und keine Überwachung (Monitoring): niemand merkt es aktiv, wenn Vercel oder Upstash Fehler melden. Datenschutzfelder im Projekt-Pass (DSGVO, Speicherort, AVV) sind noch leer. Für den BIO-Leapy fehlen noch Stichtag-Werte, daher zeigt er noch keine €/km.",
-      "zukunft": "Geplant ist der Umzug auf den eigenen netcup-Server: eigener Rumpf statt Liegeplatz, eigene Datenbank statt fremdem Lagerhaus, nächtliches Backup und das Monitoring (Teil 3) als systemd-Timer. Der eine große Datensatz wächst bis Leasingende (Oktober 2028) auf geschätzt einige hundert Ladevorgänge – unkritisch, aber jedes Speichern schickt den ganzen Datensatz. Regelmäßig nötig: Abhängigkeiten aktualisieren (Next.js, React) und die Datenschutzangaben nachziehen."
+      "gegenwart": "Das Monitoring (Teil 3) fehlt noch: Ausfälle fallen nur auf, wenn jemand die App öffnet. Datenschutzfelder im Projekt-Pass sind nach dem Umzug neu zu bewerten. Für den BIO-Leapy fehlen noch Leasing- und Stichtagsdaten.",
+      "zukunft": "Monitoring mit nächtlichem Schnappschuss und Statusseite, ein Menü mit „Planung“ (Streckenrechner, Autovorschlag), regelmäßige Updates von Node.js (Debian-Pakete) und Next.js. Der eine Datensatz wächst bis Leasingende auf einige hundert Ladevorgänge – unkritisch, aber jedes Speichern schickt den ganzen Datensatz."
     }
   },
   "schiff": [
@@ -21,43 +21,34 @@
       "technik": "Next.js 16, React 19, TypeScript, eigene CSS-Datei",
       "ort": "geraet",
       "vorhanden": true,
-      "text": "Die Brücke ist alles, was man auf dem Handy sieht und antippt: Kacheln, Lade-Historie, Erfassungsformular, dieser Entwicklerbereich. Gebaut mit [React](g:react) in [Next.js](g:nextjs); die Seite wird einmal geladen und läuft dann im Browser. Beim Öffnen holt sie den ganzen Datensatz über das [Sprachrohr](b:sprachrohr) und speichert jede Änderung nach 0,8 Sekunden Ruhe automatisch zurück. Den PIN merkt sie sich im Browser ([localStorage](g:localstorage))."
+      "text": "Die Brücke ist alles, was man auf dem Handy sieht und antippt: Kacheln, Lade-Historie, Erfassungsformular, dieser Entwicklerbereich. Gebaut mit [React](g:react) in [Next.js](g:nextjs); die Seite wird einmal geladen und läuft dann im Browser. Die Rechnungen (TCO, km, Ringe) laufen direkt hier auf dem Handy. Beim Öffnen holt sie den ganzen Datensatz über das [Sprachrohr](b:sprachrohr) und speichert jede Änderung nach 0,8 Sekunden Ruhe automatisch zurück. Den PIN merkt sie sich im Browser ([localStorage](g:localstorage))."
     },
     {
       "id": "maschinenraum",
       "name": "Maschinenraum",
-      "it": "Geschäftslogik",
-      "technik": "lib/data.ts (reine Rechenfunktionen)",
-      "ort": "geraet",
+      "it": "Backend (Next.js-Server)",
+      "technik": "Node.js 20 (Debian), Next.js im eigenständigen Paket, systemd-Dienst",
+      "ort": "server",
       "vorhanden": true,
-      "text": "Ungewöhnlich für ein Schiff: der Maschinenraum sitzt direkt hinter der [Brücke](b:bruecke) auf dem Handy. Alle Rechnungen – [TCO](g:tco), €/km, gefahrene km pro Monat, Abschreibung der Investitionen – laufen im Browser, nicht auf einem Server. Das hält die Serverseite winzig, heißt aber auch: jedes Gerät rechnet selbst. Die Rechenfunktionen haben keine Nebenwirkungen und sind mit automatischen Tests abgesichert."
+      "text": "Im Maschinenraum läuft der Next.js-Server als Dienst ([systemd](g:systemd)) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das [Sprachrohr](b:sprachrohr). Er ist abgeschottet ([Sandbox](g:sandbox)): darf keine Dateien schreiben, nicht ins Internet und nur seinen eigenen Hafen-Eingang benutzen – die anderen Apps auf dem Server sieht er nicht."
     },
     {
       "id": "sprachrohr",
       "name": "Sprachrohr",
       "it": "API-Schicht (1 Endpunkt)",
-      "technik": "app/api/data/route.ts – GET und POST /api/data",
-      "ort": "extern",
+      "technik": "app/api/data/route.ts – GET/POST /api/data, dazu /api/health",
+      "ort": "server",
       "vorhanden": true,
-      "text": "Über genau eine feste Befehlsleitung ([Endpunkt](g:endpunkt)) spricht die Brücke mit dem Lagerhaus: „gib mir alles“ (GET) und „speichere alles“ (POST). Jede Anfrage muss den [PIN](g:pin) mitbringen, sonst kommt nichts heraus. Beim Speichern wird geprüft, ob inzwischen jemand anderes gespeichert hat ([optimistisches Sperren](g:optimistic-locking)); dann gibt es eine Warnung statt stillem Überschreiben."
+      "text": "Über eine feste Befehlsleitung ([Endpunkt](g:endpunkt)) spricht die Brücke mit dem Maschinenraum: „gib mir alles“ (GET) und „speichere alles“ (POST). Jede Anfrage muss den [PIN](g:pin) mitbringen. Beim Speichern prüft der [Laderaum](b:laderaum) in einem Schritt, ob inzwischen jemand anderes gespeichert hat ([optimistisches Sperren](g:optimistic-locking)) – dann gibt es eine Warnung statt stillem Überschreiben. /api/health meldet ohne PIN nur „läuft“."
     },
     {
-      "id": "beiboot",
-      "name": "Beiboot",
-      "it": "Serverless-Funktion",
-      "technik": "Vercel Functions (Node.js)",
-      "ort": "extern",
+      "id": "laderaum",
+      "name": "Laderaum",
+      "it": "Datenbank",
+      "technik": "PostgreSQL 17, Datenbank efahrtenbuch_db, 1 Tabelle",
+      "ort": "server",
       "vorhanden": true,
-      "text": "Es gibt keinen dauernd laufenden Server. Stattdessen läuft bei jeder Anfrage ans [Sprachrohr](b:sprachrohr) kurz ein Beiboot aus ([Serverless](g:serverless)), prüft den PIN, holt oder schreibt den Datensatz im [Lagerhaus](b:lagerhaus) und legt wieder an. Vorteil: kein eigener Server zu warten. Nachteil: die erste Anfrage nach längerer Pause kann etwas länger dauern (Kaltstart)."
-    },
-    {
-      "id": "lagerhaus",
-      "name": "Lagerhaus am Kai",
-      "it": "Datenbank (Key-Value-Speicher)",
-      "technik": "Upstash Redis, 1 Schlüssel „ladeprotokoll:2026“",
-      "ort": "extern",
-      "vorhanden": true,
-      "text": "Alle Daten liegen in einem gemieteten Lagerhaus neben dem Schiff: [Redis](g:redis) beim Anbieter Upstash. Dort gibt es keine Tabellen, sondern genau ein Fach (Schlüssel) mit dem kompletten Datensatz als [JSON](g:json): Ladevorgänge aller Monate, Fixkosten, Investitionen, Ladekarten, Wünsche aus dem Entwicklerbereich. Fehlen nach einem Update Felder, ergänzt die App sie beim Laden (Migration in lib/data.ts). OFFEN: Region des Lagerhauses (EU oder USA)."
+      "text": "Im Laderaum liegt alles in einer [PostgreSQL](g:postgres)-Datenbank mit genau einer Tabelle und einer Zeile: dem kompletten Datensatz als [JSON](g:json) samt Zählnummer. Nur die eigene Datenbank-Rolle der App darf hinein. Fehlen nach einem Update Felder, ergänzt die App sie beim Laden. Bis zum 08.10.2026 lag das in einem gemieteten Lagerhaus (Upstash [Redis](g:redis))."
     },
     {
       "id": "funk",
@@ -84,52 +75,52 @@
       "technik": "„Sicherung wiederherstellen“ (JSON-Datei)",
       "ort": "geraet",
       "vorhanden": true,
-      "text": "Mit dem Ladekran hebt man eine früher exportierte Sicherung ([JSON](g:json)-Datei) wieder an Bord. Die App prüft dabei die Form der Datei und verwirft unbekannte Monate, statt sie unsichtbar mitzuschleppen. Danach wird der Datensatz wie jede Änderung ins [Lagerhaus](b:lagerhaus) gespeichert – er ersetzt den bisherigen Stand."
+      "text": "Mit dem Ladekran hebt man eine früher exportierte Sicherung ([JSON](g:json)-Datei) wieder an Bord. Die App prüft dabei die Form der Datei und verwirft unbekannte Monate, statt sie unsichtbar mitzuschleppen. Danach wird der Datensatz wie jede Änderung ins [Lagerhaus](b:laderaum) gespeichert – er ersetzt den bisherigen Stand."
     },
     {
       "id": "tresor",
       "name": "Tresor",
       "it": "Umgebungsvariablen / Geheimnisse",
-      "technik": "Vercel-Projekteinstellungen, lokal .env.local",
-      "ort": "extern",
+      "technik": "geschützte Einstellungsdatei auf dem Server (nur root)",
+      "ort": "server",
       "vorhanden": true,
-      "text": "Im Tresor liegen drei Geheimnisse als [Umgebungsvariablen](g:umgebungsvariable): der Haushalts-[PIN](g:pin) und die Zugangsdaten zum [Lagerhaus](b:lagerhaus) (Adresse und Schlüssel). Sie stehen in den Projekteinstellungen bei Vercel und für die Entwicklung in einer lokalen Datei, die nie zu GitHub hochgeladen wird. Nur das [Beiboot](b:beiboot) kann sie lesen, die Brücke nie."
+      "text": "Im Tresor liegen die Geheimnisse als [Umgebungsvariablen](g:umgebungsvariable): der Haushalts-[PIN](g:pin) und der Zugang zum [Laderaum](b:laderaum) (Zufallspasswort). Die Datei auf dem Server kann nur root lesen; der Maschinenraum bekommt die Werte beim Start. Für die Entwicklung gibt es eine lokale Datei, die nie zu GitHub geht."
     },
     {
       "id": "logbuch",
       "name": "Logbuch",
       "it": "Logs (Fehler- und Ereignisprotokolle)",
-      "technik": "Vercel-Laufzeitprotokolle",
-      "ort": "extern",
+      "technik": "systemd-Journal, Deploy-Protokolle",
+      "ort": "server",
       "vorhanden": true,
-      "text": "Das Logbuch führt Vercel automatisch: jede Anfrage ans Beiboot und jeder Fehler landet dort. Es wird aber von niemandem regelmäßig gelesen und nur kurz aufbewahrt. Eine eigene Auswertung (Monitoring, Teil 3) gibt es noch nicht – sie kommt mit dem Umzug auf den eigenen Server."
+      "text": "Das Logbuch führt der Server selbst: Start, Fehler und jede Anfrage-Panne landen im Systemprotokoll des Dienstes, jeder [Stapellauf](g:deploy) schreibt ein eigenes Protokoll. Ausgewertet wird es noch nicht – das kommt mit dem Monitoring (Teil 3)."
     },
     {
       "id": "rettungsboot",
       "name": "Rettungsboot",
       "it": "Backup",
-      "technik": "manueller JSON-Export „Exportieren aller Daten“",
-      "ort": "geraet",
+      "technik": "nächtlicher pg_dump (03:30), 30 Tage, Abholung auf den PC, dazu Handexport",
+      "ort": "server",
       "vorhanden": true,
-      "text": "Das Rettungsboot muss man selbst zu Wasser lassen: „Exportieren aller Daten“ lädt den kompletten Datensatz als [JSON](g:json)-Datei aufs Handy. Ein automatisches, regelmäßiges [Backup](g:backup) gibt es nicht; geht beim Anbieter des [Lagerhauses](b:lagerhaus) etwas verloren, ist nur die letzte Handsicherung da. Mit dem [Ladekran](b:ladekran) kommt eine Sicherung zurück."
+      "text": "Das Rettungsboot läuft jetzt jede Nacht von selbst aus: um 03:30 wird die Datenbank gesichert ([Backup](g:backup)), die Sicherungen bleiben 30 Tage auf dem Server und werden auf den PC geholt. Zusätzlich lädt „Exportieren aller Daten“ den Datensatz jederzeit als [JSON](g:json) aufs Handy, und mit dem [Ladekran](b:ladekran) kommt eine Sicherung zurück."
     },
     {
       "id": "werft",
       "name": "Werft",
       "it": "Entwicklung und Deployment",
-      "technik": "GitHub (darkjak2026/efahrtenbuch-tco), Claude Code, Vercel-Auto-Deploy",
+      "technik": "GitHub (darkjak2026/efahrtenbuch-tco), Claude Code, server/deploy.sh",
       "ort": "werkzeug",
       "vorhanden": true,
-      "text": "In der Werft wird gebaut: der Quellcode liegt bei [GitHub](g:github), geschrieben wird mit Claude Code auf dem PC. Jeder Upload auf den Hauptzweig (master) löst bei Vercel automatisch einen [Stapellauf](g:deploy) aus: die App wird neu gebaut und ist eine Minute später live. Vorher laufen lokal Tests, Typprüfung ([TypeScript](g:typescript)) und Lint."
+      "text": "In der Werft wird gebaut: der Quellcode liegt bei [GitHub](g:github), geschrieben wird mit Claude Code auf dem PC. Den [Stapellauf](g:deploy) startet server/deploy.sh: Tests, Bau, Hochladen, dann ein Probelauf des neuen Stands neben dem laufenden; erst wenn der antwortet, wird umgeschaltet – sonst geht es automatisch zurück auf den vorigen Stand."
     },
     {
-      "id": "liegeplatz",
-      "name": "Liegeplatz bei Vercel",
-      "it": "Hosting (gemietet)",
-      "technik": "Vercel, Adresse efahrtenbuch-tco.vercel.app",
-      "ort": "extern",
+      "id": "rumpf",
+      "name": "Rumpf",
+      "it": "Hosting (eigener Server)",
+      "technik": "netcup VPS, Debian 13, Caddy mit automatischem HTTPS, Adresse efahrtenbuch.…nip.io",
+      "ort": "server",
       "vorhanden": true,
-      "text": "Das Schiff hat keinen eigenen Rumpf auf eigenem Grund, sondern einen gemieteten Liegeplatz bei [Vercel](g:vercel). Vercel liefert die Seite aus, stellt die sichere Verbindung (HTTPS) und lässt die [Beiboote](b:beiboot) laufen. Eine eigene Domain gibt es nicht. Geplant ist der Umzug in den eigenen Hafen (netcup-Server)."
+      "text": "Seit dem 08.10.2026 hat das Schiff einen eigenen Rumpf: einen gemieteten [VPS](g:vps) bei netcup, auf dem auch VitalCoach und VoiceNotes fahren – jede App abgeschottet für sich. Vorne sitzt [Caddy](g:caddy) als Hafeneinfahrt: holt das Zertifikat (HTTPS) und reicht Anfragen an den [Maschinenraum](b:maschinenraum) weiter. Die Adresse läuft über [nip.io](g:nip-io), eine eigene Domain ist nicht nötig."
     },
     {
       "id": "uboot",
@@ -138,7 +129,7 @@
       "technik": "–",
       "ort": "server",
       "vorhanden": false,
-      "text": "Kein U-Boot an Bord: es laufen keine geplanten Hintergrundaufgaben (Cron-Jobs). Nichts passiert, solange niemand die App öffnet."
+      "text": "Kein eigenes U-Boot: die App hat keine geplanten Hintergrundaufgaben. Die nächtliche Sicherung erledigt das gemeinsame Sicherungsskript des Servers mit."
     }
   ],
   "glossar": [
@@ -170,17 +161,17 @@
     {
       "id": "redis",
       "begriff": "Redis",
-      "erklaerung": "Sehr schneller Speicher, der Daten unter einem Namen (Schlüssel) ablegt, ohne Tabellen (Key-Value-Speicher)."
+      "erklaerung": "Schneller Schlüssel-Wert-Speicher; beim eFahrtenbuch bis 08.10.2026 bei Upstash der Datenspeicher."
     },
     {
       "id": "vercel",
       "begriff": "Vercel",
-      "erklaerung": "Anbieter, der Next.js-Apps hostet und bei jedem Code-Upload automatisch neu ausliefert."
+      "erklaerung": "Anbieter, der Next.js-Apps hostet; beim eFahrtenbuch bis 08.10.2026 der Liegeplatz."
     },
     {
       "id": "serverless",
       "begriff": "Serverless",
-      "erklaerung": "Server-Code, der nur bei Bedarf kurz gestartet wird, statt dauernd auf einem eigenen Rechner zu laufen."
+      "erklaerung": "Server-Code, der nur bei Bedarf kurz gestartet wird (so lief die App bei Vercel)."
     },
     {
       "id": "endpunkt",
@@ -246,11 +237,40 @@
       "id": "avv",
       "begriff": "AVV (Auftragsverarbeitungsvertrag)",
       "erklaerung": "Vertrag nach DSGVO mit einem Dienstleister, der personenbezogene Daten im eigenen Auftrag speichert oder verarbeitet."
+    },
+    {
+      "id": "postgres",
+      "begriff": "PostgreSQL",
+      "erklaerung": "Bewährte Open-Source-Datenbank; läuft auf dem eigenen Server für alle drei Apps, jede mit eigener Datenbank und Rolle."
+    },
+    {
+      "id": "caddy",
+      "begriff": "Caddy",
+      "erklaerung": "Webserver vor den Apps: holt HTTPS-Zertifikate automatisch und leitet Anfragen an die richtige App weiter."
+    },
+    {
+      "id": "systemd",
+      "begriff": "systemd",
+      "erklaerung": "Startet und überwacht Dienste unter Linux, startet sie nach einem Absturz neu und setzt die Abschottung (Sandbox) um."
+    },
+    {
+      "id": "sandbox",
+      "begriff": "Sandbox (Abschottung)",
+      "erklaerung": "Regeln, die einem Dienst fast alles verbieten, was er nicht braucht: keine Dateien schreiben, kein Internet, keine fremden Ordner."
+    },
+    {
+      "id": "vps",
+      "begriff": "VPS (Virtual Private Server)",
+      "erklaerung": "Ein gemieteter virtueller Server mit eigenem Betriebssystem, den man selbst verwaltet."
+    },
+    {
+      "id": "nip-io",
+      "begriff": "nip.io",
+      "erklaerung": "Kostenloser Dienst, bei dem die IP-Adresse des Servers mit Bindestrichen im Namen steht (name.<IP>.nip.io) und auf genau diesen Server zeigt – so bekommt man HTTPS ohne eigene Domain."
     }
   ],
   "offen": [
-    "OFFEN: Region des Upstash-Lagerhauses (EU oder USA) und Stand des AVV.",
-    "OFFEN: Monitoring (Teil 3) – folgt mit dem Umzug auf den netcup-Server (Entscheidung vom 07.10.2026).",
-    "OFFEN: kein automatisches Backup, nur die Handsicherung."
+    "OFFEN: Monitoring (Teil 3) – nächtlicher Schnappschuss, Statusseite, Verlauf (jetzt auf dem eigenen Server umsetzbar).",
+    "OFFEN: Vercel-Projekt abschalten und Upstash-Datenbank löschen (Urheber; die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis)."
   ]
 }

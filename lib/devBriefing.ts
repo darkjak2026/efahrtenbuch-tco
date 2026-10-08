@@ -18,15 +18,15 @@ export const DEV_BRIEFING: BriefingSection[] = [
   },
   {
     heading: "Lokal starten",
-    body: "npm install\n.env.local braucht: KV_REST_API_URL, KV_REST_API_TOKEN (Upstash Redis, via Vercel-Marketplace-Integration - NICHT die UPSTASH_REDIS_REST_*-Namen), LADEPROTOKOLL_PIN.\nnpm run dev\nTests: npm test (node:test, lib/*.test.ts). Nach Änderungen am Bauplan: npm run bauplan.\nZum risikofreien Ausprobieren ohne echte Daten anzufassen: ?testmode=1 an die URL hängen (siehe lib/testData.ts).",
+    body: "npm install\n.env.local braucht: LADEPROTOKOLL_PIN und entweder DATABASE_URL (Postgres) oder KV_REST_API_URL/KV_REST_API_TOKEN (Upstash, nur noch die alte Vercel-Version).\nnpm run dev\nTests: npm test (node:test, lib/*.test.ts). Nach Änderungen am Bauplan: npm run bauplan.\nZum risikofreien Ausprobieren ohne echte Daten: ?testmode=1 an die URL hängen (siehe lib/testData.ts).",
   },
   {
     heading: "Wo die Daten wirklich liegen",
-    body: "EIN einziger Redis-Key (REDIS_KEY in lib/constants.ts) hält das komplette AppData-Objekt als JSON-Blob - kein Schema, keine Tabellen, keine Migrations-Tools. lib/redis.ts: getAppData()/setAppData(). lib/data.ts: migrate() füllt beim Laden fehlende Felder mit Defaults auf. WICHTIG: jedes neue Feld in AppData muss dort ergänzt werden, sonst verhält sich alter gespeicherter Stand beim nächsten Laden inkonsistent statt sauber zu crashen.",
+    body: "Seit 08.10.2026: EINE Zeile in Postgres (Tabelle app_data, id 'main') hält das komplette AppData-Objekt als JSON - kein Schema pro Feld. lib/store.ts wählt den Speicher (DATABASE_URL -> lib/pg-store.ts, sonst lib/redis.ts für die alte Vercel-Version). lib/data.ts: migrate() füllt beim Laden fehlende Felder mit Defaults auf. WICHTIG: jedes neue Feld in AppData muss dort ergänzt werden, sonst verhält sich alter gespeicherter Stand beim nächsten Laden inkonsistent statt sauber zu crashen.",
   },
   {
     heading: "Nebenläufigkeit (AppData._rev)",
-    body: "Zwei Haushaltsmitglieder können gleichzeitig auf verschiedenen Geräten speichern. _rev ist ein Zähler für optimistisches Locking: setAppData() lehnt ab (Konflikt), wenn der mitgeschickte _rev nicht mehr zum aktuell gespeicherten Stand passt. Kein echtes atomares Compare-and-Swap (Upstash REST kennt kein WATCH/MULTI) - nur GET-dann-vergleichen-dann-SET, ein bewusster Kompromiss statt einem ungetesteten Lua-Skript in Produktion. Details im Kommentar über setAppData in lib/redis.ts.",
+    body: "Zwei Haushaltsmitglieder können gleichzeitig auf verschiedenen Geräten speichern. _rev ist ein Zähler für optimistisches Locking: setAppData() lehnt ab (Konflikt), wenn der mitgeschickte _rev nicht mehr zum aktuell gespeicherten Stand passt. Auf Postgres echtes atomares Compare-and-Swap (UPDATE ... WHERE rev = erwartete Revision, lib/pg-store.ts). Die alte Upstash-Variante (lib/redis.ts) konnte nur GET-dann-vergleichen-dann-SET.",
   },
   {
     heading: "Komponentenkarte",
@@ -38,6 +38,6 @@ export const DEV_BRIEFING: BriefingSection[] = [
   },
   {
     heading: "Vollständige Doku & Deployment",
-    body: "/CLAUDE-eFahrtenbuch.md - Projektregeln (geladen über die Weiche /CLAUDE.md); allgemeine Regeln in CLAUDE-Allgemein.md.\n/docs/technisch/bauplan.md - Bauplan (technischer Aufbau) zum Lesen.\n/Doku/PROJEKT-PASS-ANLEITUNG.md - wie projekt-pass.json gepflegt wird.\n/projekt-pass.json - changelog (jede Änderung mit Begründung, laienverständlich) und offene_punkte (bekannte Lücken, nicht verschwiegen).\nDeployment: Vercel, jeder Push auf master deployt automatisch. Env-Vars liegen in den Vercel-Projekteinstellungen, nicht in .env.local (die gilt nur lokal).",
+    body: "/CLAUDE-eFahrtenbuch.md - Projektregeln (geladen über die Weiche /CLAUDE.md), Abschnitt 3: Server und Deploy.\n/docs/technisch/bauplan.md - Bauplan (technischer Aufbau) zum Lesen.\n/projekt-pass.json - changelog und offene_punkte.\nDeployment: eigener netcup-Server, vom PC aus mit bash server/deploy.sh (Probelauf auf Port 8021, automatischer Rückweg). Ein Push auf GitHub allein ändert nichts an der laufenden App. Zugangsdaten nur in /etc/efahrtenbuch/efahrtenbuch.env auf dem Server.",
   },
 ];
