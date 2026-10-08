@@ -80,6 +80,17 @@ export default function FixedCostsPanel({
             />
           </div>
           <div className="field-row">
+            <label htmlFor="b10_freiKmGesamt">🛣️ Freikilometer gesamt laut Vertrag (statt pro Jahr)</label>
+            <input
+              type="number"
+              step="100"
+              id="b10_freiKmGesamt"
+              min="0"
+              value={data.vehicles.b10.freiKmGesamt}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.freiKmGesamt = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
             <label htmlFor="b10_leasingMonate">⏱️ Leasinglaufzeit in Monaten</label>
             <input
               type="number"
@@ -179,6 +190,17 @@ export default function FixedCostsPanel({
               min="0"
               value={data.vehicles.t03.freiKmProJahr}
               onChange={(e) => updateData((d) => { d.vehicles.t03.freiKmProJahr = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_freiKmGesamt">🛣️ Freikilometer gesamt laut Vertrag (statt pro Jahr)</label>
+            <input
+              type="number"
+              step="100"
+              id="t03_freiKmGesamt"
+              min="0"
+              value={data.vehicles.t03.freiKmGesamt}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.freiKmGesamt = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">

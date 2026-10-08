@@ -102,6 +102,17 @@ test("Leasing-km-Countdown ohne km-Stand und ohne Übergabedatum", () => {
   assert.equal(l.anteilZeit, null);
   assert.equal(l.startKmGeschaetzt, true);
 });
+
+test("Freikilometer gesamt laut Vertrag gehen vor Freikilometer pro Jahr", () => {
+  const d = dataWith([]);
+  d.vehicles.t03.start = "2025-11-28";
+  d.vehicles.t03.leasingMonate = 35;
+  d.vehicles.t03.freiKmProJahr = 13000;
+  d.vehicles.t03.freiKmGesamt = 37500;
+  const l = leasingKm(d, "t03");
+  assert.equal(l.inklusiveKm, 37500);
+  assert.equal(l.ende, "2028-10-28");
+});
 test("Leasingende und sichtbare Monate: 28.11.2025 + 36 Monate -> bis November 2028", () => {
   const d = dataWith([]);
   d.vehicles.t03.start = "2025-11-28";

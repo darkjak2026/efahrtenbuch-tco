@@ -42,6 +42,8 @@ export interface VehicleFixedCosts {
   // Leasing-km-Countdown: Freikilometer pro Jahr, Laufzeit in Monaten und der
   // km-Stand bei Übergabe (leer = 0, also Neuwagen).
   freiKmProJahr: string | number;
+  // Gesamtlaufleistung laut Vertrag; wenn gesetzt, gilt sie statt freiKmProJahr × Laufzeit.
+  freiKmGesamt: string | number;
   leasingMonate: string | number;
   kmBeiLeasingbeginn: string | number;
 }

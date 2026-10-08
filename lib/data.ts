@@ -45,8 +45,8 @@ export function defaultData(): AppData {
     _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
-      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "", freiKmProJahr: 15000, leasingMonate: 36, kmBeiLeasingbeginn: "" },
-      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696, freiKmProJahr: 13000, leasingMonate: 36, kmBeiLeasingbeginn: "" },
+      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "", freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "" },
+      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "" },
     },
     recurringCosts: [emptyRecurring()],
     erfassungStart: "2026-07-01",
@@ -229,7 +229,8 @@ export interface LeasingKm {
 export function leasingKm(data: AppData, key: VehicleKey, today: Date = new Date()): LeasingKm {
   const v = data.vehicles[key];
   const monate = parseNum(v.leasingMonate) || 36;
-  const inklusiveKm = Math.round((parseNum(v.freiKmProJahr) * monate) / 12);
+  const inklusiveKm =
+    parseNum(v.freiKmGesamt) > 0 ? Math.round(parseNum(v.freiKmGesamt)) : Math.round((parseNum(v.freiKmProJahr) * monate) / 12);
   const kmStand = vehicleStats(data, key).kmStand;
   const startKmGeschaetzt = v.kmBeiLeasingbeginn === "" || v.kmBeiLeasingbeginn === null || v.kmBeiLeasingbeginn === undefined;
   const gefahren = kmStand > 0 ? Math.max(0, kmStand - parseNum(v.kmBeiLeasingbeginn)) : null;
