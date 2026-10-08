@@ -1,6 +1,6 @@
 {
   "app": "eFahrtenbuch",
-  "stand": "08.10.2026 | 09:36",
+  "stand": "08.10.2026 | 10:08",
   "beschreibung": {
     "kurz": "Das eFahrtenbuch ist ein gemeinsames Ladeprotokoll für die zwei E-Autos der Familie Liese-Held (Leapmotor B10 „BIO-Leapy“ und T03 „Leapy“). Aus jedem Ladevorgang und den Fixkosten rechnet es laufend aus, was ein gefahrener Kilometer wirklich kostet ([TCO](g:tco)). Die App läuft im Handy-Browser, die Daten liegen seit dem 08.10.2026 im [Laderaum](b:laderaum) des eigenen Schiffs auf dem eigenen Server ([Rumpf](b:rumpf)).",
     "ausgangslage_ziel": "Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern konnte. Ziel war, dass beide Haushaltsmitglieder vom eigenen Handy aus Ladevorgänge eintragen und dieselben Zahlen sehen. Deshalb wurde die App am 05.07.2026 auf [Next.js](g:nextjs) umgebaut, zunächst gemietet bei [Vercel](g:vercel) mit Upstash-[Redis](g:redis) als Speicher. Am 08.10.2026 zog sie auf den eigenen Server um (Daten in der EU, eigene Sicherung, keine Abhängigkeit von zwei fremden Anbietern). Bewusst klein gehalten: ein gemeinsamer [PIN](g:pin) statt Benutzerkonten, ein einziger Datensatz.",
@@ -9,8 +9,8 @@
     "abhaengigkeiten": "Eigener Server bei netcup ([VPS](g:vps)) mit [Caddy](g:caddy) und [PostgreSQL](g:postgres), GitHub (Quellcode), Open Charge Map und Nominatim/OpenStreetMap (Ladestation und Adresse zum Standort), cdnjs (Excel- und PDF-Bausteine). Fällt der Server aus, steht die App; fallen die anderen aus, fehlen nur Komfortfunktionen.",
     "herausforderungen": {
       "vergangenheit": "Am ersten Tag (05.07.2026) entstanden über 50 Änderungen in Folge, vor allem am Eingabeformular; mehrere Bedienideen (Schieberegler, Drehrad für die Dauer) wurden gebaut und wieder verworfen. Fehler, die erst im Alltag auffielen: der Excel-Export stürzte über den Jahreswechsel ab, die Preisautomatik blieb nach dem ersten Rechnen hängen, eine km-Schätzformel kopierte nur alte Werte. Zwei Stresstests im September 2026 fanden u. a. sich gegenseitig überschreibende Speicherungen von zwei Handys; seitdem gibt es eine Konfliktprüfung ([optimistisches Sperren](g:optimistic-locking)).",
-      "gegenwart": "Das Monitoring (Teil 3) fehlt noch: Ausfälle fallen nur auf, wenn jemand die App öffnet. Datenschutzfelder im Projekt-Pass sind nach dem Umzug neu zu bewerten. Für den BIO-Leapy fehlen noch Leasing- und Stichtagsdaten.",
-      "zukunft": "Monitoring mit nächtlichem Schnappschuss und Statusseite, ein Menü mit „Planung“ (Streckenrechner, Autovorschlag), regelmäßige Updates von Node.js (Debian-Pakete) und Next.js. Der eine Datensatz wächst bis Leasingende auf einige hundert Ladevorgänge – unkritisch, aber jedes Speichern schickt den ganzen Datensatz."
+      "gegenwart": "Seit 08.10.2026 misst das Monitoring (Teil 3) jede Nacht den Zustand von Server und Daten; Alarme bei Ausfällen gibt es noch nicht – auffallen tut ein Problem beim Blick in den Bauplan oder beim Öffnen der App. Der Routendienst für die Planung wartet noch auf seinen Schlüssel. Datenschutzfelder im Projekt-Pass sind nach dem Umzug neu zu bewerten. Für den BIO-Leapy fehlen noch Leasing- und Stichtagsdaten (noch nicht übergeben).",
+      "zukunft": "Regelmäßige Updates von Node.js (Debian-Pakete) und Next.js, ein Blick in das Monitoring nach jedem Deploy und bei Gelegenheit eine Benachrichtigung, wenn Sicherung oder Schnappschuss ausfallen. Der eine Datensatz wächst bis Leasingende auf einige hundert Ladevorgänge – unkritisch, aber jedes Speichern schickt den ganzen Datensatz; die Verlaufskurve der Datensatzgröße zeigt, wann sich ein Umbau lohnt."
     }
   },
   "schiff": [
@@ -35,20 +35,20 @@
     {
       "id": "sprachrohr",
       "name": "Sprachrohr",
-      "it": "API-Schicht (4 Endpunkte)",
-      "technik": "/api/data (Laden/Speichern), /api/route und /api/geocode (Planung), /api/health",
+      "it": "API-Schicht (5 Endpunkte)",
+      "technik": "/api/data (Laden/Speichern), /api/route und /api/geocode (Planung), /api/status (Monitoring), /api/health",
       "ort": "server",
       "vorhanden": true,
-      "text": "Über feste Befehlsleitungen ([Endpunkte](g:endpunkt)) spricht die Brücke mit dem Maschinenraum: /api/data „gib mir alles“ und „speichere alles“, /api/route und /api/geocode für die Planung. Jede Anfrage muss den [PIN](g:pin) mitbringen. Beim Speichern prüft der [Laderaum](b:laderaum) in einem Schritt, ob inzwischen jemand anderes gespeichert hat ([optimistisches Sperren](g:optimistic-locking)). /api/health meldet ohne PIN nur „läuft“."
+      "text": "Über feste Befehlsleitungen ([Endpunkte](g:endpunkt)) spricht die Brücke mit dem Maschinenraum: /api/data „gib mir alles“ und „speichere alles“, /api/route und /api/geocode für die Planung, /api/status für das Monitoring. Jede Anfrage muss den [PIN](g:pin) mitbringen. Beim Speichern prüft der [Laderaum](b:laderaum) in einem Schritt, ob inzwischen jemand anderes gespeichert hat ([optimistisches Sperren](g:optimistic-locking)). /api/health meldet ohne PIN nur „läuft“."
     },
     {
       "id": "laderaum",
       "name": "Laderaum",
       "it": "Datenbank",
-      "technik": "PostgreSQL 17, Datenbank efahrtenbuch_db, 1 Tabelle",
+      "technik": "PostgreSQL 17, Datenbank efahrtenbuch_db, 3 Tabellen (app_data, ops_events, metrics_history)",
       "ort": "server",
       "vorhanden": true,
-      "text": "Im Laderaum liegt alles in einer [PostgreSQL](g:postgres)-Datenbank mit genau einer Tabelle und einer Zeile: dem kompletten Datensatz als [JSON](g:json) samt Zählnummer. Nur die eigene Datenbank-Rolle der App darf hinein. Fehlen nach einem Update Felder, ergänzt die App sie beim Laden. Bis zum 08.10.2026 lag das in einem gemieteten Lagerhaus (Upstash [Redis](g:redis))."
+      "text": "Im Laderaum liegt alles in einer [PostgreSQL](g:postgres)-Datenbank mit einer Tabelle für die Daten und genau einer Zeile darin: dem kompletten Datensatz als [JSON](g:json) samt Zählnummer. Nur die eigene Datenbank-Rolle der App darf hinein. Fehlen nach einem Update Felder, ergänzt die App sie beim Laden. Bis zum 08.10.2026 lag das in einem gemieteten Lagerhaus (Upstash [Redis](g:redis)). Zwei weitere Tabellen gehören dem [Logbuch](b:logbuch) (Monitoring)."
     },
     {
       "id": "funk",
@@ -90,10 +90,10 @@
       "id": "logbuch",
       "name": "Logbuch",
       "it": "Logs (Fehler- und Ereignisprotokolle)",
-      "technik": "systemd-Journal, Deploy-Protokolle",
+      "technik": "systemd-Journal, Deploy-Protokolle, Tabellen ops_events und metrics_history",
       "ort": "server",
       "vorhanden": true,
-      "text": "Das Logbuch führt der Server selbst: Start, Fehler und jede Anfrage-Panne landen im Systemprotokoll des Dienstes, jeder [Stapellauf](g:deploy) schreibt ein eigenes Protokoll. Ausgewertet wird es noch nicht – das kommt mit dem Monitoring (Teil 3)."
+      "text": "Das Logbuch führt der Server selbst: Start, Fehler und jede Anfrage-Panne landen im Systemprotokoll des Dienstes, jeder [Stapellauf](g:deploy) schreibt ein eigenes Protokoll. Was für den Verlauf zählt, steht zusätzlich im [Laderaum](b:laderaum): Ereignisse wie Start, Serverfehler, Aufrufe des Routendienstes und das Ergebnis der Sicherung ([ops_events](g:ops-events)) und ein Tageswert je Nacht ([Metrics History](g:metrics-history)). Daraus entsteht das Monitoring in Teil 3."
     },
     {
       "id": "rettungsboot",
@@ -102,7 +102,7 @@
       "technik": "nächtlicher pg_dump (03:30), 30 Tage, Abholung auf den PC, dazu Handexport",
       "ort": "server",
       "vorhanden": true,
-      "text": "Das Rettungsboot läuft jetzt jede Nacht von selbst aus: um 03:30 wird die Datenbank gesichert ([Backup](g:backup)), die Sicherungen bleiben 30 Tage auf dem Server und werden auf den PC geholt. Zusätzlich lädt „Exportieren aller Daten“ den Datensatz jederzeit als [JSON](g:json) aufs Handy, und mit dem [Ladekran](b:ladekran) kommt eine Sicherung zurück."
+      "text": "Das Rettungsboot läuft jetzt jede Nacht von selbst aus: um 03:30 wird die Datenbank gesichert ([Backup](g:backup)), die Sicherungen bleiben 30 Tage auf dem Server und werden auf den PC geholt. Zusätzlich lädt „Exportieren aller Daten“ den Datensatz jederzeit als [JSON](g:json) aufs Handy, und mit dem [Ladekran](b:ladekran) kommt eine Sicherung zurück. Nach jeder Sicherung meldet das Skript Erfolg oder Fehler ins [Logbuch](b:logbuch) – so zeigt das Monitoring, ob die letzte Sicherung geklappt hat."
     },
     {
       "id": "werft",
@@ -126,10 +126,10 @@
       "id": "uboot",
       "name": "U-Boot",
       "it": "Hintergrund-Jobs",
-      "technik": "–",
+      "technik": "systemd-Timer efahrtenbuch-snapshot (täglich 23:50), dazu das gemeinsame Sicherungsskript (03:30)",
       "ort": "server",
-      "vorhanden": false,
-      "text": "Kein eigenes U-Boot: die App hat keine geplanten Hintergrundaufgaben. Die nächtliche Sicherung erledigt das gemeinsame Sicherungsskript des Servers mit."
+      "vorhanden": true,
+      "text": "Das U-Boot taucht jede Nacht von selbst auf: ein [Timer](g:timer) weckt um 23:50 einen kleinen Helfer, der die App nach ihren Kennzahlen fragt und daraus einen [Schnappschuss](g:snapshot) ins [Logbuch](b:logbuch) schreibt (Teil 3, Monitoring). Der Helfer läuft mit einem Wegwerf-Benutzer, darf nur die eigene App auf dem Server erreichen und sonst nichts. Um 03:30 läuft außerdem das gemeinsame Sicherungsskript des Servers ([Rettungsboot](b:rettungsboot))."
     }
   ],
   "glossar": [
@@ -272,10 +272,62 @@
       "id": "ors",
       "begriff": "OpenRouteService",
       "erklaerung": "Routendienst der Uni Heidelberg auf Basis von OpenStreetMap: berechnet Straßenentfernungen und schlägt Adressen vor; braucht einen kostenlosen Schlüssel."
+    },
+    {
+      "id": "timer",
+      "begriff": "Timer (systemd)",
+      "erklaerung": "Wecker des Servers: startet eine Aufgabe zu einer festen Uhrzeit, holt einen verpassten Lauf nach dem Neustart nach. Ersatz für den älteren Cron."
+    },
+    {
+      "id": "snapshot",
+      "begriff": "Schnappschuss (Snapshot)",
+      "erklaerung": "Momentaufnahme aller Kennzahlen zu einem Zeitpunkt, als eine Zeile gespeichert. Viele Schnappschüsse ergeben den Verlauf."
+    },
+    {
+      "id": "metrics-history",
+      "begriff": "Metrics History",
+      "erklaerung": "Tabelle metrics_history: ein Schnappschuss je Tag (Version, Datenbankgröße, Einträge, Codezeilen, Fehler, Sicherung). Nach 90 Tagen werden Tageswerte zu Monatswerten zusammengefasst (Retention)."
+    },
+    {
+      "id": "ops-events",
+      "begriff": "Betriebsereignisse (ops_events)",
+      "erklaerung": "Tabelle für Ereignisse, die der abgeschottete Dienst nicht selbst messen darf oder kann: Start, Serverfehler, Aufrufe fremder Dienste, Ergebnis der Sicherung. Werden nach 90 Tagen gelöscht."
+    },
+    {
+      "id": "uptime",
+      "begriff": "Uptime",
+      "erklaerung": "Laufzeit seit dem letzten Start des Dienstes."
+    },
+    {
+      "id": "loc",
+      "begriff": "Codezeilen (LOC)",
+      "erklaerung": "Lines of Code: Anzahl der nicht leeren Zeilen im Quellcode, grobes Maß für die Größe der App. Wird beim Deploy auf dem PC gezählt."
+    }
+  ],
+  "monitoring": "Ein [Timer](g:timer) (systemd, täglich 23:50, zusätzlich bei jedem [Deploy](g:deploy)) ruft POST /api/status auf; die App schreibt daraufhin einen [Snapshot](g:snapshot) in die Tabelle [metrics_history](g:metrics-history): Datenbankgröße, Einträge je Tabelle, Ladevorgänge, Speichervorgänge, Version, [Codezeilen](g:loc), Endpunkte und Abhängigkeiten, [Uptime](g:uptime), Fehler des Tages, Aufrufe des Routendienstes und das Ergebnis der letzten Sicherung. Werte, die der abgeschottete Dienst nicht selbst sehen darf (Sicherungsordner, Systemprotokoll), melden die Beteiligten als [Betriebsereignis](g:ops-events). Codezeilen, Endpunkte und Abhängigkeiten zählt der PC beim Deploy; für die Zeit vor dem Monitoring sind sie einmalig aus der Git-Historie rekonstruiert (je Woche der letzte Commit, gestrichelt). Retention: Tageswerte 90 Tage, danach Monatswerte. GET /api/status liefert die aktuellen Werte und den Verlauf, nur mit [PIN](g:pin) und ohne Geheimnisse oder Inhalte des Datensatzes.",
+  "meilensteine": [
+    {
+      "datum": "2026-07-05",
+      "titel": "Start: Next.js-App auf Vercel mit Upstash Redis (1.0.00)"
+    },
+    {
+      "datum": "2026-08-15",
+      "titel": "Neuer Erfassungsdialog „Vor/Nach“ (2.0.00)"
+    },
+    {
+      "datum": "2026-09-01",
+      "titel": "Stresstests und Härtung (2.22.00–2.24.00)"
+    },
+    {
+      "datum": "2026-10-07",
+      "titel": "Entwicklerbereich neu und Bauplan (2.26.00)"
+    },
+    {
+      "datum": "2026-10-08",
+      "titel": "Umzug auf den eigenen netcup-Server (2.34.00), Planung (2.36.00), Monitoring (2.37.00)"
     }
   ],
   "offen": [
-    "OFFEN: Monitoring (Teil 3) – nächtlicher Schnappschuss, Statusseite, Verlauf (jetzt auf dem eigenen Server umsetzbar).",
     "OFFEN: Vercel-Projekt abschalten und Upstash-Datenbank löschen (Urheber; die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis)."
   ]
 }

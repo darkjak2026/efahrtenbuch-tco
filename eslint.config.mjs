@@ -9,6 +9,8 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    // Deploy-Paket von server/deploy.sh (erzeugt, nicht versioniert)
+    ".deploy/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

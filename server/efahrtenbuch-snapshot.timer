@@ -1,0 +1,11 @@
+[Unit]
+Description=eFahrtenbuch Monitoring-Schnappschuss täglich 23:50
+
+[Timer]
+OnCalendar=*-*-* 23:50:00 Europe/Berlin
+# Verpasster Lauf (Server aus) wird nach dem Start nachgeholt
+Persistent=true
+RandomizedDelaySec=120
+
+[Install]
+WantedBy=timers.target

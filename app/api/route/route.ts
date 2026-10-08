@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthorized } from "@/lib/auth";
+import { recordEvent } from "@/lib/monitoring";
 
 // Streckenrechner (Planung): Straßenentfernung über OpenRouteService. Der Schlüssel
 // (ORS_API_KEY) liegt nur auf dem Server; die App fragt hier mit dem Haushalts-PIN an.
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ coordinates: [[body.from.lon, body.from.lat], [body.to.lon, body.to.lat]] }),
       signal: AbortSignal.timeout(10_000),
     });
+    await recordEvent("api_aufruf", { dienst: "ors", art: "route", ok: res.ok });
     if (!res.ok) return NextResponse.json({ error: "route-failed", status: res.status }, { status: 502 });
     const json = await res.json();
     const summary = json?.routes?.[0]?.summary;

@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 08.10.2026 | 09:36
+Stand der Dokumentation: 08.10.2026 | 10:08
 
 ## Teil 1 – Beschreibung der App
 
@@ -32,11 +32,11 @@ Am ersten Tag (05.07.2026) entstanden über 50 Änderungen in Folge, vor allem a
 
 ### 1.5 Herausforderungen – Gegenwart
 
-Das Monitoring (Teil 3) fehlt noch: Ausfälle fallen nur auf, wenn jemand die App öffnet. Datenschutzfelder im Projekt-Pass sind nach dem Umzug neu zu bewerten. Für den BIO-Leapy fehlen noch Leasing- und Stichtagsdaten.
+Seit 08.10.2026 misst das Monitoring (Teil 3) jede Nacht den Zustand von Server und Daten; Alarme bei Ausfällen gibt es noch nicht – auffallen tut ein Problem beim Blick in den Bauplan oder beim Öffnen der App. Der Routendienst für die Planung wartet noch auf seinen Schlüssel. Datenschutzfelder im Projekt-Pass sind nach dem Umzug neu zu bewerten. Für den BIO-Leapy fehlen noch Leasing- und Stichtagsdaten (noch nicht übergeben).
 
 ### 1.5 Herausforderungen – Zukunft
 
-Monitoring mit nächtlichem Schnappschuss und Statusseite, ein Menü mit „Planung“ (Streckenrechner, Autovorschlag), regelmäßige Updates von Node.js (Debian-Pakete) und Next.js. Der eine Datensatz wächst bis Leasingende auf einige hundert Ladevorgänge – unkritisch, aber jedes Speichern schickt den ganzen Datensatz.
+Regelmäßige Updates von Node.js (Debian-Pakete) und Next.js, ein Blick in das Monitoring nach jedem Deploy und bei Gelegenheit eine Benachrichtigung, wenn Sicherung oder Schnappschuss ausfallen. Der eine Datensatz wächst bis Leasingende auf einige hundert Ladevorgänge – unkritisch, aber jedes Speichern schickt den ganzen Datensatz; die Verlaufskurve der Datensatzgröße zeigt, wann sich ein Umbau lohnt.
 
 ## Teil 2 – Die Bauteile im Detail
 
@@ -52,17 +52,17 @@ Die Brücke ist alles, was man auf dem Handy sieht und antippt: Kacheln, Lade-Hi
 
 Im Maschinenraum läuft der Next.js-Server als Dienst (systemd) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das Sprachrohr. Er ist abgeschottet (Sandbox): darf keine Dateien schreiben, keine fremden Ordner sehen und nur seinen eigenen Hafen-Eingang benutzen. Seit der Planung darf er ausgehend ins Internet – genutzt nur für OpenRouteService.
 
-### Sprachrohr – API-Schicht (4 Endpunkte)
+### Sprachrohr – API-Schicht (5 Endpunkte)
 
-*eigener Server · /api/data (Laden/Speichern), /api/route und /api/geocode (Planung), /api/health*
+*eigener Server · /api/data (Laden/Speichern), /api/route und /api/geocode (Planung), /api/status (Monitoring), /api/health*
 
-Über feste Befehlsleitungen (Endpunkte) spricht die Brücke mit dem Maschinenraum: /api/data „gib mir alles“ und „speichere alles“, /api/route und /api/geocode für die Planung. Jede Anfrage muss den PIN mitbringen. Beim Speichern prüft der Laderaum in einem Schritt, ob inzwischen jemand anderes gespeichert hat (optimistisches Sperren). /api/health meldet ohne PIN nur „läuft“.
+Über feste Befehlsleitungen (Endpunkte) spricht die Brücke mit dem Maschinenraum: /api/data „gib mir alles“ und „speichere alles“, /api/route und /api/geocode für die Planung, /api/status für das Monitoring. Jede Anfrage muss den PIN mitbringen. Beim Speichern prüft der Laderaum in einem Schritt, ob inzwischen jemand anderes gespeichert hat (optimistisches Sperren). /api/health meldet ohne PIN nur „läuft“.
 
 ### Laderaum – Datenbank
 
-*eigener Server · PostgreSQL 17, Datenbank efahrtenbuch_db, 1 Tabelle*
+*eigener Server · PostgreSQL 17, Datenbank efahrtenbuch_db, 3 Tabellen (app_data, ops_events, metrics_history)*
 
-Im Laderaum liegt alles in einer PostgreSQL-Datenbank mit genau einer Tabelle und einer Zeile: dem kompletten Datensatz als JSON samt Zählnummer. Nur die eigene Datenbank-Rolle der App darf hinein. Fehlen nach einem Update Felder, ergänzt die App sie beim Laden. Bis zum 08.10.2026 lag das in einem gemieteten Lagerhaus (Upstash Redis).
+Im Laderaum liegt alles in einer PostgreSQL-Datenbank mit einer Tabelle für die Daten und genau einer Zeile darin: dem kompletten Datensatz als JSON samt Zählnummer. Nur die eigene Datenbank-Rolle der App darf hinein. Fehlen nach einem Update Felder, ergänzt die App sie beim Laden. Bis zum 08.10.2026 lag das in einem gemieteten Lagerhaus (Upstash Redis). Zwei weitere Tabellen gehören dem Logbuch (Monitoring).
 
 ### Funkmast – Externe APIs
 
@@ -90,15 +90,15 @@ Im Tresor liegen die Geheimnisse als Umgebungsvariablen: der Haushalts-PIN und d
 
 ### Logbuch – Logs (Fehler- und Ereignisprotokolle)
 
-*eigener Server · systemd-Journal, Deploy-Protokolle*
+*eigener Server · systemd-Journal, Deploy-Protokolle, Tabellen ops_events und metrics_history*
 
-Das Logbuch führt der Server selbst: Start, Fehler und jede Anfrage-Panne landen im Systemprotokoll des Dienstes, jeder Stapellauf schreibt ein eigenes Protokoll. Ausgewertet wird es noch nicht – das kommt mit dem Monitoring (Teil 3).
+Das Logbuch führt der Server selbst: Start, Fehler und jede Anfrage-Panne landen im Systemprotokoll des Dienstes, jeder Stapellauf schreibt ein eigenes Protokoll. Was für den Verlauf zählt, steht zusätzlich im Laderaum: Ereignisse wie Start, Serverfehler, Aufrufe des Routendienstes und das Ergebnis der Sicherung (ops_events) und ein Tageswert je Nacht (Metrics History). Daraus entsteht das Monitoring in Teil 3.
 
 ### Rettungsboot – Backup
 
 *eigener Server · nächtlicher pg_dump (03:30), 30 Tage, Abholung auf den PC, dazu Handexport*
 
-Das Rettungsboot läuft jetzt jede Nacht von selbst aus: um 03:30 wird die Datenbank gesichert (Backup), die Sicherungen bleiben 30 Tage auf dem Server und werden auf den PC geholt. Zusätzlich lädt „Exportieren aller Daten“ den Datensatz jederzeit als JSON aufs Handy, und mit dem Ladekran kommt eine Sicherung zurück.
+Das Rettungsboot läuft jetzt jede Nacht von selbst aus: um 03:30 wird die Datenbank gesichert (Backup), die Sicherungen bleiben 30 Tage auf dem Server und werden auf den PC geholt. Zusätzlich lädt „Exportieren aller Daten“ den Datensatz jederzeit als JSON aufs Handy, und mit dem Ladekran kommt eine Sicherung zurück. Nach jeder Sicherung meldet das Skript Erfolg oder Fehler ins Logbuch – so zeigt das Monitoring, ob die letzte Sicherung geklappt hat.
 
 ### Werft – Entwicklung und Deployment
 
@@ -112,15 +112,23 @@ In der Werft wird gebaut: der Quellcode liegt bei GitHub, geschrieben wird mit C
 
 Seit dem 08.10.2026 hat das Schiff einen eigenen Rumpf: einen gemieteten VPS bei netcup, auf dem auch VitalCoach und VoiceNotes fahren – jede App abgeschottet für sich. Vorne sitzt Caddy als Hafeneinfahrt: holt das Zertifikat (HTTPS) und reicht Anfragen an den Maschinenraum weiter. Die Adresse läuft über nip.io, eine eigene Domain ist nicht nötig.
 
-### U-Boot – Hintergrund-Jobs (nicht vorhanden)
+### U-Boot – Hintergrund-Jobs
 
-*eigener Server · –*
+*eigener Server · systemd-Timer efahrtenbuch-snapshot (täglich 23:50), dazu das gemeinsame Sicherungsskript (03:30)*
 
-Kein eigenes U-Boot: die App hat keine geplanten Hintergrundaufgaben. Die nächtliche Sicherung erledigt das gemeinsame Sicherungsskript des Servers mit.
+Das U-Boot taucht jede Nacht von selbst auf: ein Timer weckt um 23:50 einen kleinen Helfer, der die App nach ihren Kennzahlen fragt und daraus einen Schnappschuss ins Logbuch schreibt (Teil 3, Monitoring). Der Helfer läuft mit einem Wegwerf-Benutzer, darf nur die eigene App auf dem Server erreichen und sonst nichts. Um 03:30 läuft außerdem das gemeinsame Sicherungsskript des Servers (Rettungsboot).
 
 ## Teil 3 – Monitoring – Metrics History
 
-Noch nicht eingerichtet, folgt mit dem Umzug auf den netcup-Server.
+Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api/status auf; die App schreibt daraufhin einen Snapshot in die Tabelle metrics_history: Datenbankgröße, Einträge je Tabelle, Ladevorgänge, Speichervorgänge, Version, Codezeilen, Endpunkte und Abhängigkeiten, Uptime, Fehler des Tages, Aufrufe des Routendienstes und das Ergebnis der letzten Sicherung. Werte, die der abgeschottete Dienst nicht selbst sehen darf (Sicherungsordner, Systemprotokoll), melden die Beteiligten als Betriebsereignis. Codezeilen, Endpunkte und Abhängigkeiten zählt der PC beim Deploy; für die Zeit vor dem Monitoring sind sie einmalig aus der Git-Historie rekonstruiert (je Woche der letzte Commit, gestrichelt). Retention: Tageswerte 90 Tage, danach Monatswerte. GET /api/status liefert die aktuellen Werte und den Verlauf, nur mit PIN und ohne Geheimnisse oder Inhalte des Datensatzes.
+
+### Meilensteine
+
+- 05.07.2026: Start: Next.js-App auf Vercel mit Upstash Redis (1.0.00)
+- 15.08.2026: Neuer Erfassungsdialog „Vor/Nach“ (2.0.00)
+- 01.09.2026: Stresstests und Härtung (2.22.00–2.24.00)
+- 07.10.2026: Entwicklerbereich neu und Bauplan (2.26.00)
+- 08.10.2026: Umzug auf den eigenen netcup-Server (2.34.00), Planung (2.36.00), Monitoring (2.37.00)
 
 ## Glossar
 
@@ -152,8 +160,13 @@ Noch nicht eingerichtet, folgt mit dem Umzug auf den netcup-Server.
 - **VPS (Virtual Private Server):** Ein gemieteter virtueller Server mit eigenem Betriebssystem, den man selbst verwaltet.
 - **nip.io:** Kostenloser Dienst, bei dem die IP-Adresse des Servers mit Bindestrichen im Namen steht (name.<IP>.nip.io) und auf genau diesen Server zeigt – so bekommt man HTTPS ohne eigene Domain.
 - **OpenRouteService:** Routendienst der Uni Heidelberg auf Basis von OpenStreetMap: berechnet Straßenentfernungen und schlägt Adressen vor; braucht einen kostenlosen Schlüssel.
+- **Timer (systemd):** Wecker des Servers: startet eine Aufgabe zu einer festen Uhrzeit, holt einen verpassten Lauf nach dem Neustart nach. Ersatz für den älteren Cron.
+- **Schnappschuss (Snapshot):** Momentaufnahme aller Kennzahlen zu einem Zeitpunkt, als eine Zeile gespeichert. Viele Schnappschüsse ergeben den Verlauf.
+- **Metrics History:** Tabelle metrics_history: ein Schnappschuss je Tag (Version, Datenbankgröße, Einträge, Codezeilen, Fehler, Sicherung). Nach 90 Tagen werden Tageswerte zu Monatswerten zusammengefasst (Retention).
+- **Betriebsereignisse (ops_events):** Tabelle für Ereignisse, die der abgeschottete Dienst nicht selbst messen darf oder kann: Start, Serverfehler, Aufrufe fremder Dienste, Ergebnis der Sicherung. Werden nach 90 Tagen gelöscht.
+- **Uptime:** Laufzeit seit dem letzten Start des Dienstes.
+- **Codezeilen (LOC):** Lines of Code: Anzahl der nicht leeren Zeilen im Quellcode, grobes Maß für die Größe der App. Wird beim Deploy auf dem PC gezählt.
 
 ## Offene Punkte
 
-- OFFEN: Monitoring (Teil 3) – nächtlicher Schnappschuss, Statusseite, Verlauf (jetzt auf dem eigenen Server umsetzbar).
 - OFFEN: Vercel-Projekt abschalten und Upstash-Datenbank löschen (Urheber; die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis).

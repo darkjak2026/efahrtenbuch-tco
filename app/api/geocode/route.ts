@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthorized } from "@/lib/auth";
+import { recordEvent } from "@/lib/monitoring";
 
 // Adressvorschläge beim Tippen (Planung) über OpenRouteService-Autocomplete.
 // Ohne Schlüssel 503 - die App sucht dann erst auf "Suchen" direkt bei Nominatim
@@ -20,6 +21,7 @@ export async function GET(req: NextRequest) {
   url.searchParams.set("lang", "de");
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(8000), headers: { Accept: "application/json" } });
+    await recordEvent("api_aufruf", { dienst: "ors", art: "geocode", ok: res.ok });
     if (!res.ok) return NextResponse.json({ error: "geocode-failed" }, { status: 502 });
     const json = await res.json();
     const results = (json?.features ?? [])

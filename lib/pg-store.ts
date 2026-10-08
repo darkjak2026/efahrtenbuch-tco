@@ -71,6 +71,11 @@ export async function setAppData(data: AppData): Promise<SetAppDataResult> {
   return { ok: false, current: await getAppData() };
 }
 
+// Shared pool for lib/monitoring.ts (metrics_history, ops_events).
+export function pgPool(): Pool {
+  return db();
+}
+
 // For /api/health: is the database reachable at all?
 export async function pingDb(): Promise<void> {
   await db().query("SELECT 1");

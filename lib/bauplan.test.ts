@@ -26,3 +26,9 @@ test("im Bauplan stehen keine Geheimnisse", () => {
   assert.doesNotMatch(raw, /https:\/\/[a-z0-9-]+\.upstash\.io/i);
   assert.doesNotMatch(raw, /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/);
 });
+
+test("Meilensteine haben ein gültiges Datum und stehen in zeitlicher Reihenfolge", () => {
+  const tage = bauplan.meilensteine.map((m) => m.datum);
+  for (const t of tage) assert.match(t, /^\d{4}-\d{2}-\d{2}$/);
+  assert.deepEqual([...tage].sort(), tage);
+});

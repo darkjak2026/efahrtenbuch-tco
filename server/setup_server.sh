@@ -153,7 +153,7 @@ PROBE_TMP=$(mktemp -d)
 sed -e "s#^WorkingDirectory=.*#WorkingDirectory=$OPT/$REL#" \
     -e "s#^ExecStart=.*#ExecStart=/usr/bin/node $OPT/$REL/server.js#" \
     -e "s/^Environment=PORT=$PORT/Environment=PORT=$PROBE_PORT/" -e "s/tcp:$PORT/tcp:$PROBE_PORT/" \
-    -e 's/^Restart=.*/Restart=no/' -e 's/^Description=.*/Description=eFahrtenbuch Probelauf/' efahrtenbuch.service \
+    -e 's/^Environment=EFB_INSTANZ=.*/Environment=EFB_INSTANZ=probe/'     -e 's/^Restart=.*/Restart=no/' -e 's/^Description=.*/Description=eFahrtenbuch Probelauf/' efahrtenbuch.service \
   > "$PROBE_TMP/efahrtenbuch-probe.service"
 if ! verify_out=$(sudo systemd-analyze verify "$PROBE_TMP/efahrtenbuch-probe.service" 2>&1) || [ -n "$verify_out" ]; then
   printf '%s\n' "$verify_out" >&2
@@ -184,6 +184,26 @@ if ! sudo systemctl restart "$APP" || ! app_ok $PORT; then
   exit 1   # beenden() übernimmt den Rückweg
 fi
 PHASE=caddy
+
+# --- Monitoring: nächtlicher Schnappschuss als systemd-Timer (nicht Cron) ---
+# Gehört nicht zum Rückweg: ein Fehler hier lässt die neue App laufen.
+echo "== Monitoring-Timer"
+for f in efahrtenbuch-snapshot.service efahrtenbuch-snapshot.timer; do
+  if ! verify_out=$(sudo systemd-analyze verify "$PWD/$f" 2>&1) || [ -n "$verify_out" ]; then
+    printf '%s
+' "$verify_out" >&2; echo "$f fehlerhaft" >&2; exit 1
+  fi
+done
+sudo install -m 644 -o root -g root efahrtenbuch-snapshot.service efahrtenbuch-snapshot.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable -q --now efahrtenbuch-snapshot.timer
+# Schnappschuss gleich jetzt: neue Version und Komplexitätswerte stehen sofort im Verlauf
+if sudo systemctl start efahrtenbuch-snapshot.service; then
+  echo "   Schnappschuss OK, nächster Lauf: $(systemctl show -p NextElapseUSecRealtime --value efahrtenbuch-snapshot.timer)"
+else
+  sudo journalctl -u efahrtenbuch-snapshot --since "-2min" --no-pager -o cat | tail -n 10 >&2 || true
+  echo "WARNUNG: Schnappschuss fehlgeschlagen (App läuft trotzdem)" >&2
+fi
 
 # --- Caddy: eigener Block in eigener Datei, im Haupt-Caddyfile nur per import ---
 BASE_HOST=$(sudo grep -oE '^[0-9]+-[0-9]+-[0-9]+-[0-9]+\.nip\.io' /etc/caddy/Caddyfile | head -n 1)

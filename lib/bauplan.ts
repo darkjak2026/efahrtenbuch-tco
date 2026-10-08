@@ -27,6 +27,9 @@ export interface Bauplan {
   };
   schiff: Bauteil[];
   glossar: { id: string; begriff: string; erklaerung: string }[];
+  // Teil 3: Erklärtext (IT-Jargon) und Meilensteine als Markierung in den Verlaufskurven
+  monitoring: string;
+  meilensteine: { datum: string; titel: string }[];
   offen: string[];
 }
 
@@ -79,6 +82,7 @@ export function brokenLinks(b: Bauplan): string[] {
     ...BESCHREIBUNG_BLOECKE.map((x) => x.get(b)),
     ...b.schiff.map((x) => x.text),
     ...b.glossar.map((x) => x.erklaerung),
+    b.monitoring,
   ];
   const broken: string[] = [];
   for (const t of texts) {
@@ -114,7 +118,9 @@ export function renderMarkdown(b: Bauplan): string {
       ""
     );
   }
-  lines.push("## Teil 3 – Monitoring – Metrics History", "", "Noch nicht eingerichtet, folgt mit dem Umzug auf den netcup-Server.", "");
+  lines.push("## Teil 3 – Monitoring – Metrics History", "", plainText(b.monitoring), "", "### Meilensteine", "");
+  for (const m of b.meilensteine) lines.push(`- ${m.datum.split("-").reverse().join(".")}: ${m.titel}`);
+  lines.push("");
   lines.push("## Glossar", "");
   for (const g of b.glossar) lines.push(`- **${g.begriff}:** ${plainText(g.erklaerung)}`);
   lines.push("", "## Offene Punkte", "");

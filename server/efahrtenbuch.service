@@ -16,6 +16,8 @@ Environment=NODE_ENV=production
 Environment=PORT=8020
 Environment=HOSTNAME=127.0.0.1
 Environment=NEXT_TELEMETRY_DISABLED=1
+# Monitoring: Ereignisse des Probelaufs (Port 8021) zählen nicht zur Laufzeit
+Environment=EFB_INSTANZ=dienst
 ExecStart=/usr/bin/node /opt/efahrtenbuch/current/server.js
 Restart=on-failure
 RestartSec=5

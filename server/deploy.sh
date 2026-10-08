@@ -11,7 +11,7 @@ cd "$(dirname "$0")/.."
 SSH_HOST=${SSH_HOST:-vitalcoach}
 
 # Schutz: leere oder fehlende Server-Dateien nie hochladen
-for f in server/setup_server.sh server/import_daten.sh server/ors_schluessel.sh server/efahrtenbuch.service server/Caddyfile.efahrtenbuch; do
+for f in server/setup_server.sh server/import_daten.sh server/ors_schluessel.sh server/efahrtenbuch.service server/efahrtenbuch-snapshot.service server/efahrtenbuch-snapshot.timer server/Caddyfile.efahrtenbuch; do
   [ -s "$f" ] || { echo "$f fehlt oder ist leer – Abbruch" >&2; exit 1; }
 done
 
@@ -23,12 +23,14 @@ mkdir -p .deploy/app/.next
 cp -r .next/standalone/. .deploy/app/
 cp -r .next/static .deploy/app/.next/static
 cp -r public .deploy/app/public
+# Monitoring: Komplexitätswerte (heute + aus der Git-Historie) zählt der PC
+npx tsx scripts/komplexitaet.ts .deploy/app/monitoring
 tar -C .deploy -czf .deploy/app.tar.gz app
 echo "   Paket: $(du -h .deploy/app.tar.gz | cut -f1)"
 
 echo "== Hochladen"
 ssh "$SSH_HOST" 'mkdir -p ~/efahrtenbuch-deploy && chmod 700 ~/efahrtenbuch-deploy'
-scp -q .deploy/app.tar.gz server/setup_server.sh server/import_daten.sh server/ors_schluessel.sh server/efahrtenbuch.service server/Caddyfile.efahrtenbuch \
+scp -q .deploy/app.tar.gz server/setup_server.sh server/import_daten.sh server/ors_schluessel.sh server/efahrtenbuch.service server/efahrtenbuch-snapshot.service server/efahrtenbuch-snapshot.timer server/Caddyfile.efahrtenbuch \
   "$SSH_HOST":efahrtenbuch-deploy/
 
 echo "== Einrichten auf dem Server"

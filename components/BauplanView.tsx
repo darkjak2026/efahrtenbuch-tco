@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import bauplanJson from "../docs/technisch/bauplan.json";
+import MonitoringView from "./MonitoringView";
 import { BESCHREIBUNG_BLOECKE, ORT_LABEL, parseLinks, plainText, type Bauplan, type BauteilOrt } from "@/lib/bauplan";
 
 const bauplan = bauplanJson as Bauplan;
@@ -16,7 +17,7 @@ const ORT_COLOR: Record<BauteilOrt, string> = {
 
 // Where each ship part sits in the cross-section (viewBox 360 x 240).
 // Only parts that exist in bauplan.json with vorhanden=true are drawn.
-const SHAPES: Record<string, { x: number; y: number; w: number; h: number; label: string; boat?: boolean }> = {
+const SHAPES: Record<string, { x: number; y: number; w: number; h: number; label: string; boat?: boolean; sub?: boolean }> = {
   werft: { x: 4, y: 8, w: 58, h: 34, label: "Werft" },
   funk: { x: 150, y: 6, w: 44, h: 40, label: "Funkmast" },
   bruecke: { x: 118, y: 50, w: 80, h: 44, label: "Brücke" },
@@ -29,6 +30,7 @@ const SHAPES: Record<string, { x: number; y: number; w: number; h: number; label
   boje: { x: 6, y: 168, w: 34, h: 34, label: "Boje" },
   laderaum: { x: 92, y: 142, w: 140, h: 24, label: "Laderaum (Datenbank)" },
   rumpf: { x: 104, y: 178, w: 116, h: 22, label: "Rumpf (eigener Server)" },
+  uboot: { x: 228, y: 208, w: 68, h: 22, label: "U-Boot", sub: true },
 };
 
 const STICKY_OFFSET = 8;
@@ -156,7 +158,7 @@ export default function BauplanView({ onClose }: { onClose: () => void }) {
                         y={s.y}
                         width={s.w}
                         height={s.h}
-                        rx="4"
+                        rx={s.sub ? s.h / 2 : 4}
                         fill={`color-mix(in srgb, ${color} 35%, var(--panel))`}
                         stroke={color}
                         strokeWidth="1.5"
@@ -245,14 +247,12 @@ export default function BauplanView({ onClose }: { onClose: () => void }) {
             <h3 className="bp-h3">Teil 3 – Monitoring – Metrics History</h3>
             <article className="bp-block">
               <div className="bp-block-head">
-                <h4>Status</h4>
+                <h4>So wird gemessen</h4>
+                {copyBtn("monitoring", "Monitoring – so wird gemessen", bauplan.monitoring)}
               </div>
-              <p>
-                Noch nicht eingerichtet (Entscheidung vom 07.10.2026): Snapshots in einer Tabelle metrics_history, ein
-                abgesicherter Status-Endpunkt und Verlaufskurven entstehen mit dem Umzug auf den netcup-Server, dort als
-                nächtlicher systemd-Timer.
-              </p>
+              <p>{rich(bauplan.monitoring)}</p>
             </article>
+            <MonitoringView meilensteine={bauplan.meilensteine} copyBtn={copyBtn} />
           </section>
 
           <section id="bp-glossar">

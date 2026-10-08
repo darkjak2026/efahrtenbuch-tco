@@ -1,0 +1,43 @@
+[Unit]
+Description=eFahrtenbuch Monitoring-Schnappschuss (metrics_history)
+# Ruft nur die eigene App auf 127.0.0.1 auf; die App misst und schreibt selbst.
+After=efahrtenbuch.service
+
+[Service]
+Type=oneshot
+DynamicUser=yes
+# Der Haushalts-PIN kommt aus der env-Datei (systemd liest sie als root) und
+# geht über stdin an curl - er steht so in keiner Befehlszeile.
+EnvironmentFile=/etc/efahrtenbuch/efahrtenbuch.env
+ExecStart=/bin/sh -c 'printf "x-pin: %%s\n" "$$LADEPROTOKOLL_PIN" | /usr/bin/curl -fsS -m 120 -X POST -H @- http://127.0.0.1:8020/api/status'
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RemoveIPC=yes
+UMask=0077
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+SystemCallErrorNumber=EPERM
+RestrictAddressFamilies=AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+SocketBindDeny=any
+InaccessiblePaths=/var/backups -/run/caddy -/opt -/var/www
