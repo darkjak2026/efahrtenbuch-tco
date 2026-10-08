@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 08.10.2026 | 14:30
+Stand der Dokumentation: 08.10.2026 | 14:58
 
 ## Teil 1 – Beschreibung der App
 
@@ -50,7 +50,7 @@ Die Brücke ist alles, was man auf dem Handy sieht und antippt: Kacheln, Lade-Hi
 
 *eigener Server · Node.js 20 (Debian), Next.js im eigenständigen Paket, systemd-Dienst*
 
-Im Maschinenraum läuft der Next.js-Server als Dienst (systemd) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das Sprachrohr. Er ist abgeschottet (Sandbox): darf keine Dateien schreiben, keine fremden Ordner sehen und nur seinen eigenen Hafen-Eingang benutzen. Seit der Planung darf er ausgehend ins Internet – genutzt nur für OpenRouteService.
+Im Maschinenraum läuft der Next.js-Server als Dienst (systemd) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das Sprachrohr. Er ist abgeschottet (Sandbox): darf keine Dateien schreiben, keine fremden Ordner sehen und nur seinen eigenen Hafen-Eingang benutzen. Seit der Planung darf er ausgehend ins Internet – genutzt nur für den Routendienst (GraphHopper, Ersatz OpenRouteService).
 
 ### Sprachrohr – API-Schicht (5 Endpunkte)
 
@@ -66,9 +66,9 @@ Im Laderaum liegt alles in einer PostgreSQL-Datenbank mit einer Tabelle für die
 
 ### Funkmast – Externe APIs
 
-*fremde Dienste · Open Charge Map, Nominatim (OpenStreetMap), cdnjs, OpenRouteService (über den Server)*
+*fremde Dienste · Open Charge Map, Nominatim (OpenStreetMap), cdnjs, GraphHopper (über den Server; Ersatz OpenRouteService)*
 
-Per Funk fragt die App fremde Stationen: direkt vom Handy Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, Reverse Geocoding, in der Planung auch die Adresssuche) und cdnjs (CDN) für die Excel- und PDF-Bausteine. Über den Maschinenraum läuft OpenRouteService für Straßenentfernung und Adressvorschläge – dessen Schlüssel bleibt im Tresor. Fällt ein Dienst aus, fehlt nur Komfort.
+Per Funk fragt die App fremde Stationen: direkt vom Handy Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, Reverse Geocoding, in der Planung auch die Adresssuche) und cdnjs (CDN) für die Excel- und PDF-Bausteine. Über den Maschinenraum läuft GraphHopper für Straßenentfernung und Adressvorschläge (Ersatz: OpenRouteService) – der Schlüssel bleibt im Tresor. Fällt ein Dienst aus, fehlt nur Komfort.
 
 ### Boje – Externe Datenquelle: Standort des Handys
 
@@ -166,6 +166,7 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 - **Betriebsereignisse (ops_events):** Tabelle für Ereignisse, die der abgeschottete Dienst nicht selbst messen darf oder kann: Start, Serverfehler, Aufrufe fremder Dienste, Ergebnis der Sicherung. Werden nach 90 Tagen gelöscht.
 - **Uptime:** Laufzeit seit dem letzten Start des Dienstes.
 - **Codezeilen (LOC):** Lines of Code: Anzahl der nicht leeren Zeilen im Quellcode, grobes Maß für die Größe der App. Wird beim Deploy auf dem PC gezählt.
+- **GraphHopper:** Routendienst aus München auf Basis von OpenStreetMap: berechnet Straßenentfernungen und schlägt Adressen vor. Kostenloser Free-Tarif (500 Credits am Tag) nur für private Nutzung; braucht einen Schlüssel.
 
 ## Offene Punkte
 

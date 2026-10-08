@@ -1,6 +1,6 @@
 {
   "app": "eFahrtenbuch",
-  "stand": "08.10.2026 | 14:30",
+  "stand": "08.10.2026 | 14:58",
   "beschreibung": {
     "kurz": "Das eFahrtenbuch ist ein gemeinsames Ladeprotokoll für die zwei E-Autos der Familie Liese-Held (Leapmotor B10 „BIO-Leapy“ und T03 „Leapy“). Aus jedem Ladevorgang und den Fixkosten rechnet es laufend aus, was ein gefahrener Kilometer wirklich kostet ([TCO](g:tco)). Die App läuft im Handy-Browser, die Daten liegen seit dem 08.10.2026 im [Laderaum](b:laderaum) des eigenen Schiffs auf dem eigenen Server ([Rumpf](b:rumpf)).",
     "ausgangslage_ziel": "Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern konnte. Ziel war, dass beide Haushaltsmitglieder vom eigenen Handy aus Ladevorgänge eintragen und dieselben Zahlen sehen. Deshalb wurde die App am 05.07.2026 auf [Next.js](g:nextjs) umgebaut, zunächst gemietet bei [Vercel](g:vercel) mit Upstash-[Redis](g:redis) als Speicher. Am 08.10.2026 zog sie auf den eigenen Server um (Daten in der EU, eigene Sicherung, keine Abhängigkeit von zwei fremden Anbietern). Bewusst klein gehalten: ein gemeinsamer [PIN](g:pin) statt Benutzerkonten, ein einziger Datensatz.",
@@ -30,7 +30,7 @@
       "technik": "Node.js 20 (Debian), Next.js im eigenständigen Paket, systemd-Dienst",
       "ort": "server",
       "vorhanden": true,
-      "text": "Im Maschinenraum läuft der Next.js-Server als Dienst ([systemd](g:systemd)) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das [Sprachrohr](b:sprachrohr). Er ist abgeschottet ([Sandbox](g:sandbox)): darf keine Dateien schreiben, keine fremden Ordner sehen und nur seinen eigenen Hafen-Eingang benutzen. Seit der Planung darf er ausgehend ins Internet – genutzt nur für [OpenRouteService](g:ors)."
+      "text": "Im Maschinenraum läuft der Next.js-Server als Dienst ([systemd](g:systemd)) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das [Sprachrohr](b:sprachrohr). Er ist abgeschottet ([Sandbox](g:sandbox)): darf keine Dateien schreiben, keine fremden Ordner sehen und nur seinen eigenen Hafen-Eingang benutzen. Seit der Planung darf er ausgehend ins Internet – genutzt nur für den Routendienst ([GraphHopper](g:graphhopper), Ersatz [OpenRouteService](g:ors))."
     },
     {
       "id": "sprachrohr",
@@ -54,10 +54,10 @@
       "id": "funk",
       "name": "Funkmast",
       "it": "Externe APIs",
-      "technik": "Open Charge Map, Nominatim (OpenStreetMap), cdnjs, OpenRouteService (über den Server)",
+      "technik": "Open Charge Map, Nominatim (OpenStreetMap), cdnjs, GraphHopper (über den Server; Ersatz OpenRouteService)",
       "ort": "extern",
       "vorhanden": true,
-      "text": "Per Funk fragt die App fremde Stationen: direkt vom Handy Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, [Reverse Geocoding](g:reverse-geocoding), in der Planung auch die Adresssuche) und cdnjs ([CDN](g:cdn)) für die Excel- und PDF-Bausteine. Über den [Maschinenraum](b:maschinenraum) läuft [OpenRouteService](g:ors) für Straßenentfernung und Adressvorschläge – dessen Schlüssel bleibt im [Tresor](b:tresor). Fällt ein Dienst aus, fehlt nur Komfort."
+      "text": "Per Funk fragt die App fremde Stationen: direkt vom Handy Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, [Reverse Geocoding](g:reverse-geocoding), in der Planung auch die Adresssuche) und cdnjs ([CDN](g:cdn)) für die Excel- und PDF-Bausteine. Über den [Maschinenraum](b:maschinenraum) läuft [GraphHopper](g:graphhopper) für Straßenentfernung und Adressvorschläge (Ersatz: [OpenRouteService](g:ors)) – der Schlüssel bleibt im [Tresor](b:tresor). Fällt ein Dienst aus, fehlt nur Komfort."
     },
     {
       "id": "boje",
@@ -302,6 +302,11 @@
       "id": "loc",
       "begriff": "Codezeilen (LOC)",
       "erklaerung": "Lines of Code: Anzahl der nicht leeren Zeilen im Quellcode, grobes Maß für die Größe der App. Wird beim Deploy auf dem PC gezählt."
+    },
+    {
+      "id": "graphhopper",
+      "begriff": "GraphHopper",
+      "erklaerung": "Routendienst aus München auf Basis von OpenStreetMap: berechnet Straßenentfernungen und schlägt Adressen vor. Kostenloser Free-Tarif (500 Credits am Tag) nur für private Nutzung; braucht einen Schlüssel."
     }
   ],
   "monitoring": "Ein [Timer](g:timer) (systemd, täglich 23:50, zusätzlich bei jedem [Deploy](g:deploy)) ruft POST /api/status auf; die App schreibt daraufhin einen [Snapshot](g:snapshot) in die Tabelle [metrics_history](g:metrics-history): Datenbankgröße, Einträge je Tabelle, Ladevorgänge, Speichervorgänge, Version, [Codezeilen](g:loc), Endpunkte und Abhängigkeiten, [Uptime](g:uptime), Fehler des Tages, Aufrufe des Routendienstes und das Ergebnis der letzten Sicherung. Werte, die der abgeschottete Dienst nicht selbst sehen darf (Sicherungsordner, Systemprotokoll), melden die Beteiligten als [Betriebsereignis](g:ops-events). Codezeilen, Endpunkte und Abhängigkeiten zählt der PC beim Deploy; für die Zeit vor dem Monitoring sind sie einmalig aus der Git-Historie rekonstruiert (je Woche der letzte Commit, gestrichelt). Retention: Tageswerte 90 Tage, danach Monatswerte. GET /api/status liefert die aktuellen Werte und den Verlauf, nur mit [PIN](g:pin) und ohne Geheimnisse oder Inhalte des Datensatzes.",

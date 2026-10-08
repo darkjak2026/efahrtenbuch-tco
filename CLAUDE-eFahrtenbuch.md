@@ -45,7 +45,8 @@ Bei Widerspruch gilt diese Datei.
   allein ändert die Alltags-App nicht mehr.
 - Aufbau auf dem Server: Dienst `efahrtenbuch` (Systembenutzer, Sandbox, Port 8020), Code unter
   `/opt/efahrtenbuch/releases/…`, Zugangsdaten in `/etc/efahrtenbuch/efahrtenbuch.env` (DATABASE_URL,
-  LADEPROTOKOLL_PIN), Postgres-Datenbank `efahrtenbuch_db`, Caddy-Eintrag `/etc/caddy/efahrtenbuch.caddy`,
+  LADEPROTOKOLL_PIN, optional GRAPHHOPPER_API_KEY bzw. ORS_API_KEY – trägt der Urheber per
+  `server/graphhopper_schluessel.sh` selbst ein), Postgres-Datenbank `efahrtenbuch_db`, Caddy-Eintrag `/etc/caddy/efahrtenbuch.caddy`,
   nächtliche Sicherung im gemeinsamen `~/scripts/backup_db.sh` (Quelle im VitalCoach-Repo).
 - Speicher-Weiche `lib/store.ts`: mit `DATABASE_URL` Postgres, sonst Upstash (nur noch die alte Vercel-Version,
   die per `movedTo` im Datensatz gesperrt ist und auf die neue Adresse verweist).

@@ -82,7 +82,7 @@ export async function routeAvailable(pin: string): Promise<boolean> {
   }
 }
 
-export type RouteResult = { ok: true; km: number; minutes: number } | { ok: false; reason: "no-key" | "failed" };
+export type RouteResult = { ok: true; km: number; minutes: number; dienst: string } | { ok: false; reason: "no-key" | "failed" };
 
 export async function routeDistance(pin: string, from: GeoPoint, to: GeoPoint): Promise<RouteResult> {
   try {
@@ -93,14 +93,14 @@ export async function routeDistance(pin: string, from: GeoPoint, to: GeoPoint): 
     });
     if (res.status === 503) return { ok: false, reason: "no-key" };
     if (!res.ok) return { ok: false, reason: "failed" };
-    const json = (await res.json()) as { km: number; minutes: number };
-    return { ok: true, km: json.km, minutes: json.minutes };
+    const json = (await res.json()) as { km: number; minutes: number; dienst?: string };
+    return { ok: true, km: json.km, minutes: json.minutes, dienst: json.dienst === "ors" ? "OpenRouteService" : "GraphHopper" };
   } catch {
     return { ok: false, reason: "failed" };
   }
 }
 
-// Vorschläge beim Tippen (nur mit OpenRouteService-Schlüssel auf dem Server)
+// Vorschläge beim Tippen (nur mit Routendienst-Schlüssel auf dem Server: GraphHopper bzw. OpenRouteService)
 export async function suggestAddresses(pin: string, q: string): Promise<GeoPoint[]> {
   try {
     const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, { headers: { "x-pin": pin } });

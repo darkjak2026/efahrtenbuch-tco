@@ -52,7 +52,8 @@ SystemCallFilter=@system-service
 SystemCallFilter=~@privileged @resources
 SystemCallErrorNumber=EPERM
 # Netz: Postgres auf 127.0.0.1, Caddy davor. Seit v2.36.00 (Menüpunkt Planung)
-# darf der Dienst ausgehend ins Internet, aber nur für OpenRouteService
+# darf der Dienst ausgehend ins Internet, aber nur für den Routendienst (seit
+# v2.40.00 GraphHopper, Ersatz OpenRouteService)
 # (Routen/Adressen, Schlüssel bleibt auf dem Server) - wie VitalCoach für die
 # Claude-API. IPAddressAllow kennt keine Hostnamen, daher keine IP-Sperre mehr;
 # lauschen darf der Dienst weiterhin nur auf seinem eigenen Port.

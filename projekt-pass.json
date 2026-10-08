@@ -32,7 +32,8 @@
     ["PostgreSQL 17 (auf dem Server)", "Einziger Datenspeicher - der komplette Datensatz als JSON in efahrtenbuch_db, Tabelle app_data; eigene Rolle, nur diese darf sich verbinden", "kritisch"],
     ["Caddy (auf dem Server)", "HTTPS-Zertifikate (Let's Encrypt) und Weiterleitung an die App", "kritisch"],
     ["GitHub", "Quellcode-Repository darkjak2026/efahrtenbuch-tco (öffentlich - deshalb steht die Server-Adresse nicht im Code)", "kritisch"],
-    ["OpenRouteService (Uni Heidelberg, EU)", "Planung: Straßenentfernung und Adressvorschläge; Abfrage über den eigenen Server, Schlüssel nur dort (ORS_API_KEY). Start und Ziel gehen an den Dienst", "nice-to-have (ohne Schlüssel km von Hand)"],
+    ["GraphHopper (München)", "Planung: Straßenentfernung und Adressvorschläge; Abfrage über den eigenen Server, Schlüssel nur dort (GRAPHHOPPER_API_KEY). Free-Tarif: 500 Credits/Tag, nur private Nutzung, ohne Garantie. Start und Ziel bzw. der Suchtext gehen an den Dienst", "nice-to-have (ohne Schlüssel km von Hand)"],
+    ["OpenRouteService (Uni Heidelberg, EU)", "Ersatz-Routendienst für die Planung, falls nur dessen Schlüssel (ORS_API_KEY) eingetragen ist; Anmeldung war im Oktober 2026 zeitweise gestört", "nice-to-have"],
     ["Open Charge Map API", "Ladestationssuche per GPS beim Erfassen eines Ladevorgangs (direkt vom Handy)", "nice-to-have (Adress-Fallback ohne diesen Dienst)"],
     ["OpenStreetMap / Nominatim", "Adress-Fallback beim Erfassen (Straße/PLZ/Ort) und Adresssuche in der Planung auf Knopfdruck (keine Vorschläge beim Tippen – Nutzungsregeln von Nominatim)", "nice-to-have"],
     ["SheetJS (xlsx) / jsPDF", "Client-seitig per <script> von cdnjs eingebunden, für Excel-/PDF-Export", "nice-to-have (nur Export betroffen)"],
@@ -114,7 +115,8 @@
     ["08.10.2026", "2.39.00", "Design: In der Eingabemaske sitzt die Blase mit dem Auto jetzt am Rand (B10 links, t03 gespiegelt rechts), der Titel daneben; Hintergrund und Leuchtrahmen beginnen erst auf Höhe des ersten Kästchens."],
     ["08.10.2026", "2.39.00+design.01", "Design: Eingabemaske kompakter – sie passt jetzt ohne Scrollen auf den Handybildschirm. Der Titel („Bitte vor dem Laden ausfüllen“ bzw. „Nach dem Laden“) steht in der Karte direkt über dem ersten Schritt, die Blase mit dem Auto ragt am Rand hinein, der Zähler sitzt mittig darunter. Die App dahinter wird unscharf, damit die Maske im Vordergrund steht."],
     ["08.10.2026", "2.39.00+design.02", "Design: „Das habe ich erkannt“ ist enger gesetzt – die Felder im Satz (Fahrzeug, Datum, Ladestation) sind nur noch so breit wie ihr Text, der GPS-Knopf ist kleiner, die Zeilen enger (4 statt 6 Zeilen)."],
-    ["08.10.2026", "2.39.00+design.03", "Design: Der Hinweis „… wurde zuletzt bei einem ODO von … geladen“ in der Eingabemaske entfällt."]
+    ["08.10.2026", "2.39.00+design.03", "Design: Der Hinweis „… wurde zuletzt bei einem ODO von … geladen“ in der Eingabemaske entfällt."],
+    ["08.10.2026", "2.40.00", "Neu: Die Planung nutzt jetzt GraphHopper (München, Free-Tarif für private Nutzung) für Straßenentfernung und Adressvorschläge, weil die Anmeldung bei OpenRouteService gestört war. OpenRouteService bleibt als Ersatz, falls nur dessen Schlüssel eingetragen ist. Unter der berechneten Strecke steht, welcher Dienst gerechnet hat. Den Schlüssel trägt der Urheber selbst auf dem Server ein (graphhopper_schluessel.sh)."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [
@@ -122,9 +124,9 @@
     "Leapy: km-Stand bei Übergabe in den Fixkosten eintragen (solange leer, rechnet der Freikilometer-Countdown ab 0 km). BIO-Leapy (B10): noch nicht übergeben – Übergabedatum, Laufzeit, Freikilometer laut Vertrag und km-Stand bei Übergabe eintragen, sobald der Wagen da ist.",
     "Vercel-Projekt abschalten und die Upstash-Datenbank löschen (Urheber, im jeweiligen Dashboard). Die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis.",
     "dsgvo_status ist noch nicht bewertet (auf Wunsch leer gelassen). Speicherort und AVV sind seit dem Umzug geklärt (eigener Server, netcup-AVV).",
-    "OpenRouteService-Schlüssel beantragen (openrouteservice.org, kostenlos) und auf dem Server eintragen: ssh -t vitalcoach 'sudo bash ~/efahrtenbuch-deploy/ors_schluessel.sh'. Bis dahin rechnet Planung mit von Hand eingegebenen km.",
     "Leapy und später BIO-Leapy: Preis je Mehr- und Minderkilometer laut Vertrag in den Fixkosten eintragen (für das Mehrkilometer-Risiko in der Planung).",
-    "Monitoring: bei Gelegenheit eine Benachrichtigung, wenn die nächtliche Sicherung oder der Schnappschuss ausfällt (bisher nur sichtbar im Bauplan)."
+    "Monitoring: bei Gelegenheit eine Benachrichtigung, wenn die nächtliche Sicherung oder der Schnappschuss ausfällt (bisher nur sichtbar im Bauplan).",
+    "GraphHopper-Schlüssel beantragen (graphhopper.com, Free-Tarif) und auf dem Server eintragen: ssh -t vitalcoach 'sudo bash ~/efahrtenbuch-deploy/graphhopper_schluessel.sh'. Bis dahin rechnet die Planung mit von Hand eingegebenen km."
   ],
   "feature_requests": [
     ["01.09.2026 09:57", "test", "verworfen"],

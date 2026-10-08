@@ -66,7 +66,7 @@ export default function PlanningPanel({
     patch(f, { text, point: null, results: [] });
     setRoute(null);
     if (timers.current[f]) clearTimeout(timers.current[f]!);
-    // Vorschläge beim Tippen nur über den eigenen Server (OpenRouteService)
+    // Vorschläge beim Tippen nur über den eigenen Server (GraphHopper bzw. OpenRouteService)
     if (orsReady && pin && text.trim().length >= 3) {
       timers.current[f] = setTimeout(async () => {
         patch(f, { busy: true });
@@ -121,7 +121,7 @@ export default function PlanningPanel({
     setRouting(true);
     const r = await routeDistance(pin, a, b);
     setRouting(false);
-    if (r.ok) setRoute({ km: r.km, minutes: r.minutes, source: "OpenRouteService" });
+    if (r.ok) setRoute({ km: r.km, minutes: r.minutes, source: r.dienst });
     else showToast(r.reason === "no-key" ? "Routendienst noch nicht eingerichtet – bitte km selbst eingeben" : "Strecke konnte nicht berechnet werden");
   };
 
