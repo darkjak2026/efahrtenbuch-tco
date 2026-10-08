@@ -4494,3 +4494,31 @@ section.split-section.month-view {
   bottom: -8px;
   transform: translateX(-50%);
 }
+
+/* „Das habe ich erkannt“ enger (v2.39.00+design.02): Felder so breit wie ihr Text,
+   kleiner GPS-Knopf, engere Zeilen */
+.efm-erkannt .fab-modal-sentence {
+  line-height: 19px;
+}
+.efm-erkannt .fab-modal-sentence input.sentence-field,
+.efm-erkannt .fab-modal-sentence select.sentence-field {
+  field-sizing: content;
+  min-width: 0;
+  vertical-align: baseline;
+}
+.efm-erkannt .fab-modal-sentence input.sentence-field.sentence-field-wide {
+  width: auto;
+  max-width: 190px;
+}
+.efm-erkannt .sentence-station {
+  gap: 2px;
+  vertical-align: baseline;
+}
+.efm-erkannt .locate-btn {
+  padding: 1px 4px;
+  border-radius: 5px;
+  vertical-align: baseline;
+}
+.efm-erkannt-h {
+  margin-bottom: 2px;
+}
