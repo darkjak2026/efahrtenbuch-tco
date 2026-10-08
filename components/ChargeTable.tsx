@@ -226,7 +226,7 @@ export default function ChargeTable({
                     return (
                       <div className="wk-empty" key={seg.weeks.map((w) => w.kw).join("-")}>
                         {[...seg.weeks].reverse().map((w) => `KW ${w.kw}`).join(" | ")}
-                        <span>{seg.future ? "noch leer" : "keine Ladevorgänge"}</span>
+                        <span>{seg.future ? "liegt in der Zukunft" : "keine Ladevorgänge"}</span>
                       </div>
                     );
                   }
