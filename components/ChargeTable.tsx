@@ -12,6 +12,7 @@ import {
   maybeAutofillPreis,
   minutesToDuration,
   monthWeeks,
+  type MonthWeek,
   monthKeyFromDate,
   monthTotals,
   parseNum,
@@ -29,8 +30,34 @@ import { HouseholdMonthSummary, VehicleMonthCard } from "./MonthVehicleCards";
 const VEHICLE_ORDER: VehicleKey[] = ["b10", "t03"];
 const WEEKDAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
-// "2026-10-05" -> "05.10."
-const shortDate = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.`;
+// "2026-10-05", "2026-10-11" -> "05.–11.10."; across months "28.09.–04.10." does not occur
+// (weeks are cut at the month border), so day–day plus the month is enough.
+const shortRange = (from: string, to: string) => `${from.slice(8, 10)}.–${to.slice(8, 10)}.${to.slice(5, 7)}.`;
+
+type WeekSegment =
+  | { kind: "week"; w: MonthWeek; nr: number }
+  | { kind: "empty"; weeks: MonthWeek[]; future: boolean };
+
+// Empty weeks (no charge of this vehicle) collapse into one slim tile per run -
+// future ones as "noch leer", past ones as "keine Ladevorgänge". The current
+// week always stays a full tile. nr = Woche im Monat (1 = die Woche mit dem 1.).
+function weekSegments(weeks: MonthWeek[], own: { row: ChargeRow }[], today: string): WeekSegment[] {
+  const out: WeekSegment[] = [];
+  weeks.forEach((w, i) => {
+    const nr = weeks.length - i; // weeks are newest first
+    const isCurrent = today >= w.from && today <= w.to;
+    const empty = !own.some(({ row }) => row.datum >= w.from && row.datum <= w.to);
+    if (empty && !isCurrent) {
+      const future = w.from > today;
+      const last = out[out.length - 1];
+      if (last && last.kind === "empty" && last.future === future) last.weeks.push(w);
+      else out.push({ kind: "empty", weeks: [w], future });
+    } else {
+      out.push({ kind: "week", w, nr });
+    }
+  });
+  return out;
+}
 
 // The seven dates (Mo–So) of the week starting at `monday`.
 function weekDays(monday: string): string[] {
@@ -194,7 +221,16 @@ export default function ChargeTable({
             <div className={`hist-col hist-col-${v}`} key={v}>
               <VehicleMonthCard data={data} monthKey={activeMonth} vehicle={v} />
               <div className="wk-list">
-                {weeks.map((w) => {
+                {weekSegments(weeks, own, today).map((seg) => {
+                  if (seg.kind === "empty") {
+                    return (
+                      <div className="wk-empty" key={seg.weeks.map((w) => w.kw).join("-")}>
+                        {[...seg.weeks].reverse().map((w) => `KW ${w.kw}`).join(" | ")}
+                        <span>{seg.future ? "noch leer" : "keine Ladevorgänge"}</span>
+                      </div>
+                    );
+                  }
+                  const { w, nr } = seg;
                   const inWeek = own.filter(({ row }) => row.datum >= w.from && row.datum <= w.to);
                   const sums = weekSums(data, inWeek.map(({ row }) => row));
                   const isCurrent = today >= w.from && today <= w.to;
@@ -204,7 +240,12 @@ export default function ChargeTable({
                       <button type="button" className="wk-h" aria-expanded={open} onClick={() => toggleWeek(v, w.kw, open)}>
                         <span className="wk-t">
                           <span className="wk-chev">{open ? "▾" : "▸"}</span>
-                          KW {w.kw} · {shortDate(w.from)}–{shortDate(w.to)}
+                          {w.from <= today && (
+                            <span className="wk-nr" title={`${nr}. Woche im Monat`}>
+                              {nr}
+                            </span>
+                          )}
+                          KW {w.kw} · {shortRange(w.from, w.to)}
                           {isCurrent && <span className="wk-now">jetzt</span>}
                         </span>
                         <span className="wk-v">
