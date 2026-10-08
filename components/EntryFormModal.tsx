@@ -34,8 +34,6 @@ import {
 // immer nur ein offenes Feld. "Vor" mit rot pulsierendem Rahmen (Aktion), "Nach"
 // mit ruhig grün atmendem Rahmen (Entspannung), Hintergrund in der Farbe des Autos.
 
-const HINT_ICONS = ["⚡", "🔌", "🚗", "🔋", "🛣️"];
-
 type Section = "vor" | "nach";
 type StepId = "rest" | "odo" | "cent" | "karte" | "kwh" | "dauer" | "rneu" | "notiz" | "preis";
 const STEPS: Record<Section, StepId[]> = {
@@ -164,7 +162,6 @@ export default function EntryFormModal({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [hintIcon] = useState(() => HINT_ICONS[Math.floor(Math.random() * HINT_ICONS.length)]);
 
   const patch = (fields: Partial<ChargeRow>) => setForm((f) => ({ ...f, ...fields }));
 
@@ -195,17 +192,6 @@ export default function EntryFormModal({
   const [euroModus, setEuroModus] = useState(() => parseNum(initial.preisProKwh) >= 1);
 
   const options = cardOptions.includes(form.karte) || !form.karte ? cardOptions : [...cardOptions, form.karte];
-
-  // Last known odometer reading for a given vehicle, excluding this very entry
-  // (relevant when editing — `initial` is the actual row object from `data`).
-  const lastKnownKmFor = (vehicle: "" | VehicleKey): number | null => {
-    if (!vehicle) return null;
-    const candidates = allRows(data)
-      .filter((r) => r.fahrzeug === vehicle && r !== initial && r.datum && parseNum(r.km) > 0)
-      .sort((a, b) => b.datum.localeCompare(a.datum));
-    return candidates.length ? parseNum(candidates[0].km) : null;
-  };
-  const lastKnownKm = lastKnownKmFor(form.fahrzeug);
 
   // The km-Stand field arrives with the previous value — select just the trailing
   // digits on focus so typing the real reading only takes the last few keystrokes.
@@ -297,12 +283,6 @@ export default function EntryFormModal({
       icon: <RoadIcon />,
       titel: "Gesamtkilometer (ODO) vor dem Laden",
       wert: () => (form.km ? `${fmtNum(parseNum(form.km), 0)} km` : ""),
-      hilfe:
-        lastKnownKm !== null ? (
-          <>
-            der {vehicleShortLabel(form.fahrzeug as VehicleKey)} wurde zuletzt bei einem ODO von {lastKnownKm} geladen {hintIcon}
-          </>
-        ) : undefined,
     },
     cent: {
       icon: <EuroIcon />,
