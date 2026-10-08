@@ -4383,3 +4383,114 @@ section.split-section.month-view {
   right: auto;
   left: -6px;
 }
+
+/* Eingabemaske v2.39.00+design.01: kompakt (ohne Scrollen auf dem Handy), Titel als
+   Sprechblase neben dem Auto, App dahinter unscharf */
+.fab-overlay {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+.fab-modal.efm {
+  max-height: 96vh;
+  max-height: 96dvh;
+  padding-bottom: 6px;
+}
+.efm-plakette {
+  width: 92px;
+  height: 92px;
+}
+.efm-innen {
+  inset: 7px;
+}
+.efm-zahl {
+  min-width: 32px;
+  height: 20px;
+  font-size: 11px;
+  bottom: 2px;
+}
+.efm-kopf {
+  margin: 2px 0 8px;
+  gap: 10px;
+}
+.efm-karte {
+  padding: 10px 10px 12px;
+}
+.efm-step {
+  margin-bottom: 6px;
+}
+.efm-k {
+  min-height: 40px;
+  font-size: 13px;
+  padding: 0 10px;
+}
+.efm-n {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+}
+.efm-body {
+  padding: 0 10px 10px;
+}
+.efm-zeile > input,
+.efm-zeile > select,
+.fab-modal .efm-dauer input,
+.efm-cent,
+.efm-weiter {
+  min-height: 42px;
+}
+.efm-zeile > textarea {
+  min-height: 56px;
+}
+.efm-voll {
+  min-height: 40px;
+  margin-top: 6px;
+}
+.efm-erkannt {
+  margin: 8px 0 2px;
+  padding: 8px 10px;
+}
+.efm-erkannt .fab-modal-sentence {
+  font-size: 12.5px;
+  line-height: 21px;
+  text-align: left;
+}
+.efm-andere {
+  min-height: 38px;
+  margin-top: 8px;
+}
+.fab-modal.efm .fab-modal-actions {
+  margin-top: 10px;
+}
+
+/* Titel in der Karte über dem ersten Schritt; die Blase ragt von oben am Rand hinein */
+.efm-kopf {
+  position: relative;
+  z-index: 2;
+  margin-bottom: -50px;
+  padding: 0 6px;
+}
+.fab-modal.efm .efm-karte h3.efm-h {
+  min-height: 42px;
+  margin: 0 0 8px;
+  padding-left: 92px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.25;
+}
+.fab-modal.efm.efm-car-t03 .efm-karte h3.efm-h {
+  padding-left: 0;
+  padding-right: 92px;
+  text-align: right;
+}
+
+/* Zähler mittig unter der Blase, damit er den Titel nicht überdeckt */
+.efm-zahl,
+.efm-car-t03 .efm-zahl {
+  left: 50%;
+  right: auto;
+  bottom: -8px;
+  transform: translateX(-50%);
+}

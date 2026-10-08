@@ -596,7 +596,7 @@ export default function EntryFormModal({
         className={`fab-modal efm efm-${activeSection}` + (vehicle ? ` efm-car-${vehicle}` : "")}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Kopf ohne Hintergrund: Blase am Rand (B10 links, t03 gespiegelt rechts), Titel daneben */}
+        {/* Kopf ohne Hintergrund: Blase am Rand (B10 links, t03 gespiegelt rechts) */}
         <div className="efm-kopf">
         <div className="efm-plakette" aria-hidden="true">
           <svg viewBox="0 0 132 132">
@@ -614,6 +614,11 @@ export default function EntryFormModal({
           </span>
         </div>
 
+        </div>
+
+        {/* Karte mit Leuchtrahmen und Autofarbe beginnt erst beim ersten Kästchen;
+            die Blase ragt am Rand hinein, der Titel steht daneben über dem ersten Schritt */}
+        <div className="efm-karte">
         <h3 className="efm-h">
           {activeSection === "vor" ? "Bitte vor dem Laden ausfüllen" : "Nach dem Laden"}
           <small>
@@ -621,10 +626,6 @@ export default function EntryFormModal({
             {activeSection === "vor" && isNewEntry ? ` · Start ca. ${chargeStartLabel} Uhr` : ""}
           </small>
         </h3>
-        </div>
-
-        {/* Karte mit Leuchtrahmen und Autofarbe beginnt erst beim ersten Kästchen */}
-        <div className="efm-karte">
         {sectionBody(activeSection)}
 
         {!isNewEntry && activeSection === "vor" && (
