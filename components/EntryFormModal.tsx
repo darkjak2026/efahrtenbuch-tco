@@ -267,7 +267,10 @@ export default function EntryFormModal({
   const modalRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!openStep) return;
-    const el = modalRef.current?.querySelector<HTMLElement>(`[data-step="${openStep}"] .efm-body input, [data-step="${openStep}"] .efm-body select, [data-step="${openStep}"] .efm-body textarea`);
+    // Bei der Dauer startet der Cursor in den Minuten (die Stunde steht schon auf 0)
+    const el =
+      modalRef.current?.querySelector<HTMLElement>(`[data-step="${openStep}"] .efm-body [data-fokus]`) ??
+      modalRef.current?.querySelector<HTMLElement>(`[data-step="${openStep}"] .efm-body input, [data-step="${openStep}"] .efm-body select, [data-step="${openStep}"] .efm-body textarea`);
     el?.focus({ preventScroll: true });
     // Nur die Maske selbst scrollen (scrollIntoView würde auch die Seite seitlich verschieben)
     const box = modalRef.current;
@@ -376,11 +379,13 @@ export default function EntryFormModal({
       case "dauer":
         return (
           <div className="duration-inputs efm-dauer">
+            {/* Stunde immer mit 0 vorausgefüllt (Wunsch vom 07.10.2026) – Laden dauert selten über eine Stunde;
+                beim Antippen ist die 0 markiert und wird einfach überschrieben. */}
             <input type="number" inputMode="numeric" step="1" min="0" max="999" placeholder="Std" aria-label="Stunden"
-              value={totalDurationMinutes > 0 ? durHours : ""} onKeyDown={onKey}
+              value={durHours} onKeyDown={onKey} onFocus={(e) => e.target.select()}
               onChange={(e) => setDuration(Number(e.target.value) || 0, durMinutes)} />
             <span>:</span>
-            <input type="number" inputMode="numeric" step="1" min="0" max="59" placeholder="Min" aria-label="Minuten"
+            <input type="number" inputMode="numeric" step="1" min="0" max="59" placeholder="Min" aria-label="Minuten" data-fokus
               value={totalDurationMinutes > 0 ? durMinutes : ""} onKeyDown={onKey}
               onChange={(e) => setDuration(durHours, Math.min(59, Number(e.target.value) || 0))} />
           </div>
