@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { costStats, dateRangeMax, defaultData, isoWeek, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
+import { costStats, dateRangeMax, defaultData, isoWeek, migrate, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -196,4 +196,16 @@ test("Wochensummen: Dauer, km seit letztem Laden, Kosten, kWh", () => {
   assert.equal(s.km, 479);
   assert.equal(Math.round(s.eur * 100), 1600);
   assert.equal(Math.round(s.kwh * 100), 4578);
+});
+test("Kreditkarte heißt AdHoc Kreditkarte – in der Liste und in den Ladevorgängen", () => {
+  const raw = defaultData();
+  raw.cardsList = ["EWE Go", "Kreditkarte", "Zuhause"];
+  const key = Object.keys(raw.months)[0];
+  raw.months[key] = [{ ...emptyRow(), datum: "2026-10-01", karte: "Kreditkarte" }, { ...emptyRow(), datum: "2026-10-02", karte: "EWE Go" }];
+  const d = migrate(JSON.parse(JSON.stringify(raw)));
+  assert.deepEqual(d.cardsList, ["EWE Go", "AdHoc Kreditkarte", "Zuhause"]);
+  assert.equal(d.months[key][0].karte, "AdHoc Kreditkarte");
+  assert.equal(d.months[key][1].karte, "EWE Go");
+  // wiederholbar, ohne doppelte Einträge
+  assert.deepEqual(migrate(JSON.parse(JSON.stringify(d))).cardsList, ["EWE Go", "AdHoc Kreditkarte", "Zuhause"]);
 });

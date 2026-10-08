@@ -17,7 +17,7 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
     <div className="ov">
       {incomplete > 0 && (
         <button type="button" className="ov-inc" onClick={() => onGo("historie")}>
-          ⚠ {incomplete} Ladevorgang{incomplete > 1 ? "e" : ""} unvollständig – antippen zum Ergänzen
+          ⚠ {incomplete} {incomplete > 1 ? "Ladevorgänge" : "Ladevorgang"} unvollständig – antippen zum Ergänzen
         </button>
       )}
       <button type="button" className="ov-month" onClick={() => onGo("statistik")}>

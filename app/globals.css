@@ -2309,7 +2309,8 @@ select {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  z-index: 1001;
+  /* über dem Menü unten (1100), unter Testmodus-/Konflikt-Hinweis (1200) */
+  z-index: 1150;
 }
 .fab-modal {
   background: var(--panel);
@@ -3780,4 +3781,450 @@ section.split-section.month-view {
 .mon-rek td {
   color: var(--ink-soft);
   font-style: italic;
+}
+
+/* ==== Eingabemaske (v2.38.00): Plakette mit Fortschrittsring, Schritte, Leuchtrahmen ==== */
+.fab-modal.efm {
+  --car: var(--plum);
+  --rahmen: var(--danger);
+  position: relative;
+  overflow-x: hidden;
+  padding: 0 16px 18px;
+  border: 2px solid var(--rahmen);
+  border-radius: 18px;
+  max-height: 92vh;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--car) 34%, var(--panel)) 0%,
+    color-mix(in srgb, var(--car) 13%, var(--panel)) 55%,
+    var(--panel) 100%
+  );
+}
+.fab-modal.efm.efm-car-b10 {
+  --car: var(--b10);
+}
+.fab-modal.efm.efm-car-t03 {
+  --car: var(--t03);
+}
+.fab-modal.efm.efm-vor {
+  --rahmen: var(--danger);
+  animation: efm-puls 1.8s ease-in-out infinite;
+}
+.fab-modal.efm.efm-nach {
+  --rahmen: var(--teal);
+  animation: efm-atem 4s ease-in-out infinite;
+}
+@keyframes efm-puls {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rahmen) 22%, transparent),
+      0 0 22px color-mix(in srgb, var(--rahmen) 40%, transparent), 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--rahmen) 12%, transparent),
+      0 0 34px color-mix(in srgb, var(--rahmen) 65%, transparent), 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+@keyframes efm-atem {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rahmen) 22%, transparent),
+      0 0 24px color-mix(in srgb, var(--rahmen) 40%, transparent), 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--rahmen) 10%, transparent),
+      0 0 10px color-mix(in srgb, var(--rahmen) 22%, transparent), 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fab-modal.efm.efm-vor,
+  .fab-modal.efm.efm-nach {
+    animation: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rahmen) 22%, transparent), 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+/* Plakette: Auto im Kreis, der Ring zeigt die erledigten Schritte */
+.efm-plakette {
+  position: relative;
+  width: 124px;
+  height: 124px;
+  margin: 14px auto 6px;
+}
+.efm-plakette svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.efm-spur {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink-soft) 25%, transparent);
+  stroke-width: 6;
+}
+.efm-fort {
+  fill: none;
+  stroke: var(--rahmen);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.45s ease;
+}
+.efm-innen {
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--rahmen) 60%, transparent);
+  background: radial-gradient(circle at 50% 72%, color-mix(in srgb, var(--car) 75%, var(--panel)), var(--panel) 78%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.efm-innen img {
+  width: 104%;
+  margin-top: 12px;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.45));
+  transition: transform 0.45s ease;
+}
+.efm-zahl {
+  position: absolute;
+  right: -6px;
+  bottom: 6px;
+  min-width: 38px;
+  height: 24px;
+  border-radius: 12px;
+  padding: 0 7px;
+  background: var(--rahmen);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.efm-nach .efm-zahl {
+  color: #10241a;
+}
+.fab-modal.efm h3.efm-h {
+  text-align: center;
+  color: var(--ink);
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+.efm-h small {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+/* Schritte: immer nur einer offen */
+.efm-step {
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  margin-bottom: 8px;
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+}
+.efm-step.offen {
+  border-color: var(--rahmen);
+}
+.efm-k {
+  width: 100%;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: none;
+  border: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.efm-n {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: var(--line);
+}
+.efm-step.offen .efm-n {
+  background: var(--rahmen);
+  color: #fff;
+}
+.efm-nach .efm-step.offen .efm-n {
+  color: #10241a;
+}
+.efm-step.fertig .efm-n {
+  background: var(--teal);
+  color: #10241a;
+}
+.efm-icon {
+  display: inline-flex;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+.efm-titel {
+  flex: 1;
+  min-width: 0;
+}
+.efm-wert {
+  margin-left: auto;
+  color: var(--car);
+  font-weight: 700;
+  white-space: nowrap;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.efm-body {
+  padding: 0 12px 12px;
+}
+.efm-zeile {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.efm-zeile.breit {
+  flex-direction: column;
+}
+.efm-zeile.breit .efm-weiter {
+  align-self: flex-end;
+}
+.efm-zeile > input,
+.efm-zeile > select,
+.efm-zeile > textarea,
+.fab-modal .efm-dauer input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  min-height: 46px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  color: var(--ink);
+  font: inherit;
+  font-size: 17px;
+  padding: 0 12px;
+}
+.efm-zeile > textarea {
+  min-height: 64px;
+  padding: 10px 12px;
+  font-size: 16px;
+  resize: vertical;
+}
+.efm-zeile > textarea::placeholder {
+  font-style: italic;
+}
+.efm-zeile input:focus,
+.efm-zeile select:focus,
+.efm-zeile textarea:focus {
+  outline: 2px solid var(--rahmen);
+  outline-offset: 1px;
+}
+.efm-zeile input.range-red {
+  color: var(--danger);
+}
+.efm-zeile input.range-yellow {
+  color: var(--range-yellow);
+}
+.efm-zeile input.range-green,
+.efm-zeile input.range-peak {
+  color: var(--range-green);
+}
+.efm-dauer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fab-modal .efm-dauer input {
+  text-align: center;
+}
+.efm-cent {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  padding: 0 12px;
+  font-size: 17px;
+  cursor: text;
+}
+.efm-cent:focus-within {
+  outline: 2px solid var(--rahmen);
+  outline-offset: 1px;
+}
+.efm-cent-fest {
+  color: var(--ink-soft);
+}
+.efm-cent input {
+  width: 2.4ch;
+  border: none;
+  border-bottom: 2px solid var(--rahmen);
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  text-align: center;
+  padding: 0;
+}
+.efm-cent input:focus {
+  outline: none;
+}
+.efm-cent-einheit {
+  margin-left: auto;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.efm-weiter {
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--rahmen);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.efm-nach .efm-weiter {
+  color: #10241a;
+}
+.efm-hilfe {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-top: 5px;
+}
+.efm-link {
+  background: none;
+  border: none;
+  padding: 6px 0 0;
+  min-height: 32px;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.efm-body .preis-hint {
+  margin: 8px 0 0;
+}
+.efm-erkannt {
+  margin: 12px 0 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+}
+.efm-erkannt-h {
+  display: block;
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.efm-erkannt .fab-modal-sentence {
+  margin: 0;
+}
+.efm-weitere {
+  margin-top: 12px;
+}
+.efm-andere {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.efm-andere-zahl {
+  font-weight: 800;
+  color: var(--ink);
+}
+.fab-modal.efm .efm-speichern {
+  background: var(--rahmen);
+  border-color: var(--rahmen);
+  color: #fff;
+}
+.fab-modal.efm.efm-nach .efm-speichern {
+  color: #10241a;
+}
+/* Konfetti-Fontäne und "alles eingetragen" */
+.efm-fontaene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+.efm-konfetti {
+  position: absolute;
+  left: 50%;
+  bottom: 40px;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: efm-fontaene;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  animation-fill-mode: both;
+}
+@keyframes efm-fontaene {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  45% {
+    transform: translate(calc(var(--vx) * 0.55), calc(var(--vy) * 0.55)) rotate(calc(var(--rot) * 0.5));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(var(--vx) * 0.8), calc(var(--vy) * 0.25 + 160px)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+.efm-alles {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  background: var(--teal);
+  color: #10241a;
+  font-weight: 900;
+  font-size: 17px;
+  padding: 12px 22px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+  animation: efm-alles 0.3s ease-out both;
+}
+@keyframes efm-alles {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }

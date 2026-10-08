@@ -57,6 +57,8 @@ export function defaultData(): AppData {
   };
 }
 
+export const CARD_RENAME = { alt: "Kreditkarte", neu: "AdHoc Kreditkarte" } as const;
+
 // Fills in any missing fields on a partial/older document so the app never chokes on legacy data.
 export function migrate(raw: unknown): AppData {
   const def = defaultData();
@@ -93,6 +95,20 @@ export function migrate(raw: unknown): AppData {
     if (!months[m.key]) months[m.key] = [emptyRow()];
     months[m.key] = months[m.key].map((r) => Object.assign(emptyRow(), r));
   });
+
+  // v2.38.00: "Kreditkarte" heißt "AdHoc Kreditkarte" (Ad-hoc-Laden ohne Ladekarte) -
+  // in der Kartenliste und in allen Ladevorgängen, einmalig und wiederholbar.
+  const cards = d.cardsList as string[];
+  if (cards.includes(CARD_RENAME.alt)) {
+    d.cardsList = cards.includes(CARD_RENAME.neu)
+      ? cards.filter((c) => c !== CARD_RENAME.alt)
+      : cards.map((c) => (c === CARD_RENAME.alt ? CARD_RENAME.neu : c));
+  }
+  Object.values(d.months as AppData["months"]).forEach((rows) =>
+    rows.forEach((r) => {
+      if (r.karte === CARD_RENAME.alt) r.karte = CARD_RENAME.neu;
+    })
+  );
   d.investitionen = (d.investitionen as Investition[]).map((i) => Object.assign(emptyInvest(), i));
   d.recurringCosts = (d.recurringCosts as RecurringCost[]).map((r) => Object.assign(emptyRecurring(), r));
 
