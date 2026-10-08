@@ -191,7 +191,8 @@ export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
   // bekannter Wert genügt bereits, um €/km anzuzeigen — keine Differenzbildung mehr.
   const kmStand = kms.length > 0 ? Math.max(...kms) : 0;
   const months = monthsElapsed(v.start);
-  const leasingKosten = parseNum(v.leasing) * months;
+  // Leasingraten nur für die Laufzeit (z. B. 36 Raten), danach nicht weiter.
+  const leasingKosten = parseNum(v.leasing) * Math.min(months, parseNum(v.leasingMonate) || 36);
   const versicherungKosten = parseNum(v.versicherung) * months;
   const investKosten = data.investitionen
     .filter((i) => i.fahrzeug === key)
@@ -469,7 +470,10 @@ export function monthCosts(data: AppData, monthKey: string): MonthCosts {
     const veh = data.vehicles[v];
     const active = !!veh.start && veh.start <= lastDay;
     const laden = rows.filter((r) => r.fahrzeug === v).reduce((s, r) => s + parseNum(r.preis), 0);
-    const leasing = active ? parseNum(veh.leasing) : 0;
+    // Die n-te Rate fällt im n-ten Monat ab Übergabe an; nach der letzten Rate keine mehr
+    // (Leapy: 28.11.2025 + 36 Raten -> letzte im Oktober 2028, November 2028 frei).
+    const rateNr = veh.start ? monthDiff(veh.start.slice(0, 7), monthKey) : -1;
+    const leasing = active && rateNr < (parseNum(veh.leasingMonate) || 36) ? parseNum(veh.leasing) : 0;
     const versicherung = active ? parseNum(veh.versicherung) : 0;
     const abos = data.recurringCosts
       .filter((r) => r.fahrzeug === v || r.fahrzeug === "beide")
@@ -693,7 +697,10 @@ export function computeMonthStatement(data: AppData, monthKey: string): MonthSta
   (["b10", "t03"] as VehicleKey[]).forEach((v) => {
     const veh = data.vehicles[v];
     if (veh.start && veh.start <= lastDay) {
-      if (parseNum(veh.leasing) > 0) fixcosts.push({ label: `Leasing ${v.toUpperCase()}`, betrag: parseNum(veh.leasing) });
+      // nur innerhalb der Laufzeit (siehe monthCosts)
+      const rateNr = monthDiff(veh.start.slice(0, 7), monthKey);
+      if (parseNum(veh.leasing) > 0 && rateNr < (parseNum(veh.leasingMonate) || 36))
+        fixcosts.push({ label: `Leasing ${v.toUpperCase()}`, betrag: parseNum(veh.leasing) });
       if (parseNum(veh.versicherung) > 0) fixcosts.push({ label: `Versicherung ${v.toUpperCase()}`, betrag: parseNum(veh.versicherung) });
     }
   });
