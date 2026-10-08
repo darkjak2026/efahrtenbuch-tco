@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { shiftMonth, vehicleShortLabel } from "@/lib/constants";
+import { shiftMonth, todayStr, vehicleShortLabel } from "@/lib/constants";
 import {
   completionMessage,
   durationToMinutes,
@@ -10,12 +10,16 @@ import {
   isChargeIncomplete,
   isEmptyRow,
   maybeAutofillPreis,
+  minutesToDuration,
+  monthWeeks,
   monthKeyFromDate,
   monthTotals,
   parseNum,
   reichweiteColorClass,
   rowKmDriven,
   visibleMonths,
+  weekSums,
+  fmtNum,
 } from "@/lib/data";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import ConfettiBurst from "./ConfettiBurst";
@@ -23,6 +27,19 @@ import EntryFormModal from "./EntryFormModal";
 import { HouseholdMonthSummary, VehicleMonthCard } from "./MonthVehicleCards";
 
 const VEHICLE_ORDER: VehicleKey[] = ["b10", "t03"];
+const WEEKDAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+
+// "2026-10-05" -> "05.10."
+const shortDate = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.`;
+
+// The seven dates (Mo–So) of the week starting at `monday`.
+function weekDays(monday: string): string[] {
+  const [y, m, d] = monday.split("-").map(Number);
+  return Array.from({ length: 7 }, (_, i) => {
+    const x = new Date(y, m - 1, d + i);
+    return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+  });
+}
 
 export default function ChargeTable({
   data,
@@ -42,6 +59,7 @@ export default function ChargeTable({
   onEntryCompleted: (row: ChargeRow) => void;
 }) {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [openWeeks, setOpenWeeks] = useState<Record<string, boolean>>({});
 
   const rows = data.months[activeMonth] || [];
   const totals = monthTotals(data, activeMonth);
@@ -158,17 +176,89 @@ export default function ChargeTable({
 
   const unassigned = visibleRows.filter(({ row }) => !row.fahrzeug);
 
+  // Wochengliederung (Variante D, Mockup vom 08.10.2026): Kalenderwochen Mo–So,
+  // neueste zuerst; die aktuelle Woche ist offen, bis man sie zuklappt.
+  const weeks = monthWeeks(activeMonth);
+  const today = todayStr();
+  const isWeekOpen = (v: VehicleKey, kw: number, isCurrent: boolean) => openWeeks[`${activeMonth}:${v}:${kw}`] ?? isCurrent;
+  const toggleWeek = (v: VehicleKey, kw: number, open: boolean) =>
+    setOpenWeeks((o) => ({ ...o, [`${activeMonth}:${v}:${kw}`]: !open }));
+
   return (
     <>
       <div className="hist-columns" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {VEHICLE_ORDER.map((v) => {
           const own = visibleRows.filter(({ row }) => row.fahrzeug === v);
+          const undated = own.filter(({ row }) => !row.datum.startsWith(activeMonth));
           return (
             <div className={`hist-col hist-col-${v}`} key={v}>
               <VehicleMonthCard data={data} monthKey={activeMonth} vehicle={v} />
-              <div className="entry-list">
-                {own.length === 0 && <div className="entry-list-empty">Keine Ladevorgänge.</div>}
-                {own.map((e) => renderEntry(e, true))}
+              <div className="wk-list">
+                {weeks.map((w) => {
+                  const inWeek = own.filter(({ row }) => row.datum >= w.from && row.datum <= w.to);
+                  const sums = weekSums(data, inWeek.map(({ row }) => row));
+                  const isCurrent = today >= w.from && today <= w.to;
+                  const open = isWeekOpen(v, w.kw, isCurrent);
+                  return (
+                    <div className={"wk" + (isCurrent ? " wk-cur" : "")} key={w.kw}>
+                      <button type="button" className="wk-h" aria-expanded={open} onClick={() => toggleWeek(v, w.kw, open)}>
+                        <span className="wk-t">
+                          <span className="wk-chev">{open ? "▾" : "▸"}</span>
+                          KW {w.kw} · {shortDate(w.from)}–{shortDate(w.to)}
+                          {isCurrent && <span className="wk-now">jetzt</span>}
+                        </span>
+                        <span className="wk-v">
+                          {inWeek.length === 0 ? (
+                            "keine Ladevorgänge"
+                          ) : (
+                            <>
+                              {minutesToDuration(sums.minutes)}h<i>|</i>
+                              {fmtNum(sums.km, 0)}km<i>|</i>
+                              <b>{fmtNum(sums.eur, 2)}€</b>
+                              <i>|</i>
+                              {fmtNum(sums.kwh, 0)}kWh
+                            </>
+                          )}
+                        </span>
+                        <span className="wk-days" aria-hidden="true">
+                          {weekDays(w.monday).map((day, i) => {
+                            const n = own.filter(({ row }) => row.datum === day).length;
+                            return (
+                              <span className="wk-day" key={day}>
+                                {WEEKDAY_LABELS[i]}
+                                <span
+                                  className={
+                                    "wk-dot" +
+                                    (n ? " on" : "") +
+                                    (day.startsWith(activeMonth) ? "" : " out") +
+                                    (day === today ? " today" : "")
+                                  }
+                                >
+                                  {n || ""}
+                                </span>
+                              </span>
+                            );
+                          })}
+                        </span>
+                      </button>
+                      {open && (
+                        <div className="entry-list wk-body">
+                          {inWeek.length === 0 ? (
+                            <div className="entry-list-empty">Keine Ladevorgänge in dieser Woche.</div>
+                          ) : (
+                            inWeek.map((e) => renderEntry(e, true))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {undated.length > 0 && (
+                  <div className="entry-list">
+                    <div className="hist-unassigned-title">Ohne Datum</div>
+                    {undated.map((e) => renderEntry(e, true))}
+                  </div>
+                )}
               </div>
             </div>
           );

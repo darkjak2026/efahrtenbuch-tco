@@ -518,6 +518,62 @@ export function monthCosts(data: AppData, monthKey: string): MonthCosts {
   };
 }
 
+// ISO-Kalenderwoche (Woche mit dem ersten Donnerstag des Jahres = KW 1).
+export function isoWeek(d: Date): number {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return Math.ceil(((t.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+export interface MonthWeek {
+  kw: number;
+  monday: string; // "JJJJ-MM-TT" - Montag der Woche (auch wenn im Vormonat)
+  from: string; // erster Tag der Woche innerhalb des Monats
+  to: string; // letzter Tag der Woche innerhalb des Monats
+}
+
+// Kalenderwochen (Mo–So) eines Monats, auf den Monat begrenzt, neueste zuerst.
+export function monthWeeks(monthKey: string): MonthWeek[] {
+  const [y, m] = monthKey.split("-").map(Number);
+  const last = new Date(y, m, 0).getDate();
+  const out: MonthWeek[] = [];
+  for (let day = 1; day <= last; ) {
+    const d = new Date(y, m - 1, day);
+    const dow = (d.getDay() + 6) % 7; // 0 = Montag
+    const monday = new Date(y, m - 1, day - dow);
+    const endDay = Math.min(last, day + (6 - dow));
+    out.push({
+      kw: isoWeek(d),
+      monday: isoLocalDate(monday),
+      from: isoLocalDate(d),
+      to: isoLocalDate(new Date(y, m - 1, endDay)),
+    });
+    day = endDay + 1;
+  }
+  return out.reverse();
+}
+
+export interface WeekSums {
+  minutes: number;
+  km: number; // Summe "km seit letztem Laden" der Ladevorgänge der Woche
+  eur: number;
+  kwh: number;
+}
+
+export function weekSums(data: AppData, rows: ChargeRow[]): WeekSums {
+  return rows.reduce(
+    (s, r) => ({
+      minutes: s.minutes + durationToMinutes(r.dauer),
+      km: s.km + (rowKmDriven(data, r) ?? 0),
+      eur: s.eur + parseNum(r.preis),
+      kwh: s.kwh + parseNum(r.kwh),
+    }),
+    { minutes: 0, km: 0, eur: 0, kwh: 0 }
+  );
+}
+
 export const COST_KEYS = ["laden", "leasing", "versicherung", "abos", "invest"] as const;
 export type CostKey = (typeof COST_KEYS)[number];
 

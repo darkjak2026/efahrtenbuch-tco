@@ -2960,3 +2960,113 @@ section.split-section.history {
   position: relative;
   z-index: 2;
 }
+
+/* ==== Wochengliederung der Lade-Historie (v2.32.00, Variante D) ==== */
+.wk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wk {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+.wk-cur {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.wk-h {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 7px 5px 6px;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+.wk-t {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.wk-chev {
+  width: 10px;
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+.wk-now {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--bg);
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+.wk-v {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9.4px;
+  letter-spacing: -0.02em;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wk-v b {
+  color: var(--ink);
+  font-weight: 800;
+}
+.wk-v i {
+  font-style: normal;
+  opacity: 0.45;
+  margin: 0 1px;
+}
+.wk-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-top: 5px;
+}
+.wk-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 8px;
+  color: var(--ink-soft);
+}
+.wk-dot {
+  margin-top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--plum-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--bg);
+}
+.wk-dot.out {
+  opacity: 0.25;
+}
+.hist-col-b10 .wk-dot.on {
+  background: var(--b10);
+}
+.hist-col-t03 .wk-dot.on {
+  background: var(--t03);
+}
+.wk-dot.today {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.wk-body {
+  padding: 0 5px 6px;
+}

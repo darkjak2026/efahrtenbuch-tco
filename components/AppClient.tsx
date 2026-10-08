@@ -333,7 +333,9 @@ export default function AppClient() {
             </p>
             <p className="about-text">
               In der Lade-Historie (links B10, rechts t03; Monat per ◀ ▶, Wischen oder Antippen des
-              Monatsnamens) gilt der TCO je km nur für den gewählten Monat: alle Kosten dieses Monats geteilt
+              Monatsnamens) sind die Ladevorgänge je Auto nach Kalenderwochen gegliedert – jede Woche zeigt
+              Ladedauer | km | Ladekosten | kWh und darunter Mo–So, an welchen Tagen geladen wurde; die aktuelle
+              Woche ist aufgeklappt. Der TCO je km gilt nur für den gewählten Monat: alle Kosten dieses Monats geteilt
               durch die im Monat gefahrenen km. Abos „Beide (50/50)“ zählen je zur Hälfte, Kosten ohne
               Fahrzeug nur im Haushaltswert.
             </p>

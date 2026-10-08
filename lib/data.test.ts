@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { costStats, dateRangeMax, defaultData, trendDegrees, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
+import { costStats, dateRangeMax, defaultData, isoWeek, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -155,4 +155,24 @@ test("Kostenstatistik: Vormonat, Min/Max mit Monat, Trend gegen Ø der 3 Vormona
   assert.equal(s.leasing.constant, true);
   assert.equal(s.leasing.deg, 0);
   assert.equal(s.leasing.maxPctMonth, "2026-07"); // 100/200 = 50 % war der höchste Anteil
+});
+test("Kalenderwochen im Oktober 2026: auf den Monat begrenzt, neueste zuerst", () => {
+  const w = monthWeeks("2026-10");
+  assert.deepEqual(
+    w.map((x) => `${x.kw}:${x.from}..${x.to}`),
+    ["44:2026-10-26..2026-10-31", "43:2026-10-19..2026-10-25", "42:2026-10-12..2026-10-18", "41:2026-10-05..2026-10-11", "40:2026-10-01..2026-10-04"]
+  );
+  assert.equal(w.at(-1)!.monday, "2026-09-28");
+  assert.equal(isoWeek(new Date(2027, 0, 1)), 53); // 01.01.2027 gehört zur KW 53 von 2026
+});
+
+test("Wochensummen: Dauer, km seit letztem Laden, Kosten, kWh", () => {
+  const a = { ...row("2026-10-06", "t03", 11956), preis: "6.90", kwh: "17.48", dauer: "1:10" };
+  const b = { ...row("2026-10-08", "t03", 12110), preis: "9.10", kwh: "28.3", dauer: "0:45" };
+  const d = dataWith([row("2026-10-01", "t03", 11631), a, b]);
+  const s = weekSums(d, [a, b]);
+  assert.equal(s.minutes, 115);
+  assert.equal(s.km, 479);
+  assert.equal(Math.round(s.eur * 100), 1600);
+  assert.equal(Math.round(s.kwh * 100), 4578);
 });
