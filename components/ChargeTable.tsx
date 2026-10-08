@@ -246,7 +246,7 @@ export default function ChargeTable({
                           <span className="wk-chev">{open ? "▾" : "▸"}</span>
                           {w.from <= today && (
                             <span className="wk-nr" title={`${nr}. Woche im Monat`}>
-                              {nr}
+                              {nr}.
                             </span>
                           )}
                           KW {w.kw} · {shortRange(w.from, w.to)}
