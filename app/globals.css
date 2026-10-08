@@ -3891,10 +3891,19 @@ section.split-section.month-view {
   filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.45));
   transition: transform 0.45s ease;
 }
-/* t03 (Front links im Bild): größer und nach rechts gerückt, beide Scheinwerfer sichtbar */
+/* Beide Autos näher herangeholt, die Front sitzt mittig in der Plakette (gleiche Ansicht) */
+.efm-car-b10 .efm-innen,
 .efm-car-t03 .efm-innen {
   justify-content: flex-start;
 }
+/* B10: Front rechts im Bild, daher nach links gerückt */
+.efm-car-b10 .efm-innen img {
+  flex-shrink: 0;
+  width: 150%;
+  margin-left: -62%;
+  margin-top: 14px;
+}
+/* t03: Front links im Bild, daher nach rechts gerückt */
 .efm-car-t03 .efm-innen img {
   flex-shrink: 0;
   width: 150%;
