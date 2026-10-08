@@ -2990,6 +2990,7 @@ section.split-section.history {
 }
 .wk-t {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
   font-size: 11px;
@@ -3127,6 +3128,12 @@ section.split-section.history {
   font-size: 10.5px;
   font-weight: 700;
   color: var(--ink-soft);
+}
+/* Wochen in der Zukunft: Rahmen wie die übrigen Wochen (v2.38.01+design.01) */
+.wk-empty.wk-empty-future {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
 }
 .wk-empty span {
   font-weight: 400;
@@ -3883,6 +3890,16 @@ section.split-section.month-view {
   margin-top: 12px;
   filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.45));
   transition: transform 0.45s ease;
+}
+/* t03 (Front links im Bild): größer und nach rechts gerückt, beide Scheinwerfer sichtbar */
+.efm-car-t03 .efm-innen {
+  justify-content: flex-start;
+}
+.efm-car-t03 .efm-innen img {
+  flex-shrink: 0;
+  width: 150%;
+  margin-left: 22%;
+  margin-top: 16px;
 }
 .efm-zahl {
   position: absolute;

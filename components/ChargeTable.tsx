@@ -39,7 +39,7 @@ type WeekSegment =
   | { kind: "empty"; weeks: MonthWeek[]; future: boolean };
 
 // Empty weeks (no charge of this vehicle) collapse into one slim tile per run -
-// future ones as "noch leer", past ones as "keine Ladevorgänge". The current
+// future ones as "Wochen liegen in der Zukunft", past ones as "keine Ladevorgänge". The current
 // week always stays a full tile. nr = Woche im Monat (1 = die Woche mit dem 1.).
 function weekSegments(weeks: MonthWeek[], own: { row: ChargeRow }[], today: string): WeekSegment[] {
   const out: WeekSegment[] = [];
@@ -228,9 +228,15 @@ export default function ChargeTable({
                 {weekSegments(weeks, own, today).map((seg) => {
                   if (seg.kind === "empty") {
                     return (
-                      <div className="wk-empty" key={seg.weeks.map((w) => w.kw).join("-")}>
-                        {[...seg.weeks].reverse().map((w) => `KW ${w.kw}`).join(" | ")}
-                        <span>{seg.future ? "liegt in der Zukunft" : "keine Ladevorgänge"}</span>
+                      <div className={"wk-empty" + (seg.future ? " wk-empty-future" : "")} key={seg.weeks.map((w) => w.kw).join("-")}>
+                        ({[...seg.weeks].reverse().map((w) => `KW ${w.kw}`).join(" | ")})
+                        <span>
+                          {seg.future
+                            ? seg.weeks.length > 1
+                              ? "Wochen liegen in der Zukunft"
+                              : "Woche liegt in der Zukunft"
+                            : "keine Ladevorgänge"}
+                        </span>
                       </div>
                     );
                   }
@@ -246,10 +252,10 @@ export default function ChargeTable({
                           <span className="wk-chev">{open ? "▾" : "▸"}</span>
                           {w.from <= today && (
                             <span className="wk-nr" title={`${nr}. Woche im Monat`}>
-                              {nr}.
+                              {nr}. Woche
                             </span>
                           )}
-                          KW {w.kw} · {shortRange(w.from, w.to)}
+                          (KW {w.kw}) · {shortRange(w.from, w.to)}
                           {isCurrent && <span className="wk-now">jetzt</span>}
                         </span>
                         <span className="wk-v">
