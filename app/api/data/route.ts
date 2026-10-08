@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorized } from "@/lib/auth";
 import { getAppData, setAppData, storageKind } from "@/lib/store";
 
-function isAuthorized(req: NextRequest): boolean {
-  const pin = process.env.LADEPROTOKOLL_PIN;
-  if (!pin) return false;
-  const headerPin = req.headers.get("x-pin");
-  const cookiePin = req.cookies.get("ladeprotokoll_pin")?.value;
-  return headerPin === pin || cookiePin === pin;
-}
+
 
 export async function GET(req: NextRequest) {
   if (!isAuthorized(req)) {

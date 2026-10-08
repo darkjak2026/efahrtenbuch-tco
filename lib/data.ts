@@ -45,14 +45,15 @@ export function defaultData(): AppData {
     _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
-      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "", freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "" },
-      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "" },
+      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "", freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "", mehrKmCent: "", minderKmCent: "" },
+      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "", mehrKmCent: "", minderKmCent: "" },
     },
     recurringCosts: [emptyRecurring()],
     erfassungStart: "2026-07-01",
     investitionen: [emptyInvest()],
     months,
     featureRequests: [],
+    places: [],
   };
 }
 
@@ -71,6 +72,7 @@ export function migrate(raw: unknown): AppData {
   if (!d.investitionen) d.investitionen = def.investitionen;
   if (!d.months) d.months = def.months;
   if (!d.featureRequests) d.featureRequests = def.featureRequests;
+  if (!Array.isArray(d.places)) d.places = def.places;
   if (typeof d._rev !== "number") d._rev = 0;
 
   if (!d.recurringCosts) {

@@ -49,11 +49,12 @@ SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallFilter=~@privileged @resources
 SystemCallErrorNumber=EPERM
-# Netz: nur Loopback (Postgres 127.0.0.1:5432, Caddy davor). Die App braucht
-# keinen Weg ins Internet - Ladestationssuche und Adressen laufen im Browser.
+# Netz: Postgres auf 127.0.0.1, Caddy davor. Seit v2.36.00 (Menüpunkt Planung)
+# darf der Dienst ausgehend ins Internet, aber nur für OpenRouteService
+# (Routen/Adressen, Schlüssel bleibt auf dem Server) - wie VitalCoach für die
+# Claude-API. IPAddressAllow kennt keine Hostnamen, daher keine IP-Sperre mehr;
+# lauschen darf der Dienst weiterhin nur auf seinem eigenen Port.
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
-IPAddressDeny=any
-IPAddressAllow=localhost
 SocketBindAllow=tcp:8020
 SocketBindDeny=any
 # Sicherungen, Caddy-Admin-Socket und die anderen Apps ausblenden ("-" = darf fehlen)

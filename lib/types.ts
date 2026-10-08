@@ -46,6 +46,9 @@ export interface VehicleFixedCosts {
   freiKmGesamt: string | number;
   leasingMonate: string | number;
   kmBeiLeasingbeginn: string | number;
+  // Leasingvertrag: Preis je Mehrkilometer und Vergütung je Minderkilometer, in Cent.
+  mehrKmCent: string | number;
+  minderKmCent: string | number;
 }
 
 export interface FeatureRequestEntry {
@@ -53,6 +56,14 @@ export interface FeatureRequestEntry {
   text: string;
   status: "offen" | "uebernommen" | "verworfen" | "erledigt";
   doneAt?: string; // "JJJJ-MM-TT||HH:MM" - wann auf "erledigt" gesetzt wurde
+}
+
+// Gespeicherter Ort für den Streckenrechner (Planung)
+export interface Place {
+  name: string;
+  label: string; // Adresse, wie sie angezeigt wird
+  lat: number;
+  lon: number;
 }
 
 export interface AppData {
@@ -70,6 +81,7 @@ export interface AppData {
   investitionen: Investition[];
   months: Record<string, ChargeRow[]>;
   featureRequests: FeatureRequestEntry[];
+  places: Place[];
   // Umzug: gesetzt im alten Speicher (Upstash/Vercel), sobald die App auf den
   // eigenen Server umgezogen ist - die alte Adresse zeigt dann nur noch einen
   // Hinweis mit Link und nimmt keine Änderungen mehr an. Steht bewusst im

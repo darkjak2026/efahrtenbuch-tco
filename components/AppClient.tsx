@@ -17,7 +17,11 @@ import AddEntryFab from "./AddEntryFab";
 import ExportPanel from "./ExportPanel";
 import Footer from "./Footer";
 import Collapsible from "./Collapsible";
-import { CardIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon, InfoIcon } from "./Icons";
+import BottomNav, { TABS, type Tab } from "./BottomNav";
+import OverviewPanel from "./OverviewPanel";
+import PlanningPanel from "./PlanningPanel";
+import PlacesPanel from "./PlacesPanel";
+import { CardIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon, InfoIcon, LocationPinIcon as PinIcon } from "./Icons";
 import { currentMonthKey } from "@/lib/constants";
 
 type Status = "gate" | "loading" | "ready";
@@ -34,6 +38,18 @@ export default function AppClient() {
   const [pinLockedUntil, setPinLockedUntil] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [celebrateRow, setCelebrateRow] = useState<ChargeRow | null>(null);
+  const [tab, setTab] = useState<Tab>("uebersicht");
+
+  // Menüpunkt im Adress-Anker (#planung …), damit Neuladen dort bleibt
+  useEffect(() => {
+    const h = window.location.hash.slice(1) as Tab;
+    if (TABS.some((t) => t.key === h)) queueMicrotask(() => setTab(h));
+  }, []);
+  const goTab = useCallback((t: Tab) => {
+    setTab(t);
+    window.history.replaceState(null, "", t === "uebersicht" ? window.location.pathname + window.location.search : `#${t}`);
+    window.scrollTo({ top: 0 });
+  }, []);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNextSave = useRef(true);
@@ -252,144 +268,182 @@ export default function AppClient() {
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="afterInteractive" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" strategy="afterInteractive" />
 
-      {/* Heller Kopfbereich: links B10, rechts t03, jedes Auto steht auf seiner
-          Karte; der helle Hintergrund reicht bis zur Mitte der Monatsleiste. */}
-      <header className="top hero">
-        <h1>
-          <img src="/header-icon.ico" alt="" className="header-icon" />
-          TCO - Leapmotor
-        </h1>
-        <div className="hero-inner">
-          <TcoPanel data={data} />
-        </div>
-      </header>
+      {tab === "uebersicht" ? (
+        /* Heller Kopfbereich: links B10, rechts t03, jedes Auto steht auf seiner Karte. */
+        <header className="top hero hero-solo">
+          <h1>
+            <img src="/header-icon.ico" alt="" className="header-icon" />
+            TCO - Leapmotor
+          </h1>
+          <div className="hero-inner">
+            <TcoPanel data={data} />
+          </div>
+        </header>
+      ) : (
+        <header className="topbar">
+          <span>TCO - Leapmotor</span>
+          <b>{TABS.find((t) => t.key === tab)?.label}</b>
+        </header>
+      )}
 
-      <main>
-        {/* Zweigeteilte Ansicht: links alles zum B10, rechts zum t03. Nur die
-            Monatsnavigation schwebt über beiden Hälften (Kante zum Kopfbereich
-            genau in ihrer Mitte). */}
-        <section className="split-section history">
-          <MonthNav activeMonth={activeMonth} months={visibleMonths(data)} onChange={setActiveMonth} />
-          <ChargeTable
-            data={data}
-            activeMonth={activeMonth}
-            updateData={updateData}
-            setActiveMonth={setActiveMonth}
-            showToast={showToast}
-            celebrateRow={celebrateRow}
-            onEntryCompleted={celebrateCompletion}
-          />
-        </section>
+      <main className={"tab-" + tab}>
+        {tab === "uebersicht" && <OverviewPanel data={data} onGo={goTab} />}
 
-        <section className="tco fixed-panel-card">
-          <Collapsible
-            title={
-              <>
-                <CardIcon /> Ladekarten verwalten
-              </>
-            }
-            defaultOpen={false}
-          >
-            <CardsPanel data={data} updateData={updateData} />
-          </Collapsible>
-        </section>
+        {tab === "planung" && (
+          <PlanningPanel data={data} updateData={updateData} pin={pin} testMode={testMode} showToast={showToast} />
+        )}
 
-        <section className="tco fixed-panel-card">
-          <Collapsible
-            title={
-              <>
-                <ReceiptIcon /> Fixkosten
-              </>
-            }
-            defaultOpen={false}
-          >
-            <FixedCostsPanel data={data} updateData={updateData} />
-          </Collapsible>
-        </section>
-
-        <section className="tco fixed-panel-card">
-          <Collapsible
-            title={
-              <>
-                <ToolboxIcon /> Investitionen
-              </>
-            }
-            defaultOpen={false}
-          >
-            <InvestmentsPanel data={data} updateData={updateData} />
-          </Collapsible>
-        </section>
-
-        <section className="tco about-card">
-          <Collapsible
-            title={
-              <>
-                <InfoIcon /> Anleitung
-              </>
-            }
-            defaultOpen={false}
-          >
-            <p className="about-text" style={{ marginTop: 0 }}>
-              Diese App erfasst eure Ladevorgänge für BIO-Leapy (Leapmotor B10) und Leapy (Leapmotor T03) und
-              berechnet daraus laufend die tatsächlichen Kosten pro gefahrenem Kilometer (TCO = Total Cost of
-              Ownership).
-            </p>
-            <p className="about-text">In den TCO-Preis je Fahrzeug fließen ein:</p>
-            <ul className="about-text about-list">
-              <li>Ladekosten aus den erfassten Ladevorgängen</li>
-              <li>Leasingrate + Versicherung, anteilig seit dem Übergabedatum</li>
-              <li>Wiederkehrende Kosten (Abos, Grundgebühren, …) — bei „Beide (50/50)“ je zur Hälfte</li>
-              <li>Investitionen, abgeschrieben über 36 Monate Leasingdauer</li>
-            </ul>
-            <p className="about-text">
-              Die Summe wird geteilt durch den Gesamt-km-Stand (höchster bekannter Wert aus Stichtag-km
-              und erfassten km-Ständen) — daraus ergibt sich der €/km-TCO-Wert oben in den Kacheln.
-            </p>
-            <p className="about-text">
-              Darunter zählt der Leasing-Countdown die Freikilometer herunter (Freikilometer pro Jahr ×
-              Laufzeit, minus gefahrene km seit Übergabe). Der Strich im Balken zeigt, wo ihr zeitanteilig
-              stehen dürftet; „über Plan“ heißt, ihr fahrt mehr, als gleichmäßig verteilt vorgesehen.
-            </p>
-            <p className="about-text">
-              In der Lade-Historie (links B10, rechts t03; Monat per ◀ ▶, Wischen oder Antippen des
-              Monatsnamens) sind die Ladevorgänge je Auto nach Kalenderwochen gegliedert – jede Woche zeigt
-              Ladedauer | km | Ladekosten | kWh und darunter Mo–So, an welchen Tagen geladen wurde; die aktuelle
-              Woche ist aufgeklappt. Der TCO je km gilt nur für den gewählten Monat: alle Kosten dieses Monats geteilt
-              durch die im Monat gefahrenen km. Abos „Beide (50/50)“ zählen je zur Hälfte, Kosten ohne
-              Fahrzeug nur im Haushaltswert.
-            </p>
-            <p className="about-text">
-              Die Ringe je Auto zeigen, woraus die Monatskosten bestehen: jede Kostenart hat ihren eigenen Ring
-              (Stecker = Laden, Bank = Leasing, Schild = Versicherung, € mit Uhr = Abos, Werkzeugkasten =
-              Investitionen), die Länge ist ihr Anteil. Der Pfeil am Ende zeigt den Trend gegenüber dem
-              Durchschnitt der letzten 3 Monate (waagerecht = gleich, je 5 % 10° steiler, hoch = teurer). Einen
-              Ring antippen zeigt seine Werte, das ⓘ in der Mitte öffnet die Statistik mit Vormonat, Minimum und
-              Maximum.
-            </p>
-          </Collapsible>
-        </section>
-
-        <section className="tco export-panel-card">
-          <Collapsible
-            title={
-              <>
-                <ExportBoxIcon /> Exportieren aller Daten
-              </>
-            }
-            defaultOpen={false}
-          >
-            <ExportPanel
+        {(tab === "statistik" || tab === "historie") && (
+          /* Zweigeteilt: links B10, rechts t03; nur die Monatsleiste schwebt über beiden Hälften. */
+          <section className="split-section month-view">
+            <MonthNav activeMonth={activeMonth} months={visibleMonths(data)} onChange={setActiveMonth} />
+            <ChargeTable
               data={data}
               activeMonth={activeMonth}
               updateData={updateData}
+              setActiveMonth={setActiveMonth}
               showToast={showToast}
-              testMode={testMode}
+              celebrateRow={celebrateRow}
+              onEntryCompleted={celebrateCompletion}
+              mode={tab === "statistik" ? "stats" : "history"}
             />
-          </Collapsible>
-        </section>
+          </section>
+        )}
+
+        {tab === "einstellungen" && (
+          <>
+          <section className="tco fixed-panel-card">
+            <Collapsible
+              title={
+                <>
+                  <CardIcon /> Ladekarten verwalten
+                </>
+              }
+              defaultOpen={false}
+            >
+              <CardsPanel data={data} updateData={updateData} />
+            </Collapsible>
+          </section>
+
+          <section className="tco fixed-panel-card">
+            <Collapsible
+              title={
+                <>
+                  <ReceiptIcon /> Fixkosten
+                </>
+              }
+              defaultOpen={false}
+            >
+              <FixedCostsPanel data={data} updateData={updateData} />
+            </Collapsible>
+          </section>
+
+          <section className="tco fixed-panel-card">
+            <Collapsible
+              title={
+                <>
+                  <ToolboxIcon /> Investitionen
+                </>
+              }
+              defaultOpen={false}
+            >
+              <InvestmentsPanel data={data} updateData={updateData} />
+            </Collapsible>
+          </section>
+
+            <section className="tco fixed-panel-card">
+              <Collapsible
+                title={
+                  <>
+                    <PinIcon /> Gespeicherte Orte (Planung)
+                  </>
+                }
+                defaultOpen={false}
+              >
+                <PlacesPanel data={data} updateData={updateData} />
+              </Collapsible>
+            </section>
+
+          <section className="tco export-panel-card">
+            <Collapsible
+              title={
+                <>
+                  <ExportBoxIcon /> Exportieren aller Daten
+                </>
+              }
+              defaultOpen={false}
+            >
+              <ExportPanel
+                data={data}
+                activeMonth={activeMonth}
+                updateData={updateData}
+                showToast={showToast}
+                testMode={testMode}
+              />
+            </Collapsible>
+          </section>
+
+          <section className="tco about-card">
+            <Collapsible
+              title={
+                <>
+                  <InfoIcon /> Anleitung
+                </>
+              }
+              defaultOpen={false}
+            >
+              <p className="about-text" style={{ marginTop: 0 }}>
+                Diese App erfasst eure Ladevorgänge für BIO-Leapy (Leapmotor B10) und Leapy (Leapmotor T03) und
+                berechnet daraus laufend die tatsächlichen Kosten pro gefahrenem Kilometer (TCO = Total Cost of
+                Ownership).
+              </p>
+              <p className="about-text">
+                Menü unten: <b>Übersicht</b> (Autos, €/km, laufender Monat), <b>Planung</b> (Strecke zwischen zwei
+                Adressen: Kosten je Auto und welches Auto die Freikilometer am besten ausnutzt), <b>Statistik</b>
+                (Monatskarten mit Ringen), <b>Historie</b> (Ladevorgänge nach Wochen) und <b>Einstellungen</b>
+                (Fixkosten, Orte, Export, diese Anleitung). Die Knöpfe B10 / t03 zum Erfassen gibt es überall.
+              </p>
+              <p className="about-text">In den TCO-Preis je Fahrzeug fließen ein:</p>
+              <ul className="about-text about-list">
+                <li>Ladekosten aus den erfassten Ladevorgängen</li>
+                <li>Leasingrate + Versicherung, anteilig seit dem Übergabedatum</li>
+                <li>Wiederkehrende Kosten (Abos, Grundgebühren, …) — bei „Beide (50/50)“ je zur Hälfte</li>
+                <li>Investitionen, abgeschrieben über 36 Monate Leasingdauer</li>
+              </ul>
+              <p className="about-text">
+                Die Summe wird geteilt durch den Gesamt-km-Stand (höchster bekannter Wert aus Stichtag-km
+                und erfassten km-Ständen) — daraus ergibt sich der €/km-TCO-Wert oben in den Kacheln.
+              </p>
+              <p className="about-text">
+                Darunter zählt der Leasing-Countdown die Freikilometer herunter (Freikilometer pro Jahr ×
+                Laufzeit, minus gefahrene km seit Übergabe). Der Strich im Balken zeigt, wo ihr zeitanteilig
+                stehen dürftet; „über Plan“ heißt, ihr fahrt mehr, als gleichmäßig verteilt vorgesehen.
+              </p>
+              <p className="about-text">
+                In der Lade-Historie (links B10, rechts t03; Monat per ◀ ▶, Wischen oder Antippen des
+                Monatsnamens) sind die Ladevorgänge je Auto nach Kalenderwochen gegliedert – jede Woche zeigt
+                Ladedauer | km | Ladekosten | kWh und darunter Mo–So, an welchen Tagen geladen wurde; die aktuelle
+                Woche ist aufgeklappt. Der TCO je km gilt nur für den gewählten Monat: alle Kosten dieses Monats geteilt
+                durch die im Monat gefahrenen km. Abos „Beide (50/50)“ zählen je zur Hälfte, Kosten ohne
+                Fahrzeug nur im Haushaltswert.
+              </p>
+              <p className="about-text">
+                Die Ringe je Auto zeigen, woraus die Monatskosten bestehen: jede Kostenart hat ihren eigenen Ring
+                (Stecker = Laden, Bank = Leasing, Schild = Versicherung, € mit Uhr = Abos, Werkzeugkasten =
+                Investitionen), die Länge ist ihr Anteil. Der Pfeil am Ende zeigt den Trend gegenüber dem
+                Durchschnitt der letzten 3 Monate (waagerecht = gleich, je 5 % 10° steiler, hoch = teurer). Einen
+                Ring antippen zeigt seine Werte, das ⓘ in der Mitte öffnet die Statistik mit Vormonat, Minimum und
+                Maximum.
+              </p>
+            </Collapsible>
+          </section>
+          </>
+        )}
       </main>
 
       <Footer data={data} updateData={updateData} />
+
+      <BottomNav tab={tab} onChange={goTab} />
 
       <AddEntryFab
         data={data}

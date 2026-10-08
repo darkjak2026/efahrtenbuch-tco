@@ -3151,3 +3151,485 @@ section.split-section.history {
 .hist-col-t03 .wk-nr {
   background: var(--t03);
 }
+
+/* ==== Menü (v2.36.00): Übersicht · Planung · Statistik · Historie · Einstellungen ==== */
+body {
+  padding-bottom: calc(86px + env(safe-area-inset-bottom));
+}
+.bnav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  display: flex;
+  background: #120f19;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+}
+.bnav-item {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font: inherit;
+  padding: 2px 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s;
+}
+.bnav-item:active {
+  transform: scale(1.15);
+}
+.bnav-ico {
+  width: 44px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  transition: transform 0.18s ease, background 0.18s;
+}
+.bnav-ico svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
+}
+.bnav-item.on {
+  color: var(--accent);
+}
+.bnav-item.on .bnav-ico {
+  transform: translateY(-16px);
+  background: #120f19;
+}
+.bnav-item.on .bnav-ico svg {
+  width: 29px;
+  height: 29px;
+}
+.bnav-lb {
+  font-size: 9.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.bnav-item.on .bnav-lb {
+  transform: translateY(-11px);
+}
+.bnav-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-top: -9px;
+}
+.bnav-item.on .bnav-dot {
+  background: var(--accent);
+}
+/* Schnellwahl B10 / t03 über der Menüleiste */
+.fab-group {
+  bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+/* Kopf: Übersicht mit Autos, sonst schmale Leiste */
+header.top.hero.hero-solo {
+  padding-bottom: 18px;
+}
+.topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px clamp(16px, 4vw, 48px);
+  background: linear-gradient(90deg, #b597c0, #b9a5cc 40%, #bccbdf 60%, #d6e3ef);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+.topbar span {
+  font-size: 14px;
+  font-weight: 600;
+}
+.topbar b {
+  font-size: 18px;
+}
+section.split-section.month-view {
+  margin-top: 12px;
+}
+
+/* Übersicht */
+.ov {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 20px;
+}
+.ov button {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ov-inc {
+  border: 1px solid var(--danger);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger) !important;
+  font-size: 13px;
+  font-weight: 600;
+}
+.ov-month {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(23, 20, 31, 0.6);
+}
+.ov-month-t {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+.ov-month-t span {
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--accent);
+}
+.ov-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+.ov-car {
+  display: flex;
+  flex-direction: column;
+  border-left: 3px solid;
+  padding-left: 8px;
+}
+.ov-car-b10 {
+  border-color: var(--b10);
+}
+.ov-car-t03 {
+  border-color: var(--t03);
+}
+.ov-car b {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 13px;
+}
+.ov-car-b10 b {
+  color: var(--b10);
+}
+.ov-car-t03 b {
+  color: var(--t03);
+}
+.ov-big {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 20px;
+  font-weight: 700;
+}
+.ov-car small,
+.ov-line {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}
+.ov-line {
+  font-family: var(--font-jetbrains-mono), monospace;
+  margin-top: 3px;
+}
+.ov-plan {
+  border: 1px dashed var(--accent);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: none;
+  color: var(--accent) !important;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Planung */
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 14px 0 20px;
+}
+.plan-card {
+  background: rgba(23, 20, 31, 0.7);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+}
+.plan-title {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 16px;
+  color: var(--accent);
+  margin: 0 0 10px;
+}
+.plan-note,
+.plan-hint {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+.plan-note {
+  margin: 0 0 10px;
+}
+.plan-field {
+  margin-bottom: 12px;
+}
+.plan-field > label,
+.plan-manual label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.plan-input-row {
+  display: flex;
+  gap: 6px;
+}
+.plan-input-row input,
+.plan-name-row input,
+.plan-manual input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--lav);
+  color: var(--ink);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 14px;
+}
+.plan-icon-btn {
+  width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--lav);
+  cursor: pointer;
+  font-size: 18px;
+}
+.plan-results {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.plan-results li + li {
+  border-top: 1px solid var(--line);
+}
+.plan-results button {
+  width: 100%;
+  text-align: left;
+  background: var(--panel);
+  border: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  padding: 9px 10px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.plan-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.plan-chip {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.plan-link {
+  margin-top: 6px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 0;
+}
+.plan-name-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.plan-small-btn,
+.plan-go {
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: var(--plum);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  padding: 0 14px;
+  cursor: pointer;
+}
+.plan-go {
+  width: 100%;
+  margin-top: 8px;
+}
+.plan-go:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.plan-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.plan-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+.plan-route {
+  margin: 10px 0 0;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 15px;
+}
+.plan-route span {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.plan-manual {
+  margin-top: 10px;
+}
+.plan-reco {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1.5px solid;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.plan-reco b {
+  font-size: 15px;
+  color: var(--ink);
+}
+.plan-reco-b10 {
+  border-color: var(--b10);
+  background: color-mix(in srgb, var(--b10) 16%, transparent);
+}
+.plan-reco-t03 {
+  border-color: var(--t03);
+  background: color-mix(in srgb, var(--t03) 16%, transparent);
+}
+.plan-cars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  align-items: start;
+}
+.plan-car {
+  border-radius: 12px;
+  padding: 10px;
+  border: 1.5px solid;
+  background: var(--lav);
+}
+.plan-car-b10 {
+  border-color: var(--b10);
+}
+.plan-car-t03 {
+  border-color: var(--t03);
+}
+.plan-car-win {
+  box-shadow: 0 0 0 2px var(--teal);
+}
+.plan-car-off {
+  opacity: 0.55;
+}
+.plan-car-name {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+}
+.plan-car-b10 .plan-car-name {
+  color: var(--b10);
+}
+.plan-car-t03 .plan-car-name {
+  color: var(--t03);
+}
+.plan-cost {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 21px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.plan-sub {
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--ink-soft);
+}
+.plan-ok {
+  color: var(--teal);
+}
+.plan-bad {
+  color: var(--danger);
+}
+
+/* Einstellungen › Orte */
+.places {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.place-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  align-items: center;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 8px;
+}
+.place-row input {
+  min-height: 38px;
+  border-radius: 8px;
+  border: 1.5px solid var(--line);
+  background: var(--lav);
+  color: var(--ink);
+  padding: 0 8px;
+  font: inherit;
+}
+.place-label {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+.place-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--danger);
+}

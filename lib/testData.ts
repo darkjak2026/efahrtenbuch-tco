@@ -1,4 +1,4 @@
-import { DEFAULT_CARDS, MONTHS } from "./constants";
+import { DEFAULT_CARDS, LAST_MONTH_FALLBACK, MONTHS } from "./constants";
 import { emptyRow } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
@@ -41,7 +41,8 @@ export function generateTestData(): AppData {
     t03: VEHICLE_PROFILE.t03.startKm,
   };
 
-  MONTHS.forEach((m) => {
+  // Nur bis zum Ende der Leasingzeit (der Speicherbereich reicht weiter)
+MONTHS.filter((m) => m.key <= LAST_MONTH_FALLBACK).forEach((m) => {
     const [y, mo] = m.key.split("-").map(Number);
     const rows: ChargeRow[] = [];
 
@@ -95,8 +96,8 @@ export function generateTestData(): AppData {
     _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
-      b10: { leasing: 331.51, versicherung: 78.4, start: "2026-07-01", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.b10.startKm, stichtagLadekosten: 120, freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: 0 },
-      t03: { leasing: 149.0, versicherung: 81.83, start: "2025-10-16", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.t03.startKm, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: 0 },
+      b10: { leasing: 331.51, versicherung: 78.4, start: "2026-07-01", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.b10.startKm, stichtagLadekosten: 120, freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: 0, mehrKmCent: 8, minderKmCent: 4 },
+      t03: { leasing: 149.0, versicherung: 81.83, start: "2025-10-16", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.t03.startKm, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: 0, mehrKmCent: 8, minderKmCent: 4 },
     },
     recurringCosts: [
       { anbieter: "Aral pulse", zweck: "Schnellladen-Abo", fahrzeug: "t03", betrag: "2.99", start: "2026-07-01" },
@@ -109,5 +110,9 @@ export function generateTestData(): AppData {
     ],
     months,
     featureRequests: [{ ts: "2026-07-01||10:00", text: "Beispiel-Idee zum Ausprobieren im Testmodus.", status: "offen" }],
+    places: [
+      { name: "Zuhause", label: "Marktplatz 1, 06108 Halle (Saale)", lat: 51.4828, lon: 11.9697 },
+      { name: "Arbeit", label: "Hauptbahnhof, 99084 Erfurt", lat: 50.9725, lon: 11.0383 },
+    ],
   };
 }

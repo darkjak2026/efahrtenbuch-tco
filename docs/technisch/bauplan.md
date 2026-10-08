@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 08.10.2026 | 08:24
+Stand der Dokumentation: 08.10.2026 | 09:36
 
 ## Teil 1 – Beschreibung der App
 
@@ -16,7 +16,7 @@ Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern kon
 
 ### 1.2 Aktueller Funktionsumfang und Features
 
-Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand (ODO), Ladekarte, €/kWh, Standort per GPS) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Die Oberfläche ist zweigeteilt (links B10, rechts t03): oben €/km und ein Countdown der Leasing-Freikilometer je Auto, darunter die Lade-Historie mit schwebender Monatsleiste, Ladevorgängen nach Kalenderwochen und je Auto einer Monatskarte (TCO je km, Ladekosten je km, gefahrene km und Fitnessringe je Kostenart mit Trendpfeilen; antippen zeigt Vormonat, Minimum und Maximum). Dazu PDF- und Excel-Exporte. Dazu kommen Fixkosten, Investitionen (über 36 Monate verteilt), Ladekarten, ein Testmodus mit erfundenen Daten und dieser Entwicklerbereich.
+Ein Menü unten führt zu Übersicht, Planung, Statistik, Historie und Einstellungen. Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand (ODO), Ladekarte, €/kWh, Standort per GPS) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Daraus entstehen €/km je Auto (TCO), ein Freikilometer-Countdown, Monatskarten mit Ringen und eine Wochenübersicht. Die Planung rechnet eine Strecke zwischen zwei Adressen durch und schlägt das Auto vor, das die Leasing-Freikilometer am besten ausnutzt.
 
 ### 1.3 Backup, Datensicherung, Datenschutz
 
@@ -50,13 +50,13 @@ Die Brücke ist alles, was man auf dem Handy sieht und antippt: Kacheln, Lade-Hi
 
 *eigener Server · Node.js 20 (Debian), Next.js im eigenständigen Paket, systemd-Dienst*
 
-Im Maschinenraum läuft der Next.js-Server als Dienst (systemd) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das Sprachrohr. Er ist abgeschottet (Sandbox): darf keine Dateien schreiben, nicht ins Internet und nur seinen eigenen Hafen-Eingang benutzen – die anderen Apps auf dem Server sieht er nicht.
+Im Maschinenraum läuft der Next.js-Server als Dienst (systemd) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das Sprachrohr. Er ist abgeschottet (Sandbox): darf keine Dateien schreiben, keine fremden Ordner sehen und nur seinen eigenen Hafen-Eingang benutzen. Seit der Planung darf er ausgehend ins Internet – genutzt nur für OpenRouteService.
 
-### Sprachrohr – API-Schicht (1 Endpunkt)
+### Sprachrohr – API-Schicht (4 Endpunkte)
 
-*eigener Server · app/api/data/route.ts – GET/POST /api/data, dazu /api/health*
+*eigener Server · /api/data (Laden/Speichern), /api/route und /api/geocode (Planung), /api/health*
 
-Über eine feste Befehlsleitung (Endpunkt) spricht die Brücke mit dem Maschinenraum: „gib mir alles“ (GET) und „speichere alles“ (POST). Jede Anfrage muss den PIN mitbringen. Beim Speichern prüft der Laderaum in einem Schritt, ob inzwischen jemand anderes gespeichert hat (optimistisches Sperren) – dann gibt es eine Warnung statt stillem Überschreiben. /api/health meldet ohne PIN nur „läuft“.
+Über feste Befehlsleitungen (Endpunkte) spricht die Brücke mit dem Maschinenraum: /api/data „gib mir alles“ und „speichere alles“, /api/route und /api/geocode für die Planung. Jede Anfrage muss den PIN mitbringen. Beim Speichern prüft der Laderaum in einem Schritt, ob inzwischen jemand anderes gespeichert hat (optimistisches Sperren). /api/health meldet ohne PIN nur „läuft“.
 
 ### Laderaum – Datenbank
 
@@ -66,9 +66,9 @@ Im Laderaum liegt alles in einer PostgreSQL-Datenbank mit genau einer Tabelle un
 
 ### Funkmast – Externe APIs
 
-*fremde Dienste · Open Charge Map, Nominatim (OpenStreetMap), cdnjs*
+*fremde Dienste · Open Charge Map, Nominatim (OpenStreetMap), cdnjs, OpenRouteService (über den Server)*
 
-Per Funk fragt die Brücke drei fremde Stationen direkt aus dem Browser: Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, Reverse Geocoding) und cdnjs (CDN), das die Excel- und PDF-Bausteine liefert. Keine davon braucht einen Schlüssel. Fällt eine aus, bleibt die App benutzbar – es fehlt nur der Komfort.
+Per Funk fragt die App fremde Stationen: direkt vom Handy Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, Reverse Geocoding, in der Planung auch die Adresssuche) und cdnjs (CDN) für die Excel- und PDF-Bausteine. Über den Maschinenraum läuft OpenRouteService für Straßenentfernung und Adressvorschläge – dessen Schlüssel bleibt im Tresor. Fällt ein Dienst aus, fehlt nur Komfort.
 
 ### Boje – Externe Datenquelle: Standort des Handys
 
@@ -151,6 +151,7 @@ Noch nicht eingerichtet, folgt mit dem Umzug auf den netcup-Server.
 - **Sandbox (Abschottung):** Regeln, die einem Dienst fast alles verbieten, was er nicht braucht: keine Dateien schreiben, kein Internet, keine fremden Ordner.
 - **VPS (Virtual Private Server):** Ein gemieteter virtueller Server mit eigenem Betriebssystem, den man selbst verwaltet.
 - **nip.io:** Kostenloser Dienst, bei dem die IP-Adresse des Servers mit Bindestrichen im Namen steht (name.<IP>.nip.io) und auf genau diesen Server zeigt – so bekommt man HTTPS ohne eigene Domain.
+- **OpenRouteService:** Routendienst der Uni Heidelberg auf Basis von OpenStreetMap: berechnet Straßenentfernungen und schlägt Adressen vor; braucht einen kostenlosen Schlüssel.
 
 ## Offene Punkte
 

@@ -76,6 +76,7 @@ export default function ChargeTable({
   showToast,
   celebrateRow,
   onEntryCompleted,
+  mode = "all",
 }: {
   data: AppData;
   activeMonth: string;
@@ -84,6 +85,8 @@ export default function ChargeTable({
   showToast: (msg: string) => void;
   celebrateRow: ChargeRow | null;
   onEntryCompleted: (row: ChargeRow) => void;
+  // Menü: "stats" = Monatskarten + Haushalt (Statistik), "history" = Wochen + Ladevorgänge (Historie)
+  mode?: "all" | "stats" | "history";
 }) {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [openWeeks, setOpenWeeks] = useState<Record<string, boolean>>({});
@@ -219,7 +222,8 @@ export default function ChargeTable({
           const undated = own.filter(({ row }) => !row.datum.startsWith(activeMonth));
           return (
             <div className={`hist-col hist-col-${v}`} key={v}>
-              <VehicleMonthCard data={data} monthKey={activeMonth} vehicle={v} />
+              {mode !== "history" && <VehicleMonthCard data={data} monthKey={activeMonth} vehicle={v} />}
+              {mode !== "stats" && (
               <div className="wk-list">
                 {weekSegments(weeks, own, today).map((seg) => {
                   if (seg.kind === "empty") {
@@ -301,19 +305,22 @@ export default function ChargeTable({
                   </div>
                 )}
               </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {unassigned.length > 0 && (
+      {mode !== "stats" && unassigned.length > 0 && (
         <div className="entry-list hist-unassigned">
           <div className="hist-unassigned-title">Ohne Fahrzeug</div>
           {unassigned.map((e) => renderEntry(e, false))}
         </div>
       )}
 
-      <HouseholdMonthSummary data={data} monthKey={activeMonth} monthLabel={activeMonthLabel} pct={pct} />
+      {mode !== "history" && (
+        <HouseholdMonthSummary data={data} monthKey={activeMonth} monthLabel={activeMonthLabel} pct={pct} />
+      )}
 
       {editingRow && (
         <EntryFormModal

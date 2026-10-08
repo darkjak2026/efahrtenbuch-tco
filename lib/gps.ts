@@ -22,7 +22,7 @@ export async function hasGeolocationPermission(): Promise<boolean> {
 // Reverse-geocodes to a human-readable "Straße Nr., PLZ Stadt" via OpenStreetMap/Nominatim
 // — used whenever no known charging station is nearby, so the field stays traceable
 // instead of falling back to a raw lat/lon pair nobody can place.
-async function reverseGeocodeAddress(lat: number, lon: number): Promise<string | null> {
+export async function reverseGeocodeAddress(lat: number, lon: number): Promise<string | null> {
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
     const res = await fetch(url, { headers: { Accept: "application/json" } });

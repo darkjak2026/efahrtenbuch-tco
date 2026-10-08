@@ -1,10 +1,10 @@
 {
   "app": "eFahrtenbuch",
-  "stand": "08.10.2026 | 08:24",
+  "stand": "08.10.2026 | 09:36",
   "beschreibung": {
     "kurz": "Das eFahrtenbuch ist ein gemeinsames Ladeprotokoll für die zwei E-Autos der Familie Liese-Held (Leapmotor B10 „BIO-Leapy“ und T03 „Leapy“). Aus jedem Ladevorgang und den Fixkosten rechnet es laufend aus, was ein gefahrener Kilometer wirklich kostet ([TCO](g:tco)). Die App läuft im Handy-Browser, die Daten liegen seit dem 08.10.2026 im [Laderaum](b:laderaum) des eigenen Schiffs auf dem eigenen Server ([Rumpf](b:rumpf)).",
     "ausgangslage_ziel": "Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern konnte. Ziel war, dass beide Haushaltsmitglieder vom eigenen Handy aus Ladevorgänge eintragen und dieselben Zahlen sehen. Deshalb wurde die App am 05.07.2026 auf [Next.js](g:nextjs) umgebaut, zunächst gemietet bei [Vercel](g:vercel) mit Upstash-[Redis](g:redis) als Speicher. Am 08.10.2026 zog sie auf den eigenen Server um (Daten in der EU, eigene Sicherung, keine Abhängigkeit von zwei fremden Anbietern). Bewusst klein gehalten: ein gemeinsamer [PIN](g:pin) statt Benutzerkonten, ein einziger Datensatz.",
-    "funktionsumfang": "Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand ([ODO](g:odo)), Ladekarte, €/kWh, Standort per [GPS](b:boje)) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Die Oberfläche ist zweigeteilt (links B10, rechts t03): oben €/km und ein Countdown der Leasing-Freikilometer je Auto, darunter die Lade-Historie mit schwebender Monatsleiste, Ladevorgängen nach Kalenderwochen und je Auto einer Monatskarte ([TCO](g:tco) je km, Ladekosten je km, gefahrene km und Fitnessringe je Kostenart mit Trendpfeilen; antippen zeigt Vormonat, Minimum und Maximum). Dazu PDF- und Excel-Exporte. Dazu kommen Fixkosten, Investitionen (über 36 Monate verteilt), Ladekarten, ein Testmodus mit erfundenen Daten und dieser Entwicklerbereich.",
+    "funktionsumfang": "Ein Menü unten führt zu Übersicht, Planung, Statistik, Historie und Einstellungen. Ladevorgänge werden in zwei Schritten erfasst: „Vor“ dem Laden (Fahrzeug, km-Stand ([ODO](g:odo)), Ladekarte, €/kWh, Standort per [GPS](b:boje)) und „Nach“ dem Laden (kWh, Reichweite, Dauer). Daraus entstehen €/km je Auto ([TCO](g:tco)), ein Freikilometer-Countdown, Monatskarten mit Ringen und eine Wochenübersicht. Die Planung rechnet eine Strecke zwischen zwei Adressen durch und schlägt das Auto vor, das die Leasing-Freikilometer am besten ausnutzt.",
     "backup_datenschutz": "Jede Nacht um 03:30 sichert der Server die Datenbank mit, die Sicherungen bleiben 30 Tage und werden zusätzlich auf den PC geholt ([Rettungsboot](b:rettungsboot)); dazu kommt der Handexport als [JSON](g:json). Die Daten (Ladeorte mit Koordinaten, km-Stände, Kosten) liegen auf dem eigenen Server in Österreich (EU), ohne Auftragsverarbeiter für die Speicherung. Zugang nur mit dem Haushalts-[PIN](g:pin) aus dem [Tresor](b:tresor). Beim GPS-Abruf gehen die Koordinaten direkt vom Handy an Open Charge Map und OpenStreetMap ([Funk](b:funk)).",
     "abhaengigkeiten": "Eigener Server bei netcup ([VPS](g:vps)) mit [Caddy](g:caddy) und [PostgreSQL](g:postgres), GitHub (Quellcode), Open Charge Map und Nominatim/OpenStreetMap (Ladestation und Adresse zum Standort), cdnjs (Excel- und PDF-Bausteine). Fällt der Server aus, steht die App; fallen die anderen aus, fehlen nur Komfortfunktionen.",
     "herausforderungen": {
@@ -30,16 +30,16 @@
       "technik": "Node.js 20 (Debian), Next.js im eigenständigen Paket, systemd-Dienst",
       "ort": "server",
       "vorhanden": true,
-      "text": "Im Maschinenraum läuft der Next.js-Server als Dienst ([systemd](g:systemd)) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das [Sprachrohr](b:sprachrohr). Er ist abgeschottet ([Sandbox](g:sandbox)): darf keine Dateien schreiben, nicht ins Internet und nur seinen eigenen Hafen-Eingang benutzen – die anderen Apps auf dem Server sieht er nicht."
+      "text": "Im Maschinenraum läuft der Next.js-Server als Dienst ([systemd](g:systemd)) unter einem eigenen Benutzer ohne Anmeldung. Er liefert die Seite aus und beantwortet das [Sprachrohr](b:sprachrohr). Er ist abgeschottet ([Sandbox](g:sandbox)): darf keine Dateien schreiben, keine fremden Ordner sehen und nur seinen eigenen Hafen-Eingang benutzen. Seit der Planung darf er ausgehend ins Internet – genutzt nur für [OpenRouteService](g:ors)."
     },
     {
       "id": "sprachrohr",
       "name": "Sprachrohr",
-      "it": "API-Schicht (1 Endpunkt)",
-      "technik": "app/api/data/route.ts – GET/POST /api/data, dazu /api/health",
+      "it": "API-Schicht (4 Endpunkte)",
+      "technik": "/api/data (Laden/Speichern), /api/route und /api/geocode (Planung), /api/health",
       "ort": "server",
       "vorhanden": true,
-      "text": "Über eine feste Befehlsleitung ([Endpunkt](g:endpunkt)) spricht die Brücke mit dem Maschinenraum: „gib mir alles“ (GET) und „speichere alles“ (POST). Jede Anfrage muss den [PIN](g:pin) mitbringen. Beim Speichern prüft der [Laderaum](b:laderaum) in einem Schritt, ob inzwischen jemand anderes gespeichert hat ([optimistisches Sperren](g:optimistic-locking)) – dann gibt es eine Warnung statt stillem Überschreiben. /api/health meldet ohne PIN nur „läuft“."
+      "text": "Über feste Befehlsleitungen ([Endpunkte](g:endpunkt)) spricht die Brücke mit dem Maschinenraum: /api/data „gib mir alles“ und „speichere alles“, /api/route und /api/geocode für die Planung. Jede Anfrage muss den [PIN](g:pin) mitbringen. Beim Speichern prüft der [Laderaum](b:laderaum) in einem Schritt, ob inzwischen jemand anderes gespeichert hat ([optimistisches Sperren](g:optimistic-locking)). /api/health meldet ohne PIN nur „läuft“."
     },
     {
       "id": "laderaum",
@@ -54,10 +54,10 @@
       "id": "funk",
       "name": "Funkmast",
       "it": "Externe APIs",
-      "technik": "Open Charge Map, Nominatim (OpenStreetMap), cdnjs",
+      "technik": "Open Charge Map, Nominatim (OpenStreetMap), cdnjs, OpenRouteService (über den Server)",
       "ort": "extern",
       "vorhanden": true,
-      "text": "Per Funk fragt die Brücke drei fremde Stationen direkt aus dem Browser: Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, [Reverse Geocoding](g:reverse-geocoding)) und cdnjs ([CDN](g:cdn)), das die Excel- und PDF-Bausteine liefert. Keine davon braucht einen Schlüssel. Fällt eine aus, bleibt die App benutzbar – es fehlt nur der Komfort."
+      "text": "Per Funk fragt die App fremde Stationen: direkt vom Handy Open Charge Map („welche Ladesäule steht hier?“), Nominatim von OpenStreetMap („welche Adresse ist das?“, [Reverse Geocoding](g:reverse-geocoding), in der Planung auch die Adresssuche) und cdnjs ([CDN](g:cdn)) für die Excel- und PDF-Bausteine. Über den [Maschinenraum](b:maschinenraum) läuft [OpenRouteService](g:ors) für Straßenentfernung und Adressvorschläge – dessen Schlüssel bleibt im [Tresor](b:tresor). Fällt ein Dienst aus, fehlt nur Komfort."
     },
     {
       "id": "boje",
@@ -267,6 +267,11 @@
       "id": "nip-io",
       "begriff": "nip.io",
       "erklaerung": "Kostenloser Dienst, bei dem die IP-Adresse des Servers mit Bindestrichen im Namen steht (name.<IP>.nip.io) und auf genau diesen Server zeigt – so bekommt man HTTPS ohne eigene Domain."
+    },
+    {
+      "id": "ors",
+      "begriff": "OpenRouteService",
+      "erklaerung": "Routendienst der Uni Heidelberg auf Basis von OpenStreetMap: berechnet Straßenentfernungen und schlägt Adressen vor; braucht einen kostenlosen Schlüssel."
     }
   ],
   "offen": [

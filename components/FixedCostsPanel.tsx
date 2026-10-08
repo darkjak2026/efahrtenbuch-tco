@@ -102,6 +102,28 @@ export default function FixedCostsPanel({
             />
           </div>
           <div className="field-row">
+            <label htmlFor="b10_mehrKmCent">➕ Mehrkilometer (Cent je km, laut Vertrag)</label>
+            <input
+              type="number"
+              step="0.1"
+              id="b10_mehrKmCent"
+              min="0"
+              value={data.vehicles.b10.mehrKmCent}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.mehrKmCent = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="b10_minderKmCent">➖ Minderkilometer-Vergütung (Cent je km)</label>
+            <input
+              type="number"
+              step="0.1"
+              id="b10_minderKmCent"
+              min="0"
+              value={data.vehicles.b10.minderKmCent}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.minderKmCent = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
             <label htmlFor="b10_kmBeiLeasingbeginn">📟 km-Stand bei Übergabe (leer = 0)</label>
             <input
               type="number"
@@ -212,6 +234,28 @@ export default function FixedCostsPanel({
               min="0"
               value={data.vehicles.t03.leasingMonate}
               onChange={(e) => updateData((d) => { d.vehicles.t03.leasingMonate = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_mehrKmCent">➕ Mehrkilometer (Cent je km, laut Vertrag)</label>
+            <input
+              type="number"
+              step="0.1"
+              id="t03_mehrKmCent"
+              min="0"
+              value={data.vehicles.t03.mehrKmCent}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.mehrKmCent = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_minderKmCent">➖ Minderkilometer-Vergütung (Cent je km)</label>
+            <input
+              type="number"
+              step="0.1"
+              id="t03_minderKmCent"
+              min="0"
+              value={data.vehicles.t03.minderKmCent}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.minderKmCent = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">
