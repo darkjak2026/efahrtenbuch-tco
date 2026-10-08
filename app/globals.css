@@ -3330,15 +3330,6 @@ section.split-section.month-view {
   font-family: var(--font-jetbrains-mono), monospace;
   margin-top: 3px;
 }
-.ov-plan {
-  border: 1px dashed var(--accent);
-  border-radius: 12px;
-  padding: 10px 12px;
-  background: none;
-  color: var(--accent) !important;
-  font-size: 13px;
-  font-weight: 600;
-}
 
 /* Planung */
 .plan {

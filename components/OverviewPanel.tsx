@@ -40,9 +40,6 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
           })}
         </span>
       </button>
-      <button type="button" className="ov-plan" onClick={() => onGo("planung")}>
-        Fahrt planen: Was kostet die Strecke, welches Auto nehmen? ▸
-      </button>
     </div>
   );
 }
