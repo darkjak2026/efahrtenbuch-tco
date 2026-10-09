@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, laufzeitText, migrate, offeneLadevorgaenge, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
+import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, laufzeitText, migrate, offeneLadevorgaenge, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingJahr, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -254,4 +254,37 @@ test("Offene Ladevorgänge: nur unvollständige des Autos, neueste zuerst; Laufz
   assert.equal(laufzeitText(offen[0].row, new Date("2026-10-08T15:17:00")), "0:42");
   assert.equal(laufzeitText(offen[1].row, new Date("2026-10-09T10:00:00")), "2 T");
   assert.equal(laufzeitText(d.months[key][3]), null);
+});
+
+test("Leasingjahre: 37.500 km ÷ 3 = 12.500 je Jahr, Stichtag 28.11., Rest bis Stichtag", () => {
+  const d = dataWith([row("2026-10-08", "t03", 11396)]);
+  d.vehicles.t03.start = "2025-11-28";
+  d.vehicles.t03.leasingMonate = 36;
+  d.vehicles.t03.freiKmGesamt = 37500;
+  d.vehicles.t03.kmBeiLeasingbeginn = 0;
+  const j = leasingJahr(d, "t03", new Date("2026-10-09T12:00:00"))!;
+  assert.equal(j.nr, 1);
+  assert.equal(j.anzahl, 3);
+  assert.equal(j.kontingent, 12500);
+  assert.equal(j.von, "2025-11-28");
+  assert.equal(j.stichtag, "2026-11-28");
+  assert.equal(j.uebertrag, 0);
+  assert.equal(j.rest, 1104);
+  assert.equal(j.restTage, 50);
+  assert.ok(j.voraus! > 550 && j.voraus! < 650);
+});
+
+test("Leasingjahre: übrige km wandern ins nächste Jahr", () => {
+  const d = dataWith([row("2026-11-20", "t03", 12200), row("2027-01-10", "t03", 13000)]);
+  d.vehicles.t03.start = "2025-11-28";
+  d.vehicles.t03.leasingMonate = 36;
+  d.vehicles.t03.freiKmGesamt = 37500;
+  d.vehicles.t03.kmBeiLeasingbeginn = 0;
+  const j = leasingJahr(d, "t03", new Date("2027-01-15T12:00:00"))!;
+  assert.equal(j.nr, 2);
+  assert.equal(j.stichtag, "2027-11-28");
+  assert.equal(j.uebertrag, 300); // 12.500 - 12.200 bis zum ersten Stichtag
+  assert.equal(j.verfuegbar, 12800);
+  assert.equal(j.gefahrenImJahr, 800);
+  assert.equal(j.rest, 12000); // 2 × 12.500 - 13.000
 });

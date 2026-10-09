@@ -304,6 +304,79 @@ export function leasingKm(data: AppData, key: VehicleKey, today: Date = new Date
   return { inklusiveKm, gefahren, rest, anteilGefahren, anteilZeit, planAbweichung, startKmGeschaetzt, ende };
 }
 
+// --- Leasingjahre (v2.44.00): Gesamt-Leasingkilometer ÷ Anzahl Jahre = Jahreskontingent.
+// Jedes Kontingent gilt von Stichtag zu Stichtag (Übergabe + 12, 24 … Monate). Übrige
+// oder zu viel gefahrene km wandern ins nächste Jahr (Entscheidung des Urhebers
+// 09.10.2026): bis Ende von Jahr n stehen n × Kontingent zur Verfügung.
+export interface LeasingJahr {
+  nr: number; // laufendes Leasingjahr, 1-basiert
+  anzahl: number; // Leasingjahre insgesamt (Laufzeit ÷ 12)
+  von: string; // "JJJJ-MM-TT", Beginn des Leasingjahres
+  stichtag: string; // "JJJJ-MM-TT", Beginn des nächsten Jahres bzw. Leasingende
+  kontingent: number; // Gesamtkilometer ÷ Anzahl Jahre
+  uebertrag: number | null; // aus den Vorjahren (+ übrig, − zu viel), null = km-Stand am Stichtag unbekannt
+  verfuegbar: number | null; // Kontingent + Übertrag
+  gefahrenImJahr: number | null;
+  rest: number | null; // bis zum Stichtag noch übrig (negativ = darüber)
+  restTage: number;
+  anteilJahr: number; // 0..1, wie viel des laufenden Leasingjahres vorbei ist
+  planBisHeute: number; // gleichmäßig verteilt: so viele km dürften seit Übergabe gefahren sein
+  voraus: number | null; // gefahren minus Plan (positiv = schneller als geplant)
+}
+
+function addMonths(iso: string, monate: number): Date {
+  const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
+  d.setMonth(d.getMonth() + monate);
+  return d;
+}
+
+export function leasingJahr(data: AppData, key: VehicleKey, today: Date = new Date()): LeasingJahr | null {
+  const v = data.vehicles[key];
+  if (!v.start) return null;
+  const l = leasingKm(data, key, today);
+  if (l.inklusiveKm <= 0) return null;
+  const monate = parseNum(v.leasingMonate) || 36;
+  const anzahl = Math.max(1, Math.round(monate / 12));
+  const kontingent = l.inklusiveKm / anzahl;
+  const startD = addMonths(v.start, 0);
+  const endeD = addMonths(v.start, monate);
+  let nr = 1;
+  while (nr < anzahl && today >= addMonths(v.start, 12 * nr)) nr++;
+  const vonD = addMonths(v.start, 12 * (nr - 1));
+  const stichD = nr < anzahl ? addMonths(v.start, 12 * nr) : endeD;
+  const tag = 86_400_000;
+  const restTage = Math.max(0, Math.ceil((stichD.getTime() - today.getTime()) / tag));
+  // gleichmäßiger Plan über die ganze Laufzeit (nach Tagen)
+  const anteil = Math.min(1, Math.max(0, (today.getTime() - startD.getTime()) / (endeD.getTime() - startD.getTime())));
+  const planBisHeute = Math.round(l.inklusiveKm * anteil);
+  // km-Stand zu Beginn des Leasingjahres: letzter erfasster km-Stand vor dem Stichtag
+  let gefahrenBisJahresbeginn: number | null = 0;
+  if (nr > 1) {
+    const von = isoLocalDate(vonD);
+    const vorher = allRows(data)
+      .filter((r) => r.fahrzeug === key && r.datum && r.datum < von && parseNum(r.km) > 0)
+      .map((r) => parseNum(r.km));
+    gefahrenBisJahresbeginn = vorher.length ? Math.max(0, Math.max(...vorher) - parseNum(v.kmBeiLeasingbeginn)) : null;
+  }
+  const uebertrag = gefahrenBisJahresbeginn === null ? null : Math.round((nr - 1) * kontingent - gefahrenBisJahresbeginn);
+  const rest = l.gefahren === null ? null : Math.round(nr * kontingent - l.gefahren);
+  return {
+    nr,
+    anzahl,
+    von: isoLocalDate(vonD),
+    stichtag: isoLocalDate(stichD),
+    kontingent: Math.round(kontingent),
+    uebertrag,
+    verfuegbar: uebertrag === null ? null : Math.round(kontingent + uebertrag),
+    gefahrenImJahr: l.gefahren === null || gefahrenBisJahresbeginn === null ? null : l.gefahren - gefahrenBisJahresbeginn,
+    rest,
+    restTage,
+    anteilJahr: Math.min(1, Math.max(0, (today.getTime() - vonD.getTime()) / (stichD.getTime() - vonD.getTime()))),
+    planBisHeute,
+    voraus: l.gefahren === null ? null : l.gefahren - planBisHeute,
+  };
+}
+
 // Last month inside a vehicle's lease: the month of (Übergabe + Laufzeit - 1 Tag).
 // 28.11.2025 + 36 Monate -> 28.11.2028 -> letzter Leasingmonat 2028-11.
 export function leaseLastMonth(data: AppData, key: VehicleKey): string | null {

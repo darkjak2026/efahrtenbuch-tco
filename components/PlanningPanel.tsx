@@ -281,6 +281,9 @@ export default function PlanningPanel({
             <div className={`plan-reco plan-reco-${plan.empfehlung}`}>
               <b>Empfehlung: {plan.autos.find((a) => a.vehicle === plan.empfehlung)!.name}</b>
               <span>{plan.grund}</span>
+              {plan.autos.find((a) => a.vehicle === plan.empfehlung)?.leasingText && (
+                <span>{plan.autos.find((a) => a.vehicle === plan.empfehlung)!.leasingText}</span>
+              )}
             </div>
           )}
           <div className="plan-cars">
@@ -296,9 +299,11 @@ export default function PlanningPanel({
                     <div className="plan-sub">
                       Vollkosten-Anteil: {a.vollkosten === null ? "–" : fmtEUR(a.vollkosten)}
                     </div>
-                    {a.puffer !== null && (
-                      <div className={"plan-sub " + (a.puffer >= 0 ? "plan-ok" : "plan-bad")}>
-                        {fmtNum(Math.abs(a.puffer), 0)} km {a.puffer >= 0 ? "unter" : "über"} Plan
+                    {a.leasingJahr && a.leasingJahr.rest !== null && (
+                      <div className={"plan-sub " + (a.leasingJahr.rest - km >= 0 ? "plan-ok" : "plan-bad")}>
+                        {a.leasingJahr.rest >= 0
+                          ? `${fmtNum(a.leasingJahr.rest, 0)} Leasing-km übrig bis ${a.leasingJahr.stichtag.split("-").reverse().slice(0, 2).join(".")}.`
+                          : `${fmtNum(-a.leasingJahr.rest, 0)} km über dem Jahreskontingent`}
                       </div>
                     )}
                     <div className="plan-sub">

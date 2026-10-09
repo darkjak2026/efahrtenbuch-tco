@@ -56,7 +56,7 @@ test("Vorschlag: das Auto mit mehr Puffer unter Plan gewinnt", () => {
   }
   const p = planeStrecke(d, 100, TODAY);
   assert.equal(p.empfehlung, "b10"); // b10: 2.000 km nach einem Jahr, t03: 20.000 km
-  assert.match(p.grund, /BIO-Leapy hat mehr Puffer/);
+  assert.match(p.grund, /BIO-Leapy hat im laufenden Leasingjahr mehr Leasingkilometer übrig/);
 });
 
 test("Mehrkilometer-Risiko nur, wenn die Hochrechnung über den Freikilometern liegt", () => {

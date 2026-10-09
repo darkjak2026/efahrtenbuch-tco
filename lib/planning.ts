@@ -1,5 +1,5 @@
 import { VEHICLES } from "./constants";
-import { allRows, leasingKm, parseNum, rowKmDriven, vehicleStats } from "./data";
+import { allRows, fmtNum, leasingJahr, leasingKm, parseNum, rowKmDriven, vehicleStats, type LeasingJahr } from "./data";
 import type { AppData, VehicleKey } from "./types";
 
 // Planung: Kosten einer Strecke je Auto und der Vorschlag, welches Auto die
@@ -76,7 +76,9 @@ export interface PlanAuto {
   verfuegbar: boolean; // Übergabedatum gesetzt
   zusatzkosten: number | null; // km × Laden je km
   vollkosten: number | null; // km × TCO je km
-  puffer: number | null; // km unter (+) bzw. über (−) dem zeitanteiligen Plan
+  puffer: number | null; // Leasingkilometer Luft (+) bzw. voraus (−) gegenüber dem gleichmäßigen Plan
+  leasingJahr: LeasingJahr | null; // laufendes Jahreskontingent (Rest bis zum Stichtag)
+  leasingText: string | null; // Satz für die Erklärung, z. B. „… bleiben noch 1.104 Leasingkilometer“
   restKm: number | null; // übrige Freikilometer
   mehrKmRisiko: number | null; // € falls die Fahrt am Ende Mehrkilometer verursacht
   ladestopps: number | null;
@@ -101,7 +103,18 @@ export function planeStrecke(data: AppData, km: number, today: Date = new Date()
     const tco = tcoProKm(data, v);
     const typisch = typischeReichweite(data, v, today);
     const letzte = letzteReichweite(data, v, today);
-    const puffer = l.planAbweichung === null ? null : -l.planAbweichung;
+    const jahr = leasingJahr(data, v, today);
+    const puffer = jahr?.voraus === null || jahr?.voraus === undefined ? null : -jahr.voraus;
+    const stich = jahr ? jahr.stichtag.split("-").reverse().join(".") : "";
+    const leasingText =
+      jahr && jahr.rest !== null
+        ? jahr.rest >= 0
+          ? `Im ${jahr.nr}. Leasingjahr bleiben bis zum Stichtag ${stich} noch ${fmtNum(jahr.rest, 0)} Leasingkilometer` +
+            (jahr.rest - km >= 0
+              ? ` – nach dieser Fahrt ${fmtNum(jahr.rest - km, 0)}.`
+              : ` – diese Fahrt ginge ${fmtNum(km - jahr.rest, 0)} km darüber.`)
+          : `Im ${jahr.nr}. Leasingjahr ist das Kontingent schon um ${fmtNum(-jahr.rest, 0)} km überschritten (Stichtag ${stich}); es wird ins nächste Jahr übertragen.`
+        : null;
     // Hochgerechneter Stand am Leasingende; liegt er schon über den Freikilometern,
     // kostet jeder weitere km den Mehrkilometer-Preis.
     let mehrKmRisiko: number | null = null;
@@ -117,6 +130,8 @@ export function planeStrecke(data: AppData, km: number, today: Date = new Date()
       zusatzkosten: laden === null ? null : laden * km,
       vollkosten: tco === null ? null : tco * km,
       puffer,
+      leasingJahr: jahr,
+      leasingText,
       restKm: l.rest,
       mehrKmRisiko,
       ladestopps: ladestopps(km, letzte?.km ?? null, typisch),
@@ -140,17 +155,17 @@ export function planeStrecke(data: AppData, km: number, today: Date = new Date()
   const p = sieger.puffer ?? 0;
   let grund =
     p >= 0
-      ? `${sieger.name} hat mehr Puffer bei den Freikilometern (${Math.round(p).toLocaleString("de-DE")} km unter Plan).`
-      : `${sieger.name} liegt weniger weit über Plan (${Math.round(-p).toLocaleString("de-DE")} km) – so verteilen sich die Mehrkilometer gleichmäßiger.`;
+      ? `${sieger.name} hat im laufenden Leasingjahr mehr Leasingkilometer übrig – ${fmtNum(Math.round(p), 0)} km Luft gegenüber einer gleichmäßigen Verteilung.`
+      : `${sieger.name} ist bei den Leasingkilometern weniger weit voraus (${fmtNum(Math.round(-p), 0)} km) – so verteilen sich die Kilometer gleichmäßiger.`;
   if (knapp) {
     const sx = x.ladestopps ?? 0;
     const sy = y.ladestopps ?? 0;
     if (sx !== sy) {
       sieger = sx < sy ? x : y;
-      grund = `Beide liegen beim Puffer etwa gleich – ${sieger.name} braucht weniger Ladestopps.`;
+      grund = `Bei den Leasingkilometern liegen beide etwa gleich – ${sieger.name} braucht weniger Ladestopps.`;
     } else {
       sieger = (x.zusatzkosten ?? Infinity) <= (y.zusatzkosten ?? Infinity) ? x : y;
-      grund = `Beide liegen beim Puffer etwa gleich – ${sieger.name} ist für diese Fahrt günstiger.`;
+      grund = `Bei den Leasingkilometern liegen beide etwa gleich – ${sieger.name} ist für diese Fahrt günstiger.`;
     }
   }
   return { autos, empfehlung: sieger.vehicle, grund };

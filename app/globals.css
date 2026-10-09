@@ -4700,3 +4700,84 @@ main.tab-rein-links {
 .tco-card .kmpreis small {
   white-space: nowrap;
 }
+
+/* Leasingjahr-Countdown (v2.44.00): Zahl zum Antippen, Overlay mit Gesamtkilometern */
+.lkm-label small {
+  display: block;
+  margin-top: 1px;
+  font-size: 9.5px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.lkm-rest-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  border-bottom: 1px dotted var(--ink-soft);
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.lkm-gesamt h3 {
+  margin: 0 0 6px;
+}
+.lkm-gesamt-zahl {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.lkm-gesamt-zahl small {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.lkm-gesamt-text,
+.lkm-gesamt-hint {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 4px 0 10px;
+  line-height: 1.5;
+}
+.lkm-jahre {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lkm-jahr {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+.lkm-jahr b {
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+.lkm-jahr small {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.lkm-jahr-jetzt {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.lkm-gesamt-t03 .lkm-jahr-jetzt {
+  border-color: var(--t03);
+}
+.lkm-gesamt-b10 .lkm-jahr-jetzt {
+  border-color: var(--b10);
+}
+.lkm-jahr-vorbei {
+  opacity: 0.6;
+}
+.lkm-gesamt-zu {
+  width: 100%;
+  margin-top: 6px;
+}
