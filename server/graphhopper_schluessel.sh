@@ -11,12 +11,23 @@ set -euo pipefail
 ENV_FILE=/etc/efahrtenbuch/efahrtenbuch.env
 [ -f "$ENV_FILE" ] || { echo "$ENV_FILE fehlt – erst einrichten (server/deploy.sh)." >&2; exit 1; }
 
-read -r -s -p "GraphHopper-Schlüssel (leer = entfernen): " KEY
+echo "Schlüssel einfügen (Rechtsklick oder Strg+Umschalt+V) – er bleibt unsichtbar – und Enter drücken."
+echo "Leer lassen bricht ab; zum Entfernen eines alten Schlüssels LOESCHEN eingeben."
+read -r -s -p "GraphHopper-Schlüssel: " KEY
 echo
 KEY="${KEY//[[:space:]]/}"
-if [ -n "$KEY" ] && [[ ! "$KEY" =~ ^[A-Za-z0-9=_-]{20,200}$ ]]; then
-  echo "Das sieht nicht nach einem GraphHopper-Schlüssel aus – nichts geändert." >&2
+if [ -z "$KEY" ]; then
+  echo "Nichts eingefügt – nichts geändert. Bitte erneut aufrufen und den Schlüssel einfügen." >&2
   exit 1
+fi
+if [ "$KEY" = "LOESCHEN" ]; then
+  KEY=""
+elif [[ ! "$KEY" =~ ^[A-Za-z0-9=_-]{20,200}$ ]]; then
+  echo "Das sieht nicht nach einem GraphHopper-Schlüssel aus (${#KEY} Zeichen) – nichts geändert." >&2
+  exit 1
+else
+  # Kontrolle ohne den Schlüssel zu zeigen: Länge und die letzten 4 Zeichen
+  echo "Erkannt: ${#KEY} Zeichen, endet auf …${KEY: -4}"
 fi
 
 TMP=$(mktemp)
