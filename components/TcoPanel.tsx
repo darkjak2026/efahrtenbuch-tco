@@ -11,7 +11,8 @@ function VehicleName({ vehicleKey }: { vehicleKey: VehicleKey }) {
   return (
     <>
       <span className="vehicle-nickname">{nickname}</span>
-      <span className="vehicle-official">({official})</span>
+      {/* Nur das Modell ("B10"), ohne "Leapmotor" – sonst bricht die Zeile um */}
+      <span className="vehicle-official">({official.replace(/^Leapmotor\s+/, "")})</span>
     </>
   );
 }
@@ -55,10 +56,10 @@ function TcoCard({
         {title}
       </div>
       <div className="kmpreis">
-        {kmPreis !== null ? `${fmtNum(kmPreis, 3)} €/km` : "–"} <small>TCO</small>
+        {kmPreis !== null ? `${fmtNum(kmPreis, 2)} €/km` : "–"} <small>TCO/Alltime</small>
       </div>
       <div className="odo">
-        ODO: <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b>
+        <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b> (ODO)
       </div>
       {kmStand === 0 && <div className="warn">Noch kein km-Stand erfasst — €/km folgt automatisch.</div>}
       <button type="button" className="tco-toggle" onClick={() => setOpen((v) => !v)}>

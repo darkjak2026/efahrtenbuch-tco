@@ -4688,3 +4688,15 @@ main.tab-rein-links {
   font-weight: 700;
   color: var(--ink);
 }
+
+/* Kopfbox: „TCO/Alltime“ rutscht bei schmaler Karte in die nächste Zeile statt abgeschnitten zu werden */
+.tco-card .kmpreis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+  white-space: normal;
+}
+.tco-card .kmpreis small {
+  white-space: nowrap;
+}
