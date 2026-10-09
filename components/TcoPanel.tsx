@@ -55,7 +55,7 @@ function TcoCard({
         {title}
       </div>
       <div className="kmpreis">
-        {kmPreis !== null ? fmtNum(kmPreis, 3) : "–"} <small>€/km TCO</small>
+        {kmPreis !== null ? `${fmtNum(kmPreis, 3)} €/km` : "–"} <small>TCO</small>
       </div>
       <div className="odo">
         ODO: <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b>

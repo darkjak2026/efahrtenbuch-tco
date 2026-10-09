@@ -45,11 +45,16 @@ export default function AppClient() {
     const h = window.location.hash.slice(1) as Tab;
     if (TABS.some((t) => t.key === h)) queueMicrotask(() => setTab(h));
   }, []);
+  // Richtung des letzten Wechsels für die kurze Einblend-Bewegung beim Wischen
+  const [richtung, setRichtung] = useState<"links" | "rechts" | null>(null);
   const goTab = useCallback((t: Tab) => {
     setTab(t);
     window.history.replaceState(null, "", t === "uebersicht" ? window.location.pathname + window.location.search : `#${t}`);
     window.scrollTo({ top: 0 });
   }, []);
+
+  // Seitliches Wischen wechselt den Menüpunkt (Reihenfolge wie im Menü unten)
+  const wischStart = useRef<{ x: number; y: number } | null>(null);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNextSave = useRef(true);
@@ -286,7 +291,32 @@ export default function AppClient() {
         </header>
       )}
 
-      <main className={"tab-" + tab}>
+      <main
+        key={tab}
+        className={"tab-" + tab + (richtung ? ` tab-rein-${richtung}` : "")}
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          // Nicht in der Lade-Historie (dort wechselt Wischen den Monat), nicht in Eingabefeldern
+          // und nicht in seitlich scrollbaren Bereichen.
+          const ziel = e.target as HTMLElement;
+          wischStart.current = ziel.closest(".hist-columns, input, textarea, select, .bp-bar, .mon-tabelle-wrap, [data-kein-wischen]")
+            ? null
+            : { x: t.clientX, y: t.clientY };
+        }}
+        onTouchEnd={(e) => {
+          const s = wischStart.current;
+          wischStart.current = null;
+          if (!s) return;
+          const dx = e.changedTouches[0].clientX - s.x;
+          const dy = e.changedTouches[0].clientY - s.y;
+          if (Math.abs(dx) < 70 || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
+          const i = TABS.findIndex((x) => x.key === tab);
+          const next = TABS[i + (dx < 0 ? 1 : -1)];
+          if (!next) return;
+          setRichtung(dx < 0 ? "rechts" : "links");
+          goTab(next.key);
+        }}
+      >
         {tab === "uebersicht" && <OverviewPanel data={data} onGo={goTab} />}
 
         {tab === "planung" && (
@@ -441,9 +471,16 @@ export default function AppClient() {
         )}
       </main>
 
-      <Footer data={data} updateData={updateData} />
+      {/* Version und Urheber nur unter Einstellungen (dort auch der Zugang zum Entwicklerbereich) */}
+      {tab === "einstellungen" && <Footer data={data} updateData={updateData} />}
 
-      <BottomNav tab={tab} onChange={goTab} />
+      <BottomNav
+        tab={tab}
+        onChange={(t) => {
+          setRichtung(null);
+          goTab(t);
+        }}
+      />
 
       <AddEntryFab
         data={data}
