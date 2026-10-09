@@ -9,13 +9,15 @@ import {
   suggestAddresses,
   type GeoPoint,
 } from "@/lib/client-api";
-import { allRows, fmtEUR, fmtNum } from "@/lib/data";
+import { allRows, fmtEUR, fmtNum, vehicleStats } from "@/lib/data";
 import { reverseGeocodeAddress } from "@/lib/gps";
-import { planeStrecke } from "@/lib/planning";
-import type { AppData } from "@/lib/types";
+import { planeStrecke, tcoProKm } from "@/lib/planning";
+import type { AppData, VehicleKey } from "@/lib/types";
 
-// Planung (Menüpunkt): Strecke zwischen zwei Adressen, Kosten je Auto und der
-// Vorschlag, mit welchem Auto die Leasing-Freikilometer am besten ausgenutzt werden.
+// Planung (Menüpunkt, v2.45.00, Mockup „Variante C“): eine Route aus ein oder zwei
+// Etappen (Hin- und Rückfahrt getrennt berechnet). Je Auto eine schmale Kachel: Linie
+// mit Wendepunkt, Kosten je Etappe und gesamt (km × TCO/Alltime des Autos), darunter
+// die Leasingkilometer bis zum Stichtag. Eine Zeile darüber nennt die Empfehlung.
 
 type Field = "from" | "to";
 interface FieldState {
@@ -24,7 +26,16 @@ interface FieldState {
   results: GeoPoint[];
   busy: boolean;
 }
+interface Etappe {
+  von: string;
+  nach: string;
+  km: number;
+  minutes: number | null;
+}
 const emptyField = (): FieldState => ({ text: "", point: null, results: [], busy: false });
+const kurz = (label: string) => label.split(",")[0].trim();
+const datum = (iso: string) => iso.split("-").reverse().join(".");
+const dauer = (min: number) => (min >= 60 ? `${Math.floor(min / 60)} h ${min % 60} min` : `${min} min`);
 
 export default function PlanningPanel({
   data,
@@ -40,10 +51,13 @@ export default function PlanningPanel({
   showToast: (msg: string) => void;
 }) {
   const [fields, setFields] = useState<Record<Field, FieldState>>({ from: emptyField(), to: emptyField() });
+  const [aktiv, setAktiv] = useState<Field>("from");
   const [orsReady, setOrsReady] = useState<boolean | null>(null);
-  const [roundTrip, setRoundTrip] = useState(false);
-  const [route, setRoute] = useState<{ km: number; minutes: number | null; source: string } | null>(null);
+  const [roundTrip, setRoundTrip] = useState(true);
+  // Beide Richtungen werden immer berechnet; bei „Einfache Fahrt“ zählt nur die Hinfahrt.
+  const [route, setRoute] = useState<{ hin: Etappe; rueck: Etappe | null; source: string } | null>(null);
   const [manualKm, setManualKm] = useState("");
+  const [manualOffen, setManualOffen] = useState(false);
   const [routing, setRouting] = useState(false);
   const [naming, setNaming] = useState<{ field: Field; name: string } | null>(null);
   const timers = useRef<Record<Field, ReturnType<typeof setTimeout> | null>>({ from: null, to: null });
@@ -99,6 +113,12 @@ export default function PlanningPanel({
   const choose = (f: Field, p: GeoPoint) => {
     patch(f, { text: p.label, point: p, results: [] });
     setRoute(null);
+    if (f === "from" && !fields.to.point) setAktiv("to");
+  };
+
+  const swap = () => {
+    setFields((s) => ({ from: s.to, to: s.from }));
+    setRoute(null);
   };
 
   const useGps = () => {
@@ -124,16 +144,28 @@ export default function PlanningPanel({
     const a = fields.from.point;
     const b = fields.to.point;
     if (!a || !b) return;
+    const von = kurz(a.label);
+    const nach = kurz(b.label);
     if (testMode) {
-      setRoute({ km: luftlinieKm(a, b) * 1.25, minutes: null, source: "Testmodus: Luftlinie × 1,25" });
+      const km = luftlinieKm(a, b) * 1.25;
+      setRoute({ hin: { von, nach, km, minutes: null }, rueck: { von: nach, nach: von, km, minutes: null }, source: "Testmodus: Luftlinie × 1,25" });
       return;
     }
     if (!pin) return;
     setRouting(true);
-    const r = await routeDistance(pin, a, b);
+    // Hin- und Rückfahrt getrennt: Einbahnstraßen und Auffahrten machen den Rückweg oft etwas anders
+    const [h, r] = await Promise.all([routeDistance(pin, a, b), routeDistance(pin, b, a)]);
     setRouting(false);
-    if (r.ok) setRoute({ km: r.km, minutes: r.minutes, source: r.dienst });
-    else showToast(r.reason === "no-key" ? "Routendienst noch nicht eingerichtet – bitte km selbst eingeben" : "Strecke konnte nicht berechnet werden");
+    if (h.ok) {
+      setRoute({
+        hin: { von, nach, km: h.km, minutes: h.minutes },
+        rueck: r.ok ? { von: nach, nach: von, km: r.km, minutes: r.minutes } : { von: nach, nach: von, km: h.km, minutes: h.minutes },
+        source: h.dienst,
+      });
+    } else {
+      showToast(h.reason === "no-key" ? "Routendienst noch nicht eingerichtet – bitte km selbst eingeben" : "Strecke konnte nicht berechnet werden");
+      setManualOffen(true);
+    }
   };
 
   const savePlace = () => {
@@ -148,189 +180,239 @@ export default function PlanningPanel({
     setNaming(null);
   };
 
-  const oneWay = route ? route.km : Number(manualKm.replace(",", ".")) || 0;
-  const km = oneWay * (roundTrip ? 2 : 1);
+  // Etappen der Route: berechnet oder (ohne Routendienst) aus den selbst eingegebenen km
+  const manual = Number(manualKm.replace(",", ".")) || 0;
+  const vonText = fields.from.point ? kurz(fields.from.point.label) : "Start";
+  const nachText = fields.to.point ? kurz(fields.to.point.label) : "Ziel";
+  const etappen: Etappe[] = route
+    ? roundTrip && route.rueck
+      ? [route.hin, route.rueck]
+      : [route.hin]
+    : manual > 0
+      ? roundTrip
+        ? [
+            { von: vonText, nach: nachText, km: manual, minutes: null },
+            { von: nachText, nach: vonText, km: manual, minutes: null },
+          ]
+        : [{ von: vonText, nach: nachText, km: manual, minutes: null }]
+      : [];
+  const km = etappen.reduce((s, e) => s + e.km, 0);
+  const minuten = etappen.length > 0 && etappen.every((e) => e.minutes !== null) ? etappen.reduce((s, e) => s + (e.minutes ?? 0), 0) : null;
   const plan = km > 0 ? planeStrecke(data, km) : null;
   const places = data.places || [];
 
-  const fieldBox = (f: Field, label: string) => {
+  const fieldRow = (f: Field) => {
     const st = fields[f];
     return (
-      <div className="plan-field">
-        <label htmlFor={`plan-${f}`}>{label}</label>
-        <div className="plan-input-row">
-          <input
-            id={`plan-${f}`}
-            type="text"
-            autoComplete="off"
-            placeholder={f === "from" ? "Startadresse" : "Zieladresse"}
-            value={st.text}
-            maxLength={160}
-            onChange={(e) => onType(f, e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                onSearch(f);
-              }
-            }}
-          />
-          {f === "from" && (
-            <button type="button" className="plan-icon-btn" title="Aktueller Standort" aria-label="Aktueller Standort" onClick={useGps}>
-              📍
-            </button>
-          )}
-          <button type="button" className="plan-icon-btn" title="Suchen" aria-label="Adresse suchen" onClick={() => onSearch(f)}>
+      <div className={"plan2-feld" + (aktiv === f ? " aktiv" : "")}>
+        <span className={"plan2-punkt plan2-punkt-" + f} aria-hidden="true" />
+        <input
+          id={`plan-${f}`}
+          type="text"
+          autoComplete="off"
+          aria-label={f === "from" ? "Start" : "Ziel"}
+          placeholder={f === "from" ? "Start eingeben …" : "Ziel eingeben …"}
+          value={st.text}
+          maxLength={160}
+          onFocus={() => setAktiv(f)}
+          onChange={(e) => onType(f, e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              onSearch(f);
+            }
+          }}
+        />
+        {st.busy && <span className="plan2-busy">…</span>}
+        {f === "from" && (
+          <button type="button" className="plan2-ico" title="Aktueller Standort" aria-label="Aktueller Standort als Start" onClick={useGps}>
+            📍
+          </button>
+        )}
+        {!orsReady && (
+          <button type="button" className="plan2-ico" title="Adresse suchen" aria-label="Adresse suchen" onClick={() => onSearch(f)}>
             🔎
           </button>
-        </div>
-        {st.busy && <div className="plan-hint">Suche …</div>}
-        {st.results.length > 0 && (
-          <ul className="plan-results">
-            {st.results.map((r, i) => (
-              <li key={`${r.lat},${r.lon},${i}`}>
-                <button type="button" onClick={() => choose(f, r)}>
-                  {r.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {places.length > 0 && (
-          <div className="plan-chips">
-            {places.map((p) => (
-              <button type="button" key={p.name} className="plan-chip" title={p.label} onClick={() => choose(f, p)}>
-                {p.name}
-              </button>
-            ))}
-          </div>
-        )}
-        {st.point && !places.some((p) => p.lat === st.point!.lat && p.lon === st.point!.lon) && (
-          naming?.field === f ? (
-            <div className="plan-name-row">
-              <input
-                type="text"
-                autoFocus
-                placeholder="Name, z. B. Oma"
-                value={naming.name}
-                maxLength={40}
-                onChange={(e) => setNaming({ field: f, name: e.target.value })}
-                onKeyDown={(e) => e.key === "Enter" && savePlace()}
-              />
-              <button type="button" className="plan-small-btn" onClick={savePlace}>
-                Speichern
-              </button>
-            </div>
-          ) : (
-            <button type="button" className="plan-link" onClick={() => setNaming({ field: f, name: "" })}>
-              ☆ als Ort speichern
-            </button>
-          )
         )}
       </div>
     );
   };
 
+  const resultList = (f: Field) =>
+    fields[f].results.length > 0 && (
+      <ul className="plan-results">
+        {fields[f].results.map((r, i) => (
+          <li key={`${r.lat},${r.lon},${i}`}>
+            <button type="button" onClick={() => choose(f, r)}>
+              {r.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    );
+
+  const speichernLink = (f: Field) => {
+    const st = fields[f];
+    if (!st.point || places.some((p) => p.lat === st.point!.lat && p.lon === st.point!.lon)) return null;
+    return naming?.field === f ? (
+      <div className="plan-name-row">
+        <input
+          type="text"
+          autoFocus
+          placeholder="Name, z. B. Oma"
+          value={naming.name}
+          maxLength={40}
+          onChange={(e) => setNaming({ field: f, name: e.target.value })}
+          onKeyDown={(e) => e.key === "Enter" && savePlace()}
+        />
+        <button type="button" className="plan-small-btn" onClick={savePlace}>
+          Speichern
+        </button>
+      </div>
+    ) : (
+      <button type="button" className="plan-link" onClick={() => setNaming({ field: f, name: "" })}>
+        ☆ „{kurz(st.point.label)}“ als Ort speichern
+      </button>
+    );
+  };
+
+  // Schmale Kachel je Auto (Variante C): Linie mit Wendepunkt, Kosten je Etappe und gesamt
+  const kachel = (v: VehicleKey) => {
+    const a = plan?.autos.find((x) => x.vehicle === v);
+    if (!a) return null;
+    const preis = tcoProKm(data, v);
+    const s = vehicleStats(data, v);
+    const istEmpfohlen = plan?.empfehlung === v;
+    if (!a.verfuegbar || preis === null) {
+      return (
+        <div key={v} className={`plan2-kachel plan2-kachel-${v} plan2-aus`}>
+          <div className="plan2-kopf">
+            <b>{a.name}</b>
+            <span>{a.verfuegbar ? "noch keine km erfasst" : "noch nicht übergeben"}</span>
+          </div>
+        </div>
+      );
+    }
+    const zwei = etappen.length === 2;
+    const j = a.leasingJahr;
+    return (
+      <div key={v} className={`plan2-kachel plan2-kachel-${v}` + (istEmpfohlen ? " plan2-empfohlen" : "")}>
+        <div className="plan2-kopf">
+          <b>{a.name}</b>
+          <span className="plan2-summe">{fmtEUR(km * preis)}</span>
+        </div>
+        <svg className="plan2-linie" viewBox="0 0 260 64" role="img" aria-label={zwei ? "Hin- und Rückfahrt" : "Einfache Fahrt"}>
+          {zwei ? <path d="M14 20 H226 a12 12 0 0 1 0 24 H14" /> : <path d="M14 32 H238" />}
+          <circle className="plan2-start" cx="14" cy={zwei ? 20 : 32} r="5" />
+          {zwei && <circle className="plan2-start" cx="14" cy="44" r="5" />}
+          <circle className="plan2-ziel" cx={zwei ? 238 : 244} cy="32" r="6" />
+          <text x="124" y={zwei ? 13 : 24} textAnchor="middle">
+            {zwei ? "Hin: " : ""}
+            {fmtNum(etappen[0].km, 1)} km · {fmtEUR(etappen[0].km * preis)}
+          </text>
+          {zwei && (
+            <text x="124" y="61" textAnchor="middle">
+              Zurück: {fmtNum(etappen[1].km, 1)} km · {fmtEUR(etappen[1].km * preis)}
+            </text>
+          )}
+        </svg>
+        <div className="plan2-rechnung">
+          {fmtNum(km, 1)} km × {fmtNum(preis, 2)} €/km (TCO/Alltime)
+          <details>
+            <summary>So gerechnet</summary>
+            <p>
+              {fmtNum(preis, 2)} €/km ist der TCO/Alltime-Wert des {a.name}: alle Kosten seit der Übergabe ({fmtEUR(s.tco)}) ÷
+              alle gefahrenen km ({fmtNum(s.kmStand, 0)} km). Er ändert sich mit jedem Ladevorgang und jedem Monat.
+              {a.zusatzkosten !== null && <> Davon ist Strom für diese Route ca. {fmtEUR(a.zusatzkosten)}.</>}
+            </p>
+          </details>
+        </div>
+        {j && j.rest !== null && (
+          <div className={"plan2-leasing" + (j.rest - km < 0 ? " plan2-leasing-ueber" : "")}>
+            {j.rest - km >= 0
+              ? `Bis zum ${datum(j.stichtag)} verbleiben nach dieser Fahrt noch ${fmtNum(j.rest - km, 0)} km.`
+              : `Bis zum ${datum(j.stichtag)} liegt diese Fahrt ${fmtNum(km - j.rest, 0)} km über dem Kontingent.`}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const empfohlen = plan?.autos.find((a) => a.vehicle === plan.empfehlung);
+
   return (
     <div className="plan">
       <section className="plan-card">
-        <h2 className="plan-title">Strecke</h2>
         {orsReady === false && !testMode && (
-          <p className="plan-note">
-            Der Routendienst ist noch nicht eingerichtet (Schlüssel fehlt). Adressen lassen sich mit 🔎 suchen, die
-            Entfernung bitte unten selbst eintragen.
-          </p>
+          <p className="plan-note">Routendienst nicht erreichbar – Adressen mit 🔎 suchen oder km selbst eingeben.</p>
         )}
-        {fieldBox("from", "Start")}
-        {fieldBox("to", "Ziel")}
-        <label className="plan-check">
-          <input type="checkbox" checked={roundTrip} onChange={(e) => setRoundTrip(e.target.checked)} /> Hin- und Rückfahrt
-        </label>
-        <button
-          type="button"
-          className="plan-go"
-          disabled={!fields.from.point || !fields.to.point || routing}
-          onClick={calculate}
-        >
-          {routing ? "Berechne …" : "Strecke berechnen"}
-        </button>
-        {route ? (
-          <p className="plan-route">
-            <b>{fmtNum(km, 0)} km</b>
-            {route.minutes !== null && <> · ca. {Math.floor((route.minutes * (roundTrip ? 2 : 1)) / 60)} h {(route.minutes * (roundTrip ? 2 : 1)) % 60} min</>}
-            <span> ({route.source})</span>
-          </p>
-        ) : (
-          <div className="plan-manual">
-            <label htmlFor="plan-km">oder Entfernung einfach (km):</label>
-            <input
-              id="plan-km"
-              type="number"
-              min="0"
-              inputMode="decimal"
-              value={manualKm}
-              onChange={(e) => setManualKm(e.target.value.replace(/-/g, ""))}
-            />
+        <div className="plan2-route">
+          {fieldRow("from")}
+          {aktiv === "from" && resultList("from")}
+          <button type="button" className="plan2-tausch" title="Start und Ziel tauschen" aria-label="Start und Ziel tauschen" onClick={swap}>
+            ⇅
+          </button>
+          {fieldRow("to")}
+          {aktiv === "to" && resultList("to")}
+        </div>
+        {places.length > 0 && (
+          <div className="plan-chips">
+            {places.map((p) => (
+              <button type="button" key={p.name} className="plan-chip" title={`${p.label} als ${aktiv === "from" ? "Start" : "Ziel"}`} onClick={() => choose(aktiv, p)}>
+                ★ {p.name}
+              </button>
+            ))}
           </div>
         )}
+        {speichernLink("from")}
+        {speichernLink("to")}
+        <div className="plan2-seg" role="group" aria-label="Art der Fahrt">
+          <button type="button" className={!roundTrip ? "an" : ""} aria-pressed={!roundTrip} onClick={() => setRoundTrip(false)}>
+            Einfache Fahrt
+          </button>
+          <button type="button" className={roundTrip ? "an" : ""} aria-pressed={roundTrip} onClick={() => setRoundTrip(true)}>
+            Hin &amp; zurück
+          </button>
+        </div>
+        <button type="button" className="plan-go" disabled={!fields.from.point || !fields.to.point || routing} onClick={calculate}>
+          {routing ? "Berechne …" : "Route berechnen"}
+        </button>
+        {!route &&
+          (manualOffen ? (
+            <div className="plan-manual">
+              <label htmlFor="plan-km">Entfernung einfach (km):</label>
+              <input
+                id="plan-km"
+                type="number"
+                min="0"
+                inputMode="decimal"
+                value={manualKm}
+                onChange={(e) => setManualKm(e.target.value.replace(/-/g, ""))}
+              />
+            </div>
+          ) : (
+            <button type="button" className="plan2-manuell-link" onClick={() => setManualOffen(true)}>
+              km lieber selbst eingeben
+            </button>
+          ))}
       </section>
 
       {plan && (
-        <section className="plan-card">
-          <h2 className="plan-title">Mit welchem Auto?</h2>
-          {plan.empfehlung && (
-            <div className={`plan-reco plan-reco-${plan.empfehlung}`}>
-              <b>Empfehlung: {plan.autos.find((a) => a.vehicle === plan.empfehlung)!.name}</b>
-              <span>{plan.grund}</span>
-              {plan.autos.find((a) => a.vehicle === plan.empfehlung)?.leasingText && (
-                <span>{plan.autos.find((a) => a.vehicle === plan.empfehlung)!.leasingText}</span>
-              )}
+        <section className="plan2-ergebnis">
+          <div className="plan2-kopfzeile">
+            <b>{fmtNum(km, 1)} km</b>
+            <span>
+              {etappen.length === 2 ? "Hin & zurück" : "Einfache Fahrt"}
+              {minuten !== null && ` · ca. ${dauer(minuten)}`}
+              {route && ` · ${route.source}`}
+            </span>
+          </div>
+          {empfohlen && (
+            <div className={`plan2-empfehlung plan2-empfehlung-${empfohlen.vehicle}`}>
+              <b>Empfehlung: {empfohlen.name}</b> – {plan.grund}
             </div>
           )}
-          <div className="plan-cars">
-            {plan.autos.map((a) => (
-              <div key={a.vehicle} className={`plan-car plan-car-${a.vehicle}` + (a.verfuegbar ? "" : " plan-car-off") + (a.vehicle === plan.empfehlung ? " plan-car-win" : "")}>
-                <div className="plan-car-name">{a.name}</div>
-                {!a.verfuegbar ? (
-                  <div className="plan-hint">noch nicht übergeben</div>
-                ) : (
-                  <>
-                    <div className="plan-cost">{a.zusatzkosten === null ? "–" : fmtEUR(a.zusatzkosten)}</div>
-                    <div className="plan-hint">Zusatzkosten (Strom)</div>
-                    <div className="plan-sub">
-                      Vollkosten-Anteil: {a.vollkosten === null ? "–" : fmtEUR(a.vollkosten)}
-                    </div>
-                    {a.leasingJahr && a.leasingJahr.rest !== null && (
-                      <div className={"plan-sub " + (a.leasingJahr.rest - km >= 0 ? "plan-ok" : "plan-bad")}>
-                        {a.leasingJahr.rest >= 0
-                          ? `${fmtNum(a.leasingJahr.rest, 0)} Leasing-km übrig bis ${a.leasingJahr.stichtag.split("-").reverse().slice(0, 2).join(".")}.`
-                          : `${fmtNum(-a.leasingJahr.rest, 0)} km über dem Jahreskontingent`}
-                      </div>
-                    )}
-                    <div className="plan-sub">
-                      {a.ladestopps === null
-                        ? "Reichweite unbekannt"
-                        : a.ladestopps === 0
-                          ? "ohne Ladestopp"
-                          : `ca. ${a.ladestopps} Ladestopp${a.ladestopps > 1 ? "s" : ""}`}
-                      {a.reichweite.letzte && (
-                        <span className="plan-hint">
-                          {" "}
-                          (zuletzt {a.reichweite.letzte.km} km am {a.reichweite.letzte.datum.split("-").reverse().join(".")})
-                        </span>
-                      )}
-                    </div>
-                    {a.mehrKmRisiko !== null && a.mehrKmRisiko > 0 && (
-                      <div className="plan-sub plan-bad">Mehrkilometer-Risiko: {fmtEUR(a.mehrKmRisiko)}</div>
-                    )}
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-          <p className="plan-note">
-            Zusatzkosten = Strecke × Ladekosten je km der letzten 90 Tage. Leasing und Versicherung zahlt ihr ohnehin; der
-            Vollkosten-Anteil zeigt die Strecke mit dem TCO je km.
-          </p>
+          <div className="plan2-kacheln">{(["b10", "t03"] as VehicleKey[]).map((v) => kachel(v))}</div>
         </section>
       )}
     </div>

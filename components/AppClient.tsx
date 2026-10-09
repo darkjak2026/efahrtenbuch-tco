@@ -489,6 +489,7 @@ export default function AppClient() {
         setActiveMonth={setActiveMonth}
         showToast={showToast}
         onEntryCompleted={celebrateCompletion}
+        versteckt={tab === "planung"}
       />
 
       <div className={"toast" + (toast ? " show" : "")}>{toast}</div>

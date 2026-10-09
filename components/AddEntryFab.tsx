@@ -34,6 +34,7 @@ export default function AddEntryFab({
   setActiveMonth,
   showToast,
   onEntryCompleted,
+  versteckt = false,
 }: {
   data: AppData;
   activeMonth: string;
@@ -41,6 +42,8 @@ export default function AddEntryFab({
   setActiveMonth: (key: string) => void;
   showToast: (msg: string) => void;
   onEntryCompleted: (row: ChargeRow) => void;
+  // Auf der Planungsseite ausgeblendet (dort wird nicht geladen, die Knöpfe verdecken sonst das Ergebnis)
+  versteckt?: boolean;
 }) {
   const [openVehicle, setOpenVehicle] = useState<VehicleKey | null>(null);
   const [editing, setEditing] = useState<OffenerLadevorgang | null>(null);
@@ -136,7 +139,7 @@ export default function AddEntryFab({
 
   return (
     <>
-      <div className={"fab-group" + (offen.length ? ` fab-group-offen-${offen.length}` : "")}>
+      <div className={"fab-group" + (offen.length ? ` fab-group-offen-${offen.length}` : "")} hidden={versteckt}>
         {ORDER.map((key) => {
           const o = offenFuer(key);
           const zeit = o ? laufzeitText(o.ziel.row, now) : null;
@@ -176,7 +179,7 @@ export default function AddEntryFab({
         })}
       </div>
 
-      {offen.length > 0 && (
+      {offen.length > 0 && !versteckt && (
         <div className="abschluss" role="region" aria-label="Offene Ladevorgänge">
           {offen.map((o) => (
             <button type="button" key={o.vehicle} className={`abschluss-zeile abschluss-${o.vehicle}`} onClick={() => setEditing(o.ziel)}>

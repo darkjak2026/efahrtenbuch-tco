@@ -4781,3 +4781,263 @@ main.tab-rein-links {
   width: 100%;
   margin-top: 6px;
 }
+
+/* ==== Planung v2.45.00: aufgeräumte Eingabe, Route aus Etappen, schmale Kachel je Auto ==== */
+.plan2-route {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.plan2-feld {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 0 8px 0 30px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+}
+.plan2-feld.aktiv {
+  border-color: var(--accent);
+}
+.plan2-feld input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  padding: 10px 0;
+}
+.plan2-feld input:focus {
+  outline: none;
+}
+.plan2-punkt {
+  position: absolute;
+  left: 11px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+.plan2-punkt-from {
+  background: var(--teal);
+}
+.plan2-punkt-to {
+  background: var(--danger);
+}
+.plan2-ico {
+  min-width: 36px;
+  min-height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: var(--lav);
+  cursor: pointer;
+}
+.plan2-busy {
+  color: var(--ink-soft);
+}
+.plan2-tausch {
+  position: absolute;
+  right: 54px;
+  top: 34px;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--accent);
+  font-size: 15px;
+  cursor: pointer;
+}
+.plan2-seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  padding: 3px;
+  margin: 10px 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+}
+.plan2-seg button {
+  min-height: 38px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.plan2-seg button.an {
+  background: var(--lav);
+  color: var(--ink);
+  font-weight: 700;
+}
+.plan2-manuell-link {
+  display: block;
+  margin: 8px auto 0;
+  min-height: 36px;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 12.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.plan2-ergebnis {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.plan2-kopfzeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 4px;
+}
+.plan2-kopfzeile b {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 18px;
+}
+.plan2-kopfzeile span {
+  font-size: 12px;
+  color: var(--ink-soft);
+  text-align: right;
+}
+.plan2-empfehlung {
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  border-left: 4px solid var(--accent);
+}
+.plan2-empfehlung-b10 {
+  border-left-color: var(--b10);
+}
+.plan2-empfehlung-t03 {
+  border-left-color: var(--t03);
+}
+.plan2-kacheln {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.plan2-kachel {
+  --car: var(--accent);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--car);
+  background: var(--panel);
+  padding: 8px 12px 10px;
+}
+.plan2-kachel-b10 {
+  --car: var(--b10);
+}
+.plan2-kachel-t03 {
+  --car: var(--t03);
+}
+.plan2-empfohlen {
+  border-color: var(--car);
+  box-shadow: 0 0 0 1px var(--car);
+}
+.plan2-aus {
+  opacity: 0.55;
+}
+.plan2-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.plan2-kopf b {
+  color: var(--car);
+  font-size: 14px;
+}
+.plan2-kopf span {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.plan2-kopf .plan2-summe {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.plan2-linie {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 64px;
+  margin: 2px 0;
+}
+.plan2-linie path {
+  fill: none;
+  stroke: var(--car);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.plan2-linie .plan2-start {
+  fill: var(--teal);
+}
+.plan2-linie .plan2-ziel {
+  fill: var(--danger);
+}
+.plan2-linie text {
+  fill: var(--ink);
+  font-size: 11px;
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+.plan2-rechnung {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+.plan2-rechnung details {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  margin-top: 2px;
+}
+.plan2-rechnung summary {
+  cursor: pointer;
+  color: var(--accent);
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+.plan2-rechnung details p {
+  margin: 2px 0 0;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.plan2-leasing {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line);
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.plan2-leasing-ueber {
+  color: var(--danger);
+}
+
+/* ⇅ links zwischen den Punkten, damit es die Knöpfe im Startfeld nicht überdeckt */
+.plan2-tausch {
+  right: auto;
+  left: -4px;
+  top: 34px;
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+}
+.fab-group[hidden] {
+  display: none;
+}
