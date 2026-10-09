@@ -48,3 +48,6 @@ next-env.d.ts
 
 # Deploy-Paket für den eigenen Server (server/deploy.sh)
 /.deploy/
+
+# Lokale Notizdatei mit Zugangsschlüssel – nie ins öffentliche Repository
+/API.txt
