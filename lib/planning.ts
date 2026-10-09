@@ -32,6 +32,14 @@ export function ladenProKm(data: AppData, v: VehicleKey, today: Date = new Date(
   return pick(rows.filter((r) => r.datum >= since)) ?? pick(rows);
 }
 
+// Ladekosten je km seit Übergabe (v2.46.00, Grundlage der Planung): die Ladekosten-Seite
+// von TCO/Alltime – alle Ladekosten ÷ alle gefahrenen km. Leasing, Versicherung usw.
+// verteilen sich auf alle Fahrten des Monats und zählen für eine einzelne Fahrt nicht.
+export function ladenAlltimeProKm(data: AppData, v: VehicleKey): { proKm: number; ladekosten: number; km: number } | null {
+  const s = vehicleStats(data, v);
+  return s.kmStand > 0 && s.ladekosten > 0 ? { proKm: s.ladekosten / s.kmStand, ladekosten: s.ladekosten, km: s.kmStand } : null;
+}
+
 // TCO je km wie in den Karten oben (alle Kosten seit Leasingbeginn ÷ km-Stand).
 export function tcoProKm(data: AppData, v: VehicleKey): number | null {
   const s = vehicleStats(data, v);
@@ -74,7 +82,8 @@ export interface PlanAuto {
   vehicle: VehicleKey;
   name: string;
   verfuegbar: boolean; // Übergabedatum gesetzt
-  zusatzkosten: number | null; // km × Laden je km
+  zusatzkosten: number | null; // km × Ladekosten je km seit Übergabe (Preis der Fahrt)
+  ladenKm: { proKm: number; ladekosten: number; km: number } | null; // Grundlage dafür
   vollkosten: number | null; // km × TCO je km
   puffer: number | null; // Leasingkilometer Luft (+) bzw. voraus (−) gegenüber dem gleichmäßigen Plan
   leasingJahr: LeasingJahr | null; // laufendes Jahreskontingent (Rest bis zum Stichtag)
@@ -99,7 +108,7 @@ export function planeStrecke(data: AppData, km: number, today: Date = new Date()
     const veh = data.vehicles[v];
     const verfuegbar = !!veh.start;
     const l = leasingKm(data, v, today);
-    const laden = ladenProKm(data, v, today);
+    const ladenKm = ladenAlltimeProKm(data, v);
     const tco = tcoProKm(data, v);
     const typisch = typischeReichweite(data, v, today);
     const letzte = letzteReichweite(data, v, today);
@@ -127,7 +136,8 @@ export function planeStrecke(data: AppData, km: number, today: Date = new Date()
       vehicle: v,
       name: VEHICLES[v].nickname,
       verfuegbar,
-      zusatzkosten: laden === null ? null : laden * km,
+      zusatzkosten: ladenKm === null ? null : ladenKm.proKm * km,
+      ladenKm,
       vollkosten: tco === null ? null : tco * km,
       puffer,
       leasingJahr: jahr,

@@ -9,14 +9,14 @@ import {
   suggestAddresses,
   type GeoPoint,
 } from "@/lib/client-api";
-import { allRows, fmtEUR, fmtNum, vehicleStats } from "@/lib/data";
+import { allRows, fmtEUR, fmtNum } from "@/lib/data";
 import { reverseGeocodeAddress } from "@/lib/gps";
-import { planeStrecke, tcoProKm } from "@/lib/planning";
+import { planeStrecke } from "@/lib/planning";
 import type { AppData, VehicleKey } from "@/lib/types";
 
 // Planung (Menüpunkt, v2.45.00, Mockup „Variante C“): eine Route aus ein oder zwei
 // Etappen (Hin- und Rückfahrt getrennt berechnet). Je Auto eine schmale Kachel: Linie
-// mit Wendepunkt, Kosten je Etappe und gesamt (km × TCO/Alltime des Autos), darunter
+// mit Wendepunkt, Ladekosten je Etappe und gesamt (km × Ladekosten je km seit Übergabe), darunter
 // die Leasingkilometer bis zum Stichtag. Eine Zeile darüber nennt die Empfehlung.
 
 type Field = "from" | "to";
@@ -280,8 +280,7 @@ export default function PlanningPanel({
   const kachel = (v: VehicleKey) => {
     const a = plan?.autos.find((x) => x.vehicle === v);
     if (!a) return null;
-    const preis = tcoProKm(data, v);
-    const s = vehicleStats(data, v);
+    const preis = a.ladenKm?.proKm ?? null;
     const istEmpfohlen = plan?.empfehlung === v;
     if (!a.verfuegbar || preis === null) {
       return (
@@ -317,13 +316,13 @@ export default function PlanningPanel({
           )}
         </svg>
         <div className="plan2-rechnung">
-          {fmtNum(km, 1)} km × {fmtNum(preis, 2)} €/km (TCO/Alltime)
+          {fmtNum(km, 1)} km × {fmtNum(preis, 3)} €/km Ladekosten
           <details>
             <summary>So gerechnet</summary>
             <p>
-              {fmtNum(preis, 2)} €/km ist der TCO/Alltime-Wert des {a.name}: alle Kosten seit der Übergabe ({fmtEUR(s.tco)}) ÷
-              alle gefahrenen km ({fmtNum(s.kmStand, 0)} km). Er ändert sich mit jedem Ladevorgang und jedem Monat.
-              {a.zusatzkosten !== null && <> Davon ist Strom für diese Route ca. {fmtEUR(a.zusatzkosten)}.</>}
+              Ladekosten seit der Übergabe des {a.name}: {fmtEUR(a.ladenKm!.ladekosten)} ÷ {fmtNum(a.ladenKm!.km, 0)} gefahrene km ={" "}
+              {fmtNum(preis, 3)} €/km. Der Wert ändert sich mit jedem Ladevorgang. Leasing, Versicherung und Abos zählen hier
+              nicht – sie verteilen sich auf alle Fahrten des Monats.
             </p>
           </details>
         </div>

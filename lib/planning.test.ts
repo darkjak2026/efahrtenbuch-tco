@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { defaultData, emptyRow } from "./data";
-import { ladestopps, ladenProKm, planeStrecke, typischeReichweite } from "./planning";
+import { ladenAlltimeProKm, ladestopps, ladenProKm, planeStrecke, typischeReichweite } from "./planning";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 const TODAY = new Date("2026-10-08T12:00:00");
@@ -69,4 +69,16 @@ test("Mehrkilometer-Risiko nur, wenn die Hochrechnung über den Freikilometern l
   const t03 = planeStrecke(d, 200, TODAY).autos.find((a) => a.vehicle === "t03")!;
   assert.ok(t03.mehrKmRisiko! > 0); // ~45.000 km hochgerechnet > 39.000
   assert.equal(Math.round(t03.mehrKmRisiko! * 100), 2000); // 200 km × 10 ct
+});
+
+test("Planung: Preis der Fahrt = km × Ladekosten je km seit Übergabe", () => {
+  const d = dataWith([row("2026-09-20", "t03", 1000, "40"), row("2026-10-01", "t03", 2000, "60")]);
+  d.vehicles.t03.stichtagLadekosten = "";
+  d.vehicles.t03.start = "2025-11-28";
+  const l = ladenAlltimeProKm(d, "t03")!;
+  assert.equal(l.ladekosten, 100);
+  assert.equal(l.km, 2000);
+  assert.equal(l.proKm, 0.05);
+  const p = planeStrecke(d, 80, TODAY);
+  assert.equal(p.autos.find((a) => a.vehicle === "t03")!.zusatzkosten, 4);
 });
