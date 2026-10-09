@@ -7,6 +7,7 @@ import {
   durationToMinutes,
   fmtNum,
   hasNachValues,
+  ladeBeginn,
   minutesToDuration,
   monthKeyFromDate,
   parseNum,
@@ -94,7 +95,13 @@ export default function EntryFormModal({
   onClose: () => void;
   showToast: (msg: string) => void;
 }) {
-  const [form, setForm] = useState<ChargeRow>(initial);
+  // Offener Ladevorgang mit gespeicherter Startzeit: beim Nachtragen ist die Dauer
+  // (Start bis jetzt, unter 24 h) schon vorgeschlagen.
+  const [form, setForm] = useState<ChargeRow>(() => {
+    const b = defaultSection === "nach" && !initial.dauer ? ladeBeginn(initial) : null;
+    const min = b ? Math.round((Date.now() - b.getTime()) / 60000) : 0;
+    return min > 0 && min < 24 * 60 ? { ...initial, dauer: minutesToDuration(min) } : initial;
+  });
   const [locating, setLocating] = useState(false);
   // Guards against a fast double-click/double-tap on "Speichern" creating a
   // duplicate entry. A ref (checked synchronously, before React re-renders)
@@ -559,7 +566,12 @@ export default function EntryFormModal({
     }
     submittedRef.current = true;
     setSubmitting(true);
-    const row: ChargeRow = { ...form, preis: form.preis || autoPreis || form.preis };
+    const row: ChargeRow = {
+      ...form,
+      preis: form.preis || autoPreis || form.preis,
+      // Startzeit merken (für „Laden abschließen!“ am Knopf und die Dauer beim Nachtragen)
+      start: form.start || (isNewEntry ? chargeStartLabel : form.start),
+    };
     // Erst mit "Nach" vollständig: Konfetti-Fontäne und "alles eingetragen", dann schließen
     if (hasNachValues(row) && !hasNachValues(initial)) {
       setFontaene(makePieces());

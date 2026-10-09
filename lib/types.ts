@@ -17,6 +17,8 @@ export interface ChargeRow {
   notiz: string;
   // „Akku ist voll geladen (100 %)“ bei „Reichweite neu“ (v2.39.00) – Maßstab für den Ladering
   voll?: boolean;
+  // Startzeit „HH:MM“ (v2.41.00), gespeichert beim Erfassen von „Vor“ – für „Laden abschließen!“
+  start?: string;
 }
 
 export interface Investition {

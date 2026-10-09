@@ -379,6 +379,48 @@ const INCOMPLETE_FLAG_START = "2026-08-15";
 // A row saved from the "Vor"-section alone (no reichweiteNachher/kwh yet) is a
 // charge that's still running — surfaced in the Lade-Historie as "unvollständig"
 // since Vor and Nach can be minutes or days apart in real use.
+// --- Offene Ladevorgänge (v2.41.00): „Laden abschließen!“ am Knopf des Autos ---
+export interface OffenerLadevorgang {
+  row: ChargeRow;
+  monthKey: string;
+  idx: number;
+}
+
+// Unvollständige Ladevorgänge eines Autos bis heute, neueste zuerst (Datum, dann Startzeit).
+export function offeneLadevorgaenge(data: AppData, v: VehicleKey, bis: string = isoLocalToday()): OffenerLadevorgang[] {
+  const out: OffenerLadevorgang[] = [];
+  for (const [monthKey, rows] of Object.entries(data.months)) {
+    rows.forEach((row, idx) => {
+      if (row.fahrzeug === v && row.datum <= bis && isChargeIncomplete(row)) out.push({ row, monthKey, idx });
+    });
+  }
+  return out.sort((a, b) => `${b.row.datum} ${b.row.start ?? ""}`.localeCompare(`${a.row.datum} ${a.row.start ?? ""}`));
+}
+
+function isoLocalToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Ladebeginn als Datum (lokale Zeit) aus Datum + Startzeit, sonst null.
+export function ladeBeginn(row: ChargeRow): Date | null {
+  if (!row.datum || !row.start || !/^\d{1,2}:\d{2}$/.test(row.start)) return null;
+  const [h, m] = row.start.split(":").map(Number);
+  const d = new Date(`${row.datum}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+// Laufzeit für den Knopf: "0:42" (h:mm) bis 24 h, danach "2 T"; null ohne Startzeit.
+export function laufzeitText(row: ChargeRow, now: Date = new Date()): string | null {
+  const b = ladeBeginn(row);
+  if (!b) return null;
+  const min = Math.max(0, Math.round((now.getTime() - b.getTime()) / 60000));
+  if (min >= 24 * 60) return `${Math.floor(min / (24 * 60))} T`;
+  return `${Math.floor(min / 60)}:${String(min % 60).padStart(2, "0")}`;
+}
+
 export function isChargeIncomplete(row: ChargeRow): boolean {
   if (!row.datum || row.datum < INCOMPLETE_FLAG_START) return false;
   return !isEmptyRow(row) && !hasNachValues(row);

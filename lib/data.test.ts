@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, migrate, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
+import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, laufzeitText, migrate, offeneLadevorgaenge, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -236,4 +236,22 @@ test("Ladering: Haken voll = 100 % und Maßstab aus den letzten Vollladungen", (
   assert.deepEqual(ladeStand(d, offen), { vor: 50, nach: null });
   // Maßstab nur aus Vollladungen bis zum Tag des Ladevorgangs
   assert.equal(vollReichweite(d, "t03", "2026-10-02"), 260);
+});
+
+test("Offene Ladevorgänge: nur unvollständige des Autos, neueste zuerst; Laufzeit am Knopf", () => {
+  const d = defaultData();
+  const key = "2026-10";
+  d.months[key] = [
+    { ...emptyRow(), datum: "2026-10-07", fahrzeug: "t03" as VehicleKey, km: "100", reichweiteVorher: "40", start: "09:00" },
+    { ...emptyRow(), datum: "2026-10-08", fahrzeug: "t03" as VehicleKey, km: "200", reichweiteVorher: "50", start: "14:35" },
+    { ...emptyRow(), datum: "2026-10-08", fahrzeug: "t03" as VehicleKey, km: "150", reichweiteVorher: "30", reichweiteNachher: "200", kwh: "20" },
+    { ...emptyRow(), datum: "2026-10-08", fahrzeug: "b10" as VehicleKey, km: "300", reichweiteVorher: "60" },
+  ];
+  const offen = offeneLadevorgaenge(d, "t03", "2026-10-09");
+  assert.equal(offeneLadevorgaenge(d, "t03", "2026-10-07").length, 1);
+  assert.deepEqual(offen.map((o) => o.idx), [1, 0]);
+  assert.equal(offen[0].monthKey, key);
+  assert.equal(laufzeitText(offen[0].row, new Date("2026-10-08T15:17:00")), "0:42");
+  assert.equal(laufzeitText(offen[1].row, new Date("2026-10-09T10:00:00")), "2 T");
+  assert.equal(laufzeitText(d.months[key][3]), null);
 });
