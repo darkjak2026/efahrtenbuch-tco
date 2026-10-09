@@ -47,7 +47,8 @@
     ["App-Zugriffs-PIN (Haushalt)", "gemeinsamer PIN für Familie Liese-Held", "/etc/efahrtenbuch/efahrtenbuch.env auf dem Server, lokal .env.local"],
     ["GitHub", "darkjak2026", "unklar - siehe offene_punkte"],
     ["Vercel (alt)", "darkjak2026 (Team jakob-s-projects18)", "unklar - siehe offene_punkte"],
-    ["Upstash Redis (alt)", "über die Vercel-Integration", "Vercel-Projekteinstellungen / .env.local"]
+    ["Upstash Redis (alt)", "über die Vercel-Integration", "Vercel-Projekteinstellungen / .env.local"],
+    ["GraphHopper (Free-Tarif)", "Konto des Urhebers auf graphhopper.com", "API-Schlüssel nur in /etc/efahrtenbuch/efahrtenbuch.env (GRAPHHOPPER_API_KEY, 600 root); Konto-Login: unklar – siehe offene_punkte"]
   ],
   "dsgvo_status": "",
   "daten_speicherort": "Seit 08.10.2026 auf dem eigenen netcup-VPS (Rechenzentrum in Österreich, EU): PostgreSQL, nur über localhost erreichbar, eigene Rolle. Bis 08.10.2026 bei Upstash (Region nie geklärt), dort liegt der alte Stand bis zur Löschung. GPS-Koordinaten gehen beim Erfassen direkt vom Handy an Open Charge Map und OpenStreetMap.",
@@ -126,7 +127,8 @@
     ["09.10.2026", "2.42.00+design.03", "Design: Kopfbox der Übersicht – das Modell steht in derselben Schrift wie der Name, mit „/“ getrennt („Leapy / T03“, „BIO-Leapy / B10“)."],
     ["09.10.2026", "2.42.00+design.04", "Design: Übersicht – „TCO im Oktober“ statt „TCO im Monat Oktober“ und „Bisher 461 km im Oktober gefahren“."],
     ["09.10.2026", "2.42.00+design.05", "Design: Übersicht – km und Ladekosten des Monats stehen jetzt in zwei ganzen Sätzen: „Bisher wurden im Oktober 461 km mit dem BIO-Leapy gefahren. Dafür wurden 95,11 € für das Laden ausgegeben.“"],
-    ["09.10.2026", "2.42.01", "Härtung: Die Schriften (Space Grotesk, Inter, JetBrains Mono) liegen jetzt fest im Projekt (app/fonts) statt beim Bauen von Google Fonts geladen zu werden. Der Build braucht dafür kein Internet mehr und bricht nicht mehr ab, wenn Google kurz nicht antwortet. Aussehen unverändert."]
+    ["09.10.2026", "2.42.01", "Härtung: Die Schriften (Space Grotesk, Inter, JetBrains Mono) liegen jetzt fest im Projekt (app/fonts) statt beim Bauen von Google Fonts geladen zu werden. Der Build braucht dafür kein Internet mehr und bricht nicht mehr ab, wenn Google kurz nicht antwortet. Aussehen unverändert."],
+    ["09.10.2026", "2.43.00", "Neu: Die Planung rechnet jetzt echte Straßenentfernungen über GraphHopper (Schlüssel auf dem Server eingetragen; geprüft: Halle Marktplatz – Leipzig Hbf 40,2 km, 38 min). Adressvorschläge beim Tippen erscheinen zuerst in der Nähe – beim Ziel rund um den Start, sonst rund um den letzten Ladeort."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [
@@ -136,7 +138,7 @@
     "dsgvo_status ist noch nicht bewertet (auf Wunsch leer gelassen). Speicherort und AVV sind seit dem Umzug geklärt (eigener Server, netcup-AVV).",
     "Leapy und später BIO-Leapy: Preis je Mehr- und Minderkilometer laut Vertrag in den Fixkosten eintragen (für das Mehrkilometer-Risiko in der Planung).",
     "Monitoring: bei Gelegenheit eine Benachrichtigung, wenn die nächtliche Sicherung oder der Schnappschuss ausfällt (bisher nur sichtbar im Bauplan).",
-    "GraphHopper-Schlüssel beantragen (graphhopper.com, Free-Tarif) und auf dem Server eintragen: ssh -t vitalcoach 'sudo bash ~/efahrtenbuch-deploy/graphhopper_schluessel.sh'. Bis dahin rechnet die Planung mit von Hand eingegebenen km."
+    "GraphHopper: wo ist der Konto-Login (E-Mail/Passwort) hinterlegt? Im Projekt-Pass unter accounts ergänzen (nur den Ort, kein Passwort)."
   ],
   "feature_requests": [
     ["01.09.2026 09:57", "test", "verworfen"],

@@ -14,8 +14,15 @@ export async function GET(req: NextRequest) {
   if (!d) return NextResponse.json({ error: "no-key" }, { status: 503 });
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim().slice(0, 120);
   if (q.length < 3) return NextResponse.json({ results: [] });
+  // Optional: Nähe für die Reihenfolge der Vorschläge (keine Pflicht, nur gültige Koordinaten)
+  const lat = Number(req.nextUrl.searchParams.get("lat"));
+  const lon = Number(req.nextUrl.searchParams.get("lon"));
+  const near =
+    req.nextUrl.searchParams.has("lat") && Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180
+      ? { lat, lon }
+      : null;
   try {
-    const res = await fetchGeocode(d, q);
+    const res = await fetchGeocode(d, q, near);
     await recordEvent("api_aufruf", { dienst: d.dienst, art: "geocode", ok: res.ok });
     if (!res.ok) return NextResponse.json({ error: "geocode-failed" }, { status: 502 });
     const json = await res.json();

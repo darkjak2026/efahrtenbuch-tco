@@ -101,9 +101,10 @@ export async function routeDistance(pin: string, from: GeoPoint, to: GeoPoint): 
 }
 
 // Vorschläge beim Tippen (nur mit Routendienst-Schlüssel auf dem Server: GraphHopper bzw. OpenRouteService)
-export async function suggestAddresses(pin: string, q: string): Promise<GeoPoint[]> {
+export async function suggestAddresses(pin: string, q: string, near?: { lat: number; lon: number } | null): Promise<GeoPoint[]> {
   try {
-    const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, { headers: { "x-pin": pin } });
+    const nah = near ? `&lat=${near.lat.toFixed(4)}&lon=${near.lon.toFixed(4)}` : "";
+    const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}${nah}`, { headers: { "x-pin": pin } });
     if (!res.ok) return [];
     return ((await res.json()).results ?? []) as GeoPoint[];
   } catch {

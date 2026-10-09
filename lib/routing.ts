@@ -84,12 +84,14 @@ export async function fetchRoute(d: { dienst: Dienst; key: string }, from: Point
   });
 }
 
-export async function fetchGeocode(d: { dienst: Dienst; key: string }, q: string): Promise<Response> {
+// near: Vorschläge zuerst in der Nähe (Start der Strecke bzw. letzter Ladeort)
+export async function fetchGeocode(d: { dienst: Dienst; key: string }, q: string, near?: Point | null): Promise<Response> {
   if (d.dienst === "graphhopper") {
     const url = new URL("https://graphhopper.com/api/1/geocode");
     url.searchParams.set("q", q);
     url.searchParams.set("locale", "de");
     url.searchParams.set("limit", "8"); // danach auf DE/AT/CH gefiltert, 5 angezeigt
+    if (near) url.searchParams.set("point", `${near.lat},${near.lon}`);
     url.searchParams.set("key", d.key);
     return fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) });
   }
@@ -99,5 +101,9 @@ export async function fetchGeocode(d: { dienst: Dienst; key: string }, q: string
   url.searchParams.set("boundary.country", "DE,AT,CH");
   url.searchParams.set("size", "5");
   url.searchParams.set("lang", "de");
+  if (near) {
+    url.searchParams.set("focus.point.lat", String(near.lat));
+    url.searchParams.set("focus.point.lon", String(near.lon));
+  }
   return fetch(url, { signal: AbortSignal.timeout(8000), headers: { Accept: "application/json" } });
 }

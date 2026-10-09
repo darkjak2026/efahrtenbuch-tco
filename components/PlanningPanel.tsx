@@ -9,7 +9,7 @@ import {
   suggestAddresses,
   type GeoPoint,
 } from "@/lib/client-api";
-import { fmtEUR, fmtNum } from "@/lib/data";
+import { allRows, fmtEUR, fmtNum } from "@/lib/data";
 import { reverseGeocodeAddress } from "@/lib/gps";
 import { planeStrecke } from "@/lib/planning";
 import type { AppData } from "@/lib/types";
@@ -62,6 +62,17 @@ export default function PlanningPanel({
 
   const patch = (f: Field, p: Partial<FieldState>) => setFields((s) => ({ ...s, [f]: { ...s[f], ...p } }));
 
+  // Vorschläge zuerst in der Nähe: beim Ziel rund um den Start (und umgekehrt),
+  // sonst rund um den letzten Ladeort mit Koordinaten.
+  const naheBei = (f: Field): { lat: number; lon: number } | null => {
+    const andere = fields[f === "to" ? "from" : "to"].point;
+    if (andere) return { lat: andere.lat, lon: andere.lon };
+    const letzte = allRows(data)
+      .filter((r) => Number.isFinite(Number(r.lat)) && Number.isFinite(Number(r.lon)) && r.lat !== "" && r.lon !== "")
+      .sort((a, b) => b.datum.localeCompare(a.datum))[0];
+    return letzte ? { lat: Number(letzte.lat), lon: Number(letzte.lon) } : null;
+  };
+
   const onType = (f: Field, text: string) => {
     patch(f, { text, point: null, results: [] });
     setRoute(null);
@@ -70,7 +81,7 @@ export default function PlanningPanel({
     if (orsReady && pin && text.trim().length >= 3) {
       timers.current[f] = setTimeout(async () => {
         patch(f, { busy: true });
-        const results = await suggestAddresses(pin, text);
+        const results = await suggestAddresses(pin, text, naheBei(f));
         patch(f, { results, busy: false });
       }, 350);
     }
