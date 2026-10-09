@@ -40,6 +40,36 @@ export function ladenAlltimeProKm(data: AppData, v: VehicleKey): { proKm: number
   return s.kmStand > 0 && s.ladekosten > 0 ? { proKm: s.ladekosten / s.kmStand, ladekosten: s.ladekosten, km: s.kmStand } : null;
 }
 
+// Ø Strompreis je kWh aus den erfassten Ladevorgängen (Summe Preis ÷ Summe kWh,
+// nur Vorgänge mit beidem) – die Pauschale „Ladekosten bis Stichtag“ hat keine kWh.
+export function strompreisProKwh(data: AppData, v: VehicleKey): { proKwh: number; kwh: number; eur: number } | null {
+  let kwh = 0;
+  let eur = 0;
+  for (const r of allRows(data)) {
+    if (r.fahrzeug !== v) continue;
+    const k = parseNum(r.kwh);
+    const p = parseNum(r.preis);
+    if (k > 0 && p > 0) {
+      kwh += k;
+      eur += p;
+    }
+  }
+  return kwh > 0 ? { proKwh: eur / kwh, kwh, eur } : null;
+}
+
+// Kosten je km für die Planung (v2.47.00): Ø Verbrauch (fester Wert je Auto aus den
+// Fixkosten) × Ø Strompreis. Ohne Verbrauch: Ladekosten seit Übergabe ÷ km (Ersatz).
+export type FahrtPreis =
+  | { art: "verbrauch"; proKm: number; verbrauch: number; proKwh: number }
+  | { art: "ladekosten"; proKm: number; ladekosten: number; km: number };
+export function fahrtPreisProKm(data: AppData, v: VehicleKey): FahrtPreis | null {
+  const verbrauch = parseNum(data.vehicles[v].verbrauchKwh100);
+  const strom = strompreisProKwh(data, v);
+  if (verbrauch > 0 && strom) return { art: "verbrauch", proKm: (verbrauch / 100) * strom.proKwh, verbrauch, proKwh: strom.proKwh };
+  const l = ladenAlltimeProKm(data, v);
+  return l ? { art: "ladekosten", proKm: l.proKm, ladekosten: l.ladekosten, km: l.km } : null;
+}
+
 // TCO je km wie in den Karten oben (alle Kosten seit Leasingbeginn ÷ km-Stand).
 export function tcoProKm(data: AppData, v: VehicleKey): number | null {
   const s = vehicleStats(data, v);
@@ -83,7 +113,7 @@ export interface PlanAuto {
   name: string;
   verfuegbar: boolean; // Übergabedatum gesetzt
   zusatzkosten: number | null; // km × Ladekosten je km seit Übergabe (Preis der Fahrt)
-  ladenKm: { proKm: number; ladekosten: number; km: number } | null; // Grundlage dafür
+  preis: FahrtPreis | null; // Grundlage dafür (Verbrauch × Strompreis bzw. Ladekosten je km)
   vollkosten: number | null; // km × TCO je km
   puffer: number | null; // Leasingkilometer Luft (+) bzw. voraus (−) gegenüber dem gleichmäßigen Plan
   leasingJahr: LeasingJahr | null; // laufendes Jahreskontingent (Rest bis zum Stichtag)
@@ -108,7 +138,7 @@ export function planeStrecke(data: AppData, km: number, today: Date = new Date()
     const veh = data.vehicles[v];
     const verfuegbar = !!veh.start;
     const l = leasingKm(data, v, today);
-    const ladenKm = ladenAlltimeProKm(data, v);
+    const preis = fahrtPreisProKm(data, v);
     const tco = tcoProKm(data, v);
     const typisch = typischeReichweite(data, v, today);
     const letzte = letzteReichweite(data, v, today);
@@ -136,8 +166,8 @@ export function planeStrecke(data: AppData, km: number, today: Date = new Date()
       vehicle: v,
       name: VEHICLES[v].nickname,
       verfuegbar,
-      zusatzkosten: ladenKm === null ? null : ladenKm.proKm * km,
-      ladenKm,
+      zusatzkosten: preis === null ? null : preis.proKm * km,
+      preis,
       vollkosten: tco === null ? null : tco * km,
       puffer,
       leasingJahr: jahr,

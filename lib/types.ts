@@ -53,6 +53,8 @@ export interface VehicleFixedCosts {
   // Leasingvertrag: Preis je Mehrkilometer und Vergütung je Minderkilometer, in Cent.
   mehrKmCent: string | number;
   minderKmCent: string | number;
+  // Ø Verbrauch in kWh/100 km (v2.47.00) – Grundlage der Kosten in der Planung
+  verbrauchKwh100: string | number;
 }
 
 export interface FeatureRequestEntry {

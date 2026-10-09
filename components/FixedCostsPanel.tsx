@@ -102,6 +102,17 @@ export default function FixedCostsPanel({
             />
           </div>
           <div className="field-row">
+            <label htmlFor="b10_verbrauch">⚡ Ø Verbrauch (kWh/100 km, für die Planung)</label>
+            <input
+              type="number"
+              step="0.1"
+              id="b10_verbrauch"
+              min="0"
+              value={data.vehicles.b10.verbrauchKwh100}
+              onChange={(e) => updateData((d) => { d.vehicles.b10.verbrauchKwh100 = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
             <label htmlFor="b10_mehrKmCent">➕ Mehrkilometer (Cent je km, laut Vertrag)</label>
             <input
               type="number"
@@ -234,6 +245,17 @@ export default function FixedCostsPanel({
               min="0"
               value={data.vehicles.t03.leasingMonate}
               onChange={(e) => updateData((d) => { d.vehicles.t03.leasingMonate = e.target.value.replace(/-/g, ""); })}
+            />
+          </div>
+          <div className="field-row">
+            <label htmlFor="t03_verbrauch">⚡ Ø Verbrauch (kWh/100 km, für die Planung)</label>
+            <input
+              type="number"
+              step="0.1"
+              id="t03_verbrauch"
+              min="0"
+              value={data.vehicles.t03.verbrauchKwh100}
+              onChange={(e) => updateData((d) => { d.vehicles.t03.verbrauchKwh100 = e.target.value.replace(/-/g, ""); })}
             />
           </div>
           <div className="field-row">

@@ -96,8 +96,8 @@ MONTHS.filter((m) => m.key <= LAST_MONTH_FALLBACK).forEach((m) => {
     _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
-      b10: { leasing: 331.51, versicherung: 78.4, start: "2026-07-01", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.b10.startKm, stichtagLadekosten: 120, freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: 0, mehrKmCent: 8, minderKmCent: 4 },
-      t03: { leasing: 149.0, versicherung: 81.83, start: "2025-10-16", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.t03.startKm, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: 0, mehrKmCent: 8, minderKmCent: 4 },
+      b10: { leasing: 331.51, versicherung: 78.4, start: "2026-07-01", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.b10.startKm, stichtagLadekosten: 120, freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: 0, mehrKmCent: 8, minderKmCent: 4, verbrauchKwh100: 16.5 },
+      t03: { leasing: 149.0, versicherung: 81.83, start: "2025-10-16", stichtag: "2026-07-01", stichtagKm: VEHICLE_PROFILE.t03.startKm, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: 0, mehrKmCent: 8, minderKmCent: 4, verbrauchKwh100: 13 },
     },
     recurringCosts: [
       { anbieter: "Aral pulse", zweck: "Schnellladen-Abo", fahrzeug: "t03", betrag: "2.99", start: "2026-07-01" },

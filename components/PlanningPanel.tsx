@@ -280,7 +280,8 @@ export default function PlanningPanel({
   const kachel = (v: VehicleKey) => {
     const a = plan?.autos.find((x) => x.vehicle === v);
     if (!a) return null;
-    const preis = a.ladenKm?.proKm ?? null;
+    const fp = a.preis;
+    const preis = fp?.proKm ?? null;
     const istEmpfohlen = plan?.empfehlung === v;
     if (!a.verfuegbar || preis === null) {
       return (
@@ -316,14 +317,24 @@ export default function PlanningPanel({
           )}
         </svg>
         <div className="plan2-rechnung">
-          {fmtNum(km, 1)} km × {fmtNum(preis, 3)} €/km Ladekosten
+          {fp!.art === "verbrauch"
+            ? `${fmtNum(km, 1)} km × ${fmtNum(fp!.verbrauch, 1)} kWh/100 km × ${fmtNum(fp!.proKwh, 2)} €/kWh`
+            : `${fmtNum(km, 1)} km × ${fmtNum(preis, 3)} €/km Ladekosten`}
           <details>
             <summary>So gerechnet</summary>
-            <p>
-              Ladekosten seit der Übergabe des {a.name}: {fmtEUR(a.ladenKm!.ladekosten)} ÷ {fmtNum(a.ladenKm!.km, 0)} gefahrene km ={" "}
-              {fmtNum(preis, 3)} €/km. Der Wert ändert sich mit jedem Ladevorgang. Leasing, Versicherung und Abos zählen hier
-              nicht – sie verteilen sich auf alle Fahrten des Monats.
-            </p>
+            {fp!.art === "verbrauch" ? (
+              <p>
+                {fmtNum(km, 1)} km × {fmtNum(fp!.verbrauch, 1)} kWh/100 km = {fmtNum((km * fp!.verbrauch) / 100, 1)} kWh. Mal{" "}
+                {fmtNum(fp!.proKwh, 2)} €/kWh – dem Durchschnitt eurer erfassten Ladevorgänge – sind das {fmtEUR(km * preis)}. Den
+                Verbrauch des {a.name} tragt ihr in den Fixkosten ein; der Strompreis läuft mit jedem Ladevorgang mit. Leasing,
+                Versicherung und Abos zählen hier nicht – sie verteilen sich auf alle Fahrten des Monats.
+              </p>
+            ) : (
+              <p>
+                Ladekosten seit der Übergabe des {a.name}: {fmtEUR(fp!.ladekosten)} ÷ {fmtNum(fp!.km, 0)} gefahrene km ={" "}
+                {fmtNum(preis, 3)} €/km. Genauer wird es mit dem Ø Verbrauch in den Fixkosten.
+              </p>
+            )}
           </details>
         </div>
         {j && j.rest !== null && (

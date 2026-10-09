@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { defaultData, emptyRow } from "./data";
-import { ladenAlltimeProKm, ladestopps, ladenProKm, planeStrecke, typischeReichweite } from "./planning";
+import { fahrtPreisProKm, ladenAlltimeProKm, ladestopps, strompreisProKwh, ladenProKm, planeStrecke, typischeReichweite } from "./planning";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 const TODAY = new Date("2026-10-08T12:00:00");
@@ -81,4 +81,19 @@ test("Planung: Preis der Fahrt = km × Ladekosten je km seit Übergabe", () => {
   assert.equal(l.proKm, 0.05);
   const p = planeStrecke(d, 80, TODAY);
   assert.equal(p.autos.find((a) => a.vehicle === "t03")!.zusatzkosten, 4);
+});
+
+test("Planung: Preis je km = Ø Verbrauch × Ø Strompreis der erfassten Ladevorgänge", () => {
+  const d = dataWith([
+    { ...row("2026-09-20", "t03", 1000, "30"), kwh: "50" },
+    { ...row("2026-10-01", "t03", 1300, "30"), kwh: "50" },
+  ]);
+  d.vehicles.t03.verbrauchKwh100 = "13";
+  assert.equal(strompreisProKwh(d, "t03")!.proKwh, 0.6);
+  const p = fahrtPreisProKm(d, "t03")!;
+  assert.equal(p.art, "verbrauch");
+  assert.ok(Math.abs(p.proKm - 0.078) < 1e-9);
+  // ohne Verbrauch: Ersatz über Ladekosten je km
+  d.vehicles.t03.verbrauchKwh100 = "";
+  assert.equal(fahrtPreisProKm(d, "t03")!.art, "ladekosten");
 });
