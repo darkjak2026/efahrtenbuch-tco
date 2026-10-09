@@ -10,9 +10,10 @@ function VehicleName({ vehicleKey }: { vehicleKey: VehicleKey }) {
   const { nickname, official } = VEHICLES[vehicleKey];
   return (
     <>
-      <span className="vehicle-nickname">{nickname}</span>
-      {/* Nur das Modell ("B10"), ohne "Leapmotor" – sonst bricht die Zeile um */}
-      <span className="vehicle-official">({official.replace(/^Leapmotor\s+/, "")})</span>
+      {/* Name und Modell in derselben Schrift, mit "/" getrennt; ohne "Leapmotor" (bricht sonst um) */}
+      <span className="vehicle-nickname">
+        {nickname} / {official.replace(/^Leapmotor\s+/, "")}
+      </span>
     </>
   );
 }
