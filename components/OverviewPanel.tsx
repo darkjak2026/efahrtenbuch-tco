@@ -31,9 +31,9 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
               <span key={v} className={`ov-car ov-car-${v}`}>
                 <b>{VEHICLES[v].nickname}</b>
                 <span className="ov-big">{c.tcoKm === null ? "–" : `${fmtNum(c.tcoKm, 3)} €/km`}</span>
-                <small>TCO im Monat {label}</small>
+                <small>TCO im {label}</small>
                 <span className="ov-line">
-                  Bisher <b className="ov-nw">{c.km === null ? "–" : fmtNum(c.km, 0)} km</b> gefahren
+                  Bisher <b className="ov-nw">{c.km === null ? "–" : fmtNum(c.km, 0)} km</b> im {label} gefahren
                 </span>
                 <span className="ov-line">
                   Ladekosten bisher <b className="ov-nw">{fmtEUR(c.laden)}</b>
