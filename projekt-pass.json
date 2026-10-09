@@ -125,7 +125,8 @@
     ["09.10.2026", "2.42.00+design.02", "Design: Übersicht – unter dem Monatswert steht jetzt „TCO im Monat Oktober“ (der laufende Monat) statt nur „TCO im Monat“."],
     ["09.10.2026", "2.42.00+design.03", "Design: Kopfbox der Übersicht – das Modell steht in derselben Schrift wie der Name, mit „/“ getrennt („Leapy / T03“, „BIO-Leapy / B10“)."],
     ["09.10.2026", "2.42.00+design.04", "Design: Übersicht – „TCO im Oktober“ statt „TCO im Monat Oktober“ und „Bisher 461 km im Oktober gefahren“."],
-    ["09.10.2026", "2.42.00+design.05", "Design: Übersicht – km und Ladekosten des Monats stehen jetzt in zwei ganzen Sätzen: „Bisher wurden im Oktober 461 km mit dem BIO-Leapy gefahren. Dafür wurden 95,11 € für das Laden ausgegeben.“"]
+    ["09.10.2026", "2.42.00+design.05", "Design: Übersicht – km und Ladekosten des Monats stehen jetzt in zwei ganzen Sätzen: „Bisher wurden im Oktober 461 km mit dem BIO-Leapy gefahren. Dafür wurden 95,11 € für das Laden ausgegeben.“"],
+    ["09.10.2026", "2.42.01", "Härtung: Die Schriften (Space Grotesk, Inter, JetBrains Mono) liegen jetzt fest im Projekt (app/fonts) statt beim Bauen von Google Fonts geladen zu werden. Der Build braucht dafür kein Internet mehr und bricht nicht mehr ab, wenn Google kurz nicht antwortet. Aussehen unverändert."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [

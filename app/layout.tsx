@@ -1,23 +1,30 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+// Schriften fest im Projekt (v2.42.01): der Build braucht kein Internet mehr – vorher
+// brach er öfter beim Laden von Google Fonts ab. Dateien: app/fonts/*.woff2, Zeichensatz
+// "latin" (deckt Deutsch mit Umlauten, ß, € und „“ ab), variable Schriften (Gewichtsbereich).
+// Lizenz: SIL Open Font License 1.1 (Space Grotesk, Inter, JetBrains Mono).
+const spaceGrotesk = localFont({
+  src: "./fonts/space-grotesk-latin.woff2",
   variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: "500 700",
+  display: "swap",
 });
 
-const inter = Inter({
+const inter = localFont({
+  src: "./fonts/inter-latin.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: "400 600",
+  display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
+  src: "./fonts/jetbrains-mono-latin.woff2",
   variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: "400 600",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
