@@ -33,10 +33,9 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
                 <span className="ov-big">{c.tcoKm === null ? "–" : `${fmtNum(c.tcoKm, 3)} €/km`}</span>
                 <small>TCO im {label}</small>
                 <span className="ov-line">
-                  Bisher <b className="ov-nw">{c.km === null ? "–" : fmtNum(c.km, 0)} km</b> im {label} gefahren
-                </span>
-                <span className="ov-line">
-                  Ladekosten bisher <b className="ov-nw">{fmtEUR(c.laden)}</b>
+                  Bisher wurden im {label} <b className="ov-nw">{c.km === null ? "–" : fmtNum(c.km, 0)} km</b> mit dem{" "}
+                  <span style={{ whiteSpace: "nowrap" }}>{VEHICLES[v].nickname}</span> gefahren. Dafür wurden <b className="ov-nw">{fmtEUR(c.laden)}</b> für das Laden
+                  ausgegeben.
                 </span>
               </span>
             );

@@ -124,7 +124,8 @@
     ["09.10.2026", "2.42.00+design.01", "Design: Kopfbox der Übersicht – Preis mit zwei Nachkommastellen („0,18 €/km“) und dahinter „TCO/Alltime“; hinter dem Namen nur noch das Modell („(B10)“ statt „(Leapmotor B10)“), damit nichts unschön umbricht; der km-Stand steht jetzt als „24.333 km (ODO)“."],
     ["09.10.2026", "2.42.00+design.02", "Design: Übersicht – unter dem Monatswert steht jetzt „TCO im Monat Oktober“ (der laufende Monat) statt nur „TCO im Monat“."],
     ["09.10.2026", "2.42.00+design.03", "Design: Kopfbox der Übersicht – das Modell steht in derselben Schrift wie der Name, mit „/“ getrennt („Leapy / T03“, „BIO-Leapy / B10“)."],
-    ["09.10.2026", "2.42.00+design.04", "Design: Übersicht – „TCO im Oktober“ statt „TCO im Monat Oktober“ und „Bisher 461 km im Oktober gefahren“."]
+    ["09.10.2026", "2.42.00+design.04", "Design: Übersicht – „TCO im Oktober“ statt „TCO im Monat Oktober“ und „Bisher 461 km im Oktober gefahren“."],
+    ["09.10.2026", "2.42.00+design.05", "Design: Übersicht – km und Ladekosten des Monats stehen jetzt in zwei ganzen Sätzen: „Bisher wurden im Oktober 461 km mit dem BIO-Leapy gefahren. Dafür wurden 95,11 € für das Laden ausgegeben.“"]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [
