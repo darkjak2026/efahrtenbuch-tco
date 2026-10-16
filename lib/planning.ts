@@ -1,5 +1,5 @@
 import { VEHICLES } from "./constants";
-import { allRows, fmtNum, leasingJahr, leasingKm, parseNum, rowKmDriven, vehicleStats, type LeasingJahr } from "./data";
+import { allRows, fmtNum, kmAusgleich, leasingJahr, leasingKm, parseNum, rowKmDriven, vehicleStats, type LeasingJahr } from "./data";
 import type { AppData, VehicleKey } from "./types";
 
 // Planung: Kosten einer Strecke je Auto und der Vorschlag, welches Auto die
@@ -154,13 +154,16 @@ export function planeStrecke(data: AppData, km: number, today: Date = new Date()
               : ` – diese Fahrt ginge ${fmtNum(km - jahr.rest, 0)} km darüber.`)
           : `Im ${jahr.nr}. Leasingjahr ist das Kontingent schon um ${fmtNum(-jahr.rest, 0)} km überschritten (Stichtag ${stich}); es wird ins nächste Jahr übertragen.`
         : null;
-    // Hochgerechneter Stand am Leasingende; liegt er schon über den Freikilometern,
-    // kostet jeder weitere km den Mehrkilometer-Preis.
+    // Hochgerechneter Stand am Leasingende: was ändert diese Fahrt an der Abrechnung
+    // zum Vertragsende (Staffel und Freibetrag, v2.48.00)? Mehr Nachzahlung oder
+    // weniger Minderkilometer-Erstattung zählen beide als Risiko.
     let mehrKmRisiko: number | null = null;
-    const mehrCent = parseNum(veh.mehrKmCent);
-    if (mehrCent > 0 && l.gefahren !== null && l.anteilZeit && l.anteilZeit > 0) {
+    const preise = parseNum(veh.mehrKmCent) > 0 || parseNum(veh.minderKmCent) > 0;
+    if (preise && l.gefahren !== null && l.anteilZeit && l.anteilZeit > 0) {
       const hochgerechnet = l.gefahren / l.anteilZeit;
-      mehrKmRisiko = hochgerechnet + km > l.inklusiveKm ? (Math.min(km, hochgerechnet + km - l.inklusiveKm) * mehrCent) / 100 : 0;
+      const vorher = kmAusgleich(veh, l.inklusiveKm, hochgerechnet).betrag;
+      const nachher = kmAusgleich(veh, l.inklusiveKm, hochgerechnet + km).betrag;
+      mehrKmRisiko = Math.max(0, nachher - vorher);
     }
     return {
       vehicle: v,

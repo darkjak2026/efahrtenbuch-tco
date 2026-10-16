@@ -283,18 +283,48 @@ export default function PlanningPanel({
     const fp = a.preis;
     const preis = fp?.proKm ?? null;
     const istEmpfohlen = plan?.empfehlung === v;
-    if (!a.verfuegbar || preis === null) {
+    const j = a.leasingJahr;
+    // Leasingkilometer und Mehrkilometer-Risiko gelten auch ohne Preis (v2.48.00)
+    const leasingZeile = j && j.rest !== null && (
+      <div className={"plan2-leasing" + (j.rest - km < 0 ? " plan2-leasing-ueber" : "")}>
+        {j.rest - km >= 0
+          ? `Bis zum ${datum(j.stichtag)} verbleiben nach dieser Fahrt noch ${fmtNum(j.rest - km, 0)} km.`
+          : `Bis zum ${datum(j.stichtag)} liegt diese Fahrt ${fmtNum(km - j.rest, 0)} km über dem Kontingent.`}
+      </div>
+    );
+    const risikoZeile = a.mehrKmRisiko !== null && a.mehrKmRisiko >= 0.01 && (
+      <div className="plan2-leasing plan2-leasing-ueber">
+        Hochgerechnet aufs Vertragsende kostet diese Fahrt ca. {fmtEUR(a.mehrKmRisiko)} Mehrkilometer (bzw. weniger Erstattung).
+      </div>
+    );
+    if (!a.verfuegbar) {
       return (
         <div key={v} className={`plan2-kachel plan2-kachel-${v} plan2-aus`}>
           <div className="plan2-kopf">
             <b>{a.name}</b>
-            <span>{a.verfuegbar ? "noch keine km erfasst" : "noch nicht übergeben"}</span>
+            <span>noch nicht übergeben</span>
           </div>
         </div>
       );
     }
+    // Übergeben, aber noch ohne Ladedaten (z. B. am Übergabetag): Kachel aktiv, Preis folgt.
+    if (preis === null) {
+      return (
+        <div key={v} className={`plan2-kachel plan2-kachel-${v}` + (istEmpfohlen ? " plan2-empfohlen" : "")}>
+          <div className="plan2-kopf">
+            <b>{a.name}</b>
+            <span>Preis folgt</span>
+          </div>
+          <div className="plan2-rechnung">
+            Den Preis je km rechnet die App nach dem ersten Ladevorgang mit km-Stand – oder sofort, wenn ihr den Ø Verbrauch in
+            den Fixkosten eintragt.
+          </div>
+          {leasingZeile}
+          {risikoZeile}
+        </div>
+      );
+    }
     const zwei = etappen.length === 2;
-    const j = a.leasingJahr;
     return (
       <div key={v} className={`plan2-kachel plan2-kachel-${v}` + (istEmpfohlen ? " plan2-empfohlen" : "")}>
         <div className="plan2-kopf">
@@ -337,13 +367,8 @@ export default function PlanningPanel({
             )}
           </details>
         </div>
-        {j && j.rest !== null && (
-          <div className={"plan2-leasing" + (j.rest - km < 0 ? " plan2-leasing-ueber" : "")}>
-            {j.rest - km >= 0
-              ? `Bis zum ${datum(j.stichtag)} verbleiben nach dieser Fahrt noch ${fmtNum(j.rest - km, 0)} km.`
-              : `Bis zum ${datum(j.stichtag)} liegt diese Fahrt ${fmtNum(km - j.rest, 0)} km über dem Kontingent.`}
-          </div>
-        )}
+        {leasingZeile}
+        {risikoZeile}
       </div>
     );
   };

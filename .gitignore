@@ -51,3 +51,8 @@ next-env.d.ts
 
 # Lokale Notizdatei mit Zugangsschlüssel – nie ins öffentliche Repository
 /API.txt
+
+# Persönliche Vertragsdaten (FIN, Vertragsnummern, Kennzeichen, Beträge) – nur lokal,
+# eingespielt per server/vertragsdaten_einspielen.sh; die Vorlage *.example.json darf ins Repo
+/server/private/*
+!/server/private/*.example.json

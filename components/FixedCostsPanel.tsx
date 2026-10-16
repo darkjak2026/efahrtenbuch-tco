@@ -3,7 +3,7 @@
 import { emptyRecurring } from "@/lib/data";
 import { DATE_RANGE_MAX, DATE_RANGE_MIN, VEHICLES, vehicleShortLabel } from "@/lib/constants";
 import Collapsible from "./Collapsible";
-import type { AppData, VehicleKey } from "@/lib/types";
+import type { AppData, VehicleFixedCosts, VehicleKey } from "@/lib/types";
 
 const FAHRZEUG_OPTIONS: Array<["" | VehicleKey, string]> = [
   ["", "Haushalt"],
@@ -15,6 +15,43 @@ const RECURRING_FAHRZEUG_OPTIONS: Array<["" | VehicleKey | "beide", string]> = [
   ...FAHRZEUG_OPTIONS,
   ["beide", "Beide (50/50)"],
 ];
+
+// Staffel der Mehr-/Minderkilometer (v2.48.00): optionale 2. Stufe und Freibetrag.
+const STAFFEL: Array<[keyof Pick<VehicleFixedCosts, "mehrKmSchwelle" | "mehrKmCent2" | "minderKmSchwelle" | "minderKmCent2" | "freigrenzeKm">, string, string]> = [
+  ["mehrKmSchwelle", "➕ 2. Stufe ab km gesamt (leer = keine)", "100"],
+  ["mehrKmCent2", "➕ Mehrkilometer darüber (Cent je km)", "0.01"],
+  ["minderKmSchwelle", "➖ 2. Stufe unter km gesamt (leer = keine)", "100"],
+  ["minderKmCent2", "➖ Minderkilometer darunter (Cent je km)", "0.01"],
+  ["freigrenzeKm", "↔️ Freibetrag Mehr-/Minder-km (km)", "100"],
+];
+
+function StaffelFelder({
+  data,
+  updateData,
+  vehicleKey,
+}: {
+  data: AppData;
+  updateData: (fn: (d: AppData) => void) => void;
+  vehicleKey: VehicleKey;
+}) {
+  return (
+    <>
+      {STAFFEL.map(([feld, label, step]) => (
+        <div className="field-row" key={feld}>
+          <label htmlFor={`${vehicleKey}_${feld}`}>{label}</label>
+          <input
+            type="number"
+            step={step}
+            id={`${vehicleKey}_${feld}`}
+            min="0"
+            value={data.vehicles[vehicleKey][feld]}
+            onChange={(e) => updateData((d) => { d.vehicles[vehicleKey][feld] = e.target.value.replace(/-/g, ""); })}
+          />
+        </div>
+      ))}
+    </>
+  );
+}
 
 function VehicleHeading({ vehicleKey }: { vehicleKey: VehicleKey }) {
   const { nickname, official } = VEHICLES[vehicleKey];
@@ -134,6 +171,7 @@ export default function FixedCostsPanel({
               onChange={(e) => updateData((d) => { d.vehicles.b10.minderKmCent = e.target.value.replace(/-/g, ""); })}
             />
           </div>
+          <StaffelFelder data={data} updateData={updateData} vehicleKey="b10" />
           <div className="field-row">
             <label htmlFor="b10_kmBeiLeasingbeginn">📟 km-Stand bei Übergabe (leer = 0)</label>
             <input
@@ -280,6 +318,7 @@ export default function FixedCostsPanel({
               onChange={(e) => updateData((d) => { d.vehicles.t03.minderKmCent = e.target.value.replace(/-/g, ""); })}
             />
           </div>
+          <StaffelFelder data={data} updateData={updateData} vehicleKey="t03" />
           <div className="field-row">
             <label htmlFor="t03_kmBeiLeasingbeginn">📟 km-Stand bei Übergabe (leer = 0)</label>
             <input

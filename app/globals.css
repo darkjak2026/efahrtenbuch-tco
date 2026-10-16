@@ -5041,3 +5041,77 @@ main.tab-rein-links {
 .fab-group[hidden] {
   display: none;
 }
+
+/* Fahrzeug-Stammdaten (v2.48.00) */
+.fixed-box .field-row input[type="text"] {
+  text-align: left;
+}
+.stamm-geheim {
+  flex: 0 0 50%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+.stamm-maske {
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  letter-spacing: 0.05em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stamm-zeigen {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  border-radius: 6px;
+  padding: 4px 8px;
+  min-height: 32px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.stamm-zeigen:focus-visible {
+  outline: 2px solid var(--focus);
+}
+.stamm-label {
+  flex: 1;
+  color: var(--ink-soft);
+}
+.stamm-wert {
+  flex: 0 0 50%;
+  text-align: right;
+  color: var(--ink);
+}
+.stamm-hinweis {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* Prognose zum Vertragsende im Leasingkilometer-Overlay (v2.48.00) */
+.lkm-prognose {
+  background: var(--lav);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.lkm-prognose b.lkm-prognose-plus {
+  color: var(--danger);
+}
+.lkm-prognose b.lkm-prognose-minus {
+  color: var(--teal);
+}
+.lkm-prognose small {
+  display: block;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+.stamm-grid {
+  display: grid;
+  gap: 12px;
+}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { VEHICLES } from "@/lib/constants";
-import { fmtNum, leasingJahr, leasingKm } from "@/lib/data";
+import { fmtEUR, fmtNum, kmPrognose, leasingJahr, leasingKm } from "@/lib/data";
 import type { AppData, VehicleKey } from "@/lib/types";
 
 // Leasingkilometer-Countdown (v2.44.00): groß das laufende Jahreskontingent bis zum
@@ -18,6 +18,7 @@ export default function LeasingCountdown({ data, vehicle }: { data: AppData; veh
   const l = leasingKm(data, vehicle);
   if (l.inklusiveKm <= 0) return null;
   const j = leasingJahr(data, vehicle);
+  const prognose = kmPrognose(data, vehicle);
 
   // Ohne Übergabedatum: wie bisher auf die Gesamtkilometer bezogen
   if (!j) {
@@ -121,6 +122,33 @@ export default function LeasingCountdown({ data, vehicle }: { data: AppData; veh
                   );
                 })}
               </ul>
+              {prognose && (
+                <div className="lkm-prognose">
+                  <b>Prognose zum Vertragsende</b>
+                  <br />
+                  Bei eurem bisherigen Tempo: ca. <b>{fmtNum(Math.round(prognose.kmEnde / 100) * 100, 0)} km</b> am{" "}
+                  {datum(prognose.ende)} –{" "}
+                  {prognose.ausgleich.art === "frei" ? (
+                    <>innerhalb des Freibetrags, also keine Nachzahlung und keine Erstattung.</>
+                  ) : prognose.preiseFehlen ? (
+                    <>
+                      {fmtNum(Math.abs(prognose.ausgleich.abweichungKm), 0)} km {prognose.ausgleich.art === "mehr" ? "zu viel" : "zu wenig"}. Für den
+                      Betrag fehlen die Mehr-/Minderkilometer-Preise in den Fixkosten.
+                    </>
+                  ) : prognose.ausgleich.art === "mehr" ? (
+                    <>
+                      ca. <b className="lkm-prognose-plus">{fmtEUR(prognose.ausgleich.betrag)} Nachzahlung</b> (
+                      {fmtNum(prognose.ausgleich.berechnetKm, 0)} km über dem Freibetrag).
+                    </>
+                  ) : (
+                    <>
+                      ca. <b className="lkm-prognose-minus">{fmtEUR(-prognose.ausgleich.betrag)} Erstattung</b> (
+                      {fmtNum(prognose.ausgleich.berechnetKm, 0)} km unter dem Freibetrag).
+                    </>
+                  )}
+                  <small>Grobe Hochrechnung aus den km seit der Übergabe; Urlaub oder Winter verschieben sie.</small>
+                </div>
+              )}
               <p className="lkm-gesamt-hint">
                 {fmtNum(l.inklusiveKm, 0)} km ÷ {j.anzahl} Jahre = {fmtNum(j.kontingent, 0)} km je Leasingjahr. Übrige oder
                 zu viel gefahrene km wandern ins nächste Jahr.

@@ -1,0 +1,52 @@
+{
+  "_kopf": "Projekt: eFahrtenbuch TCO | Urheber: Jakobus Claudius Digitalensis (+KI-Claude) | Vorlage V1.00 vom 16.10.2026",
+  "_anleitung": [
+    "Kopie als vertragsdaten.local.json im selben Ordner anlegen (per .gitignore ausgeschlossen) und ausfüllen.",
+    "Leere Werte (\"\") werden übersprungen. Ein Feld, das in der App schon einen anderen Wert hat, wird NICHT überschrieben,",
+    "sondern nur gemeldet – außer es steht unter \"ueberschreiben\" (Schreibweise fahrzeug.feld bzw. fahrzeug.stammdaten.feld).",
+    "Einspielen vom PC in Git Bash: bash server/vertragsdaten_einspielen.sh --probe (nur zeigen), danach ohne --probe.",
+    "Zahlen mit Punkt als Dezimaltrennzeichen, Daten als JJJJ-MM-TT. Hier stehen nur Platzhalter."
+  ],
+  "fahrzeuge": {
+    "b10": {
+      "fixkosten": {
+        "leasing": "",
+        "versicherung": "",
+        "start": "JJJJ-MM-TT",
+        "stichtag": "",
+        "stichtagKm": "",
+        "stichtagLadekosten": "",
+        "leasingMonate": "",
+        "freiKmGesamt": "",
+        "freiKmProJahr": "",
+        "kmBeiLeasingbeginn": "",
+        "mehrKmCent": "",
+        "mehrKmSchwelle": "",
+        "mehrKmCent2": "",
+        "minderKmCent": "",
+        "minderKmSchwelle": "",
+        "minderKmCent2": "",
+        "freigrenzeKm": "",
+        "verbrauchKwh100": ""
+      },
+      "stammdaten": {
+        "modell": "",
+        "farbe": "",
+        "kennzeichen": "XX-AB 123",
+        "fin": "",
+        "leasinggeber": "",
+        "vertragsnummer": "",
+        "haendler": "",
+        "hauptfahrer": ""
+      }
+    },
+    "t03": {
+      "fixkosten": {},
+      "stammdaten": {}
+    }
+  },
+  "investitionen": [
+    { "datum": "JJJJ-MM-TT", "fahrzeug": "b10", "beschreibung": "Beispiel", "betrag": "0.00" }
+  ],
+  "ueberschreiben": ["b10.freiKmProJahr"]
+}

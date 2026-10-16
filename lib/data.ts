@@ -1,5 +1,5 @@
 import { MONTHS, DEFAULT_CARDS, LAST_MONTH_FALLBACK, monthLastDay } from "./constants";
-import type { AppData, ChargeRow, Investition, MonthMeta, RecurringCost, VehicleKey } from "./types";
+import type { AppData, ChargeRow, Investition, MonthMeta, RecurringCost, VehicleFixedCosts, VehicleKey, VehicleStammdaten } from "./types";
 
 export function emptyRow(): ChargeRow {
   return {
@@ -35,6 +35,11 @@ export function emptyInvest(): Investition {
 export function emptyRecurring(): RecurringCost {
   return { anbieter: "", zweck: "", fahrzeug: "", betrag: "", start: "" };
 }
+export function emptyStammdaten(): VehicleStammdaten {
+  return { modell: "", farbe: "", kennzeichen: "", fin: "", leasinggeber: "", vertragsnummer: "", haendler: "", hauptfahrer: "" };
+}
+// Freibetrag 2.500 km ist bei beiden Verträgen üblich und Standard für neue Datensätze.
+const STAFFEL_LEER = { mehrKmSchwelle: "", mehrKmCent2: "", minderKmSchwelle: "", minderKmCent2: "", freigrenzeKm: 2500 } as const;
 
 export function defaultData(): AppData {
   const months: AppData["months"] = {};
@@ -45,8 +50,8 @@ export function defaultData(): AppData {
     _rev: 0,
     cardsList: DEFAULT_CARDS.slice(),
     vehicles: {
-      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "", freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "", mehrKmCent: "", minderKmCent: "", verbrauchKwh100: "" },
-      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "", mehrKmCent: "", minderKmCent: "", verbrauchKwh100: "" },
+      b10: { leasing: 331.51, versicherung: "", start: "", stichtag: "", stichtagKm: "", stichtagLadekosten: "", freiKmProJahr: 15000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "", mehrKmCent: "", minderKmCent: "", ...STAFFEL_LEER, verbrauchKwh100: "", stammdaten: emptyStammdaten() },
+      t03: { leasing: 149.0, versicherung: "", start: "", stichtag: "2026-07-01", stichtagKm: 7500, stichtagLadekosten: 696, freiKmProJahr: 13000, freiKmGesamt: "", leasingMonate: 36, kmBeiLeasingbeginn: "", mehrKmCent: "", minderKmCent: "", ...STAFFEL_LEER, verbrauchKwh100: "", stammdaten: emptyStammdaten() },
     },
     recurringCosts: [emptyRecurring()],
     erfassungStart: "2026-07-01",
@@ -70,6 +75,10 @@ export function migrate(raw: unknown): AppData {
     b10: Object.assign({}, def.vehicles.b10, d.vehicles.b10),
     t03: Object.assign({}, def.vehicles.t03, d.vehicles.t03),
   };
+  (["b10", "t03"] as VehicleKey[]).forEach((k) => {
+    const v = (d.vehicles as AppData["vehicles"])[k];
+    v.stammdaten = Object.assign(emptyStammdaten(), v.stammdaten);
+  });
   if (!d.erfassungStart) d.erfassungStart = def.erfassungStart;
   if (!d.investitionen) d.investitionen = def.investitionen;
   if (!d.months) d.months = def.months;
@@ -302,6 +311,67 @@ export function leasingKm(data: AppData, key: VehicleKey, today: Date = new Date
   const anteilGefahren = gefahren !== null && inklusiveKm > 0 ? gefahren / inklusiveKm : null;
   const planAbweichung = gefahren !== null && anteilZeit !== null ? Math.round(gefahren - inklusiveKm * anteilZeit) : null;
   return { inklusiveKm, gefahren, rest, anteilGefahren, anteilZeit, planAbweichung, startKmGeschaetzt, ende };
+}
+
+// --- Mehr-/Minderkilometer mit Staffel und Freibetrag (v2.48.00).
+// Abweichung = gefahren − Freikilometer. Die ersten freigrenzeKm Abweichung sind frei
+// (Entscheidung des Urhebers 16.10.2026: Freibetrag, nicht Bagatellgrenze). Mehr-km
+// kosten bis zur Schwelle (Gesamt-km) Preis 1, darüber Preis 2; Minder-km bringen
+// oberhalb der Schwelle Preis 1, darunter Preis 2. Ohne 2. Stufe gilt Preis 1 überall.
+export interface KmAusgleich {
+  art: "mehr" | "minder" | "frei";
+  abweichungKm: number; // gefahren − Freikilometer (positiv = zu viel)
+  berechnetKm: number; // nach Abzug des Freibetrags
+  betrag: number; // € – positiv = Nachzahlung, negativ = Erstattung
+}
+
+export function kmAusgleich(v: VehicleFixedCosts, inklusiveKm: number, gefahren: number): KmAusgleich {
+  const frei = Math.max(0, parseNum(v.freigrenzeKm));
+  const abweichungKm = Math.round(gefahren - inklusiveKm);
+  if (Math.abs(abweichungKm) <= frei || inklusiveKm <= 0) return { art: "frei", abweichungKm, berechnetKm: 0, betrag: 0 };
+  if (abweichungKm > 0) {
+    const ab = inklusiveKm + frei; // ab hier wird gezahlt
+    const c1 = parseNum(v.mehrKmCent);
+    const s = parseNum(v.mehrKmSchwelle);
+    const c2 = parseNum(v.mehrKmCent2);
+    const zweite = s > 0 && c2 > 0;
+    const km1 = zweite ? Math.max(0, Math.min(gefahren, s) - ab) : gefahren - ab;
+    const km2 = zweite ? Math.max(0, gefahren - Math.max(s, ab)) : 0;
+    return { art: "mehr", abweichungKm, berechnetKm: Math.round(km1 + km2), betrag: (km1 * c1 + km2 * c2) / 100 };
+  }
+  const bis = inklusiveKm - frei; // bis hier wird vergütet
+  const c1 = parseNum(v.minderKmCent);
+  const s = parseNum(v.minderKmSchwelle);
+  const c2 = parseNum(v.minderKmCent2);
+  const zweite = s > 0 && c2 > 0;
+  const km1 = zweite ? Math.max(0, bis - Math.max(gefahren, s)) : bis - gefahren;
+  const km2 = zweite ? Math.max(0, Math.min(s, bis) - gefahren) : 0;
+  return { art: "minder", abweichungKm, berechnetKm: Math.round(km1 + km2), betrag: -(km1 * c1 + km2 * c2) / 100 };
+}
+
+// Prognose zum Vertragsende: bisheriges Tempo (km je Tag seit Übergabe) auf die ganze
+// Laufzeit hochgerechnet. Erst ab 30 Tagen, vorher schwankt das Tempo zu stark.
+export interface KmPrognose {
+  kmEnde: number;
+  ende: string; // "JJJJ-MM-TT"
+  ausgleich: KmAusgleich;
+  preiseFehlen: boolean; // keine Mehr-/Minder-km-Preise eingetragen
+}
+
+export function kmPrognose(data: AppData, key: VehicleKey, today: Date = new Date()): KmPrognose | null {
+  const v = data.vehicles[key];
+  if (!v.start) return null;
+  const l = leasingKm(data, key, today);
+  if (l.gefahren === null || l.inklusiveKm <= 0) return null;
+  const startD = new Date(`${v.start.slice(0, 10)}T00:00:00`);
+  const endeD = new Date(startD);
+  endeD.setMonth(endeD.getMonth() + (parseNum(v.leasingMonate) || 36));
+  const tage = (today.getTime() - startD.getTime()) / 86_400_000;
+  if (tage < 30) return null;
+  const gesamtTage = (endeD.getTime() - startD.getTime()) / 86_400_000;
+  const kmEnde = tage >= gesamtTage ? l.gefahren : Math.round((l.gefahren / tage) * gesamtTage);
+  const preiseFehlen = !(parseNum(v.mehrKmCent) > 0) && !(parseNum(v.minderKmCent) > 0);
+  return { kmEnde, ende: isoLocalDate(endeD), ausgleich: kmAusgleich(v, l.inklusiveKm, kmEnde), preiseFehlen };
 }
 
 // --- Leasingjahre (v2.44.00): Gesamt-Leasingkilometer ÷ Anzahl Jahre = Jahreskontingent.

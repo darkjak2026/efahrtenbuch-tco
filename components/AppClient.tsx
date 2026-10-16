@@ -11,6 +11,7 @@ import TcoPanel from "./TcoPanel";
 import FixedCostsPanel from "./FixedCostsPanel";
 import CardsPanel from "./CardsPanel";
 import InvestmentsPanel from "./InvestmentsPanel";
+import StammdatenPanel from "./StammdatenPanel";
 import MonthNav from "./MonthNav";
 import ChargeTable from "./ChargeTable";
 import AddEntryFab from "./AddEntryFab";
@@ -21,7 +22,7 @@ import BottomNav, { TABS, type Tab } from "./BottomNav";
 import OverviewPanel from "./OverviewPanel";
 import PlanningPanel from "./PlanningPanel";
 import PlacesPanel from "./PlacesPanel";
-import { CardIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon, InfoIcon, LocationPinIcon as PinIcon } from "./Icons";
+import { CardIcon, CarIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon, InfoIcon, LocationPinIcon as PinIcon } from "./Icons";
 import { currentMonthKey } from "@/lib/constants";
 
 type Status = "gate" | "loading" | "ready";
@@ -365,6 +366,19 @@ export default function AppClient() {
               defaultOpen={false}
             >
               <FixedCostsPanel data={data} updateData={updateData} />
+            </Collapsible>
+          </section>
+
+          <section className="tco fixed-panel-card">
+            <Collapsible
+              title={
+                <>
+                  <CarIcon size={18} /> Fahrzeug-Stammdaten
+                </>
+              }
+              defaultOpen={false}
+            >
+              <StammdatenPanel data={data} updateData={updateData} />
             </Collapsible>
           </section>
 

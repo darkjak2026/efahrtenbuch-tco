@@ -1,0 +1,133 @@
+<!doctype html>
+<!--
+Projekt: eFahrtenbuch TCO
+Urheber: Jakobus Claudius Digitalensis (+KI-Claude)
+Version: V1.00 (Mockup, nicht Teil der App)
+Datei: 2026-10-16_11.55_Stammdaten-Kilometerstaffel-Mockup_V1.00.html
+Änderungen: erste Fassung.
+Inhalt: (A) Mehr-/Minderkilometer mit zweiter Stufe und Freigrenze in den Fixkosten,
+        (B) aufklappbare Fahrzeug-Stammdaten je Auto, (C) Prognose zum Vertragsende im
+        Leasingjahre-Overlay. ALLE Zahlen und Kennungen sind erfunden (öffentliches Repo).
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stammdaten und Kilometerstaffel</title>
+<style>
+  :root {
+    --bg: #17141f; --panel: #221e2c; --ink: #ede9f5; --ink-soft: #a89fbf; --line: #3a3548;
+    --accent: #d8cbf2; --rot: #e2664a; --gruen: #5cc98a; --b10: #b98fcb; --t03: #8fc6e0; --lav: #2c2740;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, "Segoe UI", sans-serif; padding: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .lead { color: var(--ink-soft); margin: 0 0 16px; font-size: 13.5px; max-width: 900px; }
+  .buehne { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .spalte { width: min(400px, 100%); }
+  .tag { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .box h2 { font-size: 15px; margin: 0 0 10px; color: var(--b10); }
+  .row { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 5px 0; font-size: 14px; }
+  .row label { color: var(--ink-soft); flex: 1; }
+  .row input { width: 110px; background: var(--lav); border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 6px 8px; font: inherit; text-align: right; }
+  .row input.text { width: 170px; text-align: left; }
+  .gruppe { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; margin: 8px 0; }
+  .gruppe b { font-size: 13px; }
+  .stufe { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; font-size: 13.5px; margin-top: 6px; }
+  .stufe span { color: var(--ink-soft); }
+  .stufe input { width: 96px; background: var(--lav); border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 5px 8px; font: inherit; text-align: right; }
+  .hinweis { font-size: 12.5px; color: var(--ink-soft); margin-top: 6px; }
+  details { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; }
+  summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+  .geheim { font-family: ui-monospace, monospace; letter-spacing: .05em; }
+  .auge { background: none; border: 1px solid var(--line); color: var(--ink-soft); border-radius: 6px; padding: 3px 8px; cursor: pointer; font: inherit; font-size: 12px; }
+  .nur { color: var(--ink); font-weight: 600; }
+  .overlay { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .overlay h3 { margin: 0 0 4px; font-size: 16px; }
+  .zahl { font-size: 30px; font-weight: 800; color: var(--b10); }
+  .jahre { list-style: none; padding: 0; margin: 10px 0; font-size: 13.5px; }
+  .jahre li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--line); }
+  .prognose { background: var(--lav); border-radius: 10px; padding: 10px; margin-top: 10px; font-size: 13.5px; }
+  .prognose b.ok { color: var(--gruen); } .prognose b.warn { color: var(--rot); }
+  .neu { display: inline-block; font-size: 10px; font-weight: 800; background: var(--accent); color: #17141f; border-radius: 4px; padding: 0 4px; margin-left: 4px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<h1>Stammdaten und Kilometerstaffel</h1>
+<p class="lead">Vorschlag für Einstellungen → Fixkosten. Alles, was mit <span class="neu">NEU</span> markiert ist, kommt dazu. Alle Zahlen hier sind erfunden.</p>
+
+<div class="buehne">
+  <!-- A: Fixkosten mit Staffel -->
+  <div class="spalte">
+    <p class="tag">A · Fixkosten je Auto (Ausschnitt)</p>
+    <div class="box">
+      <h2>BIO-Leapy (Leapmotor B10) — Fixkosten</h2>
+      <div class="row"><label>🛣️ Freikilometer gesamt laut Vertrag</label><input value="60000" /></div>
+      <div class="row"><label>⏱️ Leasinglaufzeit in Monaten</label><input value="36" /></div>
+
+      <div class="gruppe">
+        <b>➕ Mehrkilometer (Cent je km)</b>
+        <div class="stufe">
+          <span>Preis</span><input value="9,00" />
+          <span>ab Gesamt-km (2. Stufe) <span class="neu">NEU</span></span><input placeholder="leer = keine" value="70000" />
+          <span>Preis darüber <span class="neu">NEU</span></span><input value="12,00" />
+        </div>
+      </div>
+      <div class="gruppe">
+        <b>➖ Minderkilometer-Vergütung (Cent je km)</b>
+        <div class="stufe">
+          <span>Vergütung</span><input value="5,00" />
+          <span>unter Gesamt-km (2. Stufe) <span class="neu">NEU</span></span><input placeholder="leer = keine" value="40000" />
+          <span>Vergütung darunter <span class="neu">NEU</span></span><input value="3,00" />
+        </div>
+      </div>
+      <div class="row"><label>↔️ Freigrenze (km, bleiben unberücksichtigt) <span class="neu">NEU</span></label><input value="2500" /></div>
+      <p class="hinweis">Beispiel: 66.000 km gefahren → 6.000 km zu viel. Davon … (siehe Frage zur Freigrenze) × 9,00 ct.
+        Ab 70.000 km gilt der Preis der 2. Stufe. Leer gelassene 2. Stufe = wie bisher ein einziger Preis.</p>
+
+      <details open>
+        <summary>🪪 Stammdaten <span class="neu">NEU</span></summary>
+        <div class="row"><label>Modell</label><input class="text" value="B10 Beispielmodell" /></div>
+        <div class="row"><label>Farbe</label><input class="text" value="Beispielfarbe" /></div>
+        <div class="row"><label>Kennzeichen</label><span class="geheim">XX-•• •••</span> <button class="auge">anzeigen</button></div>
+        <div class="row"><label>FIN</label><span class="geheim">•••••••••••••1234</span> <button class="auge">anzeigen</button></div>
+        <div class="row"><label>Leasinggeber</label><input class="text" value="Beispielbank" /></div>
+        <div class="row"><label>Vertragsnummer</label><span class="geheim">••••••5678</span> <button class="auge">anzeigen</button></div>
+        <div class="row"><label>Händler</label><input class="text" value="Autohaus Beispiel" /></div>
+        <div class="row"><label>Hauptfahrer:in</label><input class="text" value="" placeholder="Name" /></div>
+        <div class="row"><label>Leasingende</label><span class="nur">15.10.2029 (berechnet)</span></div>
+        <p class="hinweis">Reine Information, keine Rechnung. Kennzeichen, FIN und Vertragsnummer sind abgedeckt, bis man auf „anzeigen“ tippt
+          (z. B. am Telefon mit der Bank). Antippen auf „anzeigen“ macht das Feld bearbeitbar.</p>
+      </details>
+    </div>
+  </div>
+
+  <!-- C: Prognose -->
+  <div class="spalte">
+    <p class="tag">C · Leasingkilometer gesamt (Overlay, Tipp auf die km-Zahl)</p>
+    <div class="overlay">
+      <h3>Leasingkilometer · BIO-Leapy</h3>
+      <div class="zahl">57.900 <small style="font-size:14px">km übrig</small></div>
+      <p class="hinweis">von <b>60.000 km</b> für die ganze Laufzeit bis 15.10.2029; gefahren 2.100 km.</p>
+      <ul class="jahre">
+        <li><span>1. Leasingjahr</span><b>20.000 km</b><small>läuft</small></li>
+        <li><span>2. Leasingjahr</span><b>20.000 km</b><small>kommt</small></li>
+        <li><span>3. Leasingjahr</span><b>20.000 km</b><small>kommt</small></li>
+      </ul>
+      <div class="prognose">
+        <b>Prognose zum Vertragsende</b> <span class="neu">NEU</span><br />
+        Bei eurem bisherigen Tempo: ca. <b>66.000 km</b> am 15.10.2029 →
+        ca. <b class="warn">… € Nachzahlung</b> (6.000 km zu viel, Freigrenze eingerechnet).<br />
+        <span style="color:var(--ink-soft);font-size:12px">Erst ab etwa 30 Tagen nach Übergabe angezeigt, vorher ist das Tempo zu ungenau.</span>
+      </div>
+    </div>
+    <p class="tag" style="margin-top:16px">Planung (Streckenrechner)</p>
+    <div class="box">
+      <div class="row"><label>Mehrkilometer-Risiko dieser Fahrt</label><span class="nur">ca. 4,50 €</span></div>
+      <p class="hinweis">Rechnet künftig mit Staffel und Freigrenze statt mit einem einzigen Preis.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

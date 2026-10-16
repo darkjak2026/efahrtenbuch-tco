@@ -53,8 +53,31 @@ export interface VehicleFixedCosts {
   // Leasingvertrag: Preis je Mehrkilometer und Vergütung je Minderkilometer, in Cent.
   mehrKmCent: string | number;
   minderKmCent: string | number;
+  // Staffel (v2.48.00): optionale 2. Stufe. Schwellen sind Gesamt-km seit Übergabe –
+  // Mehr-km über der Schwelle kosten mehrKmCent2, Minder-km unter der Schwelle
+  // bringen minderKmCent2. Leer = ein einziger Preis wie bisher.
+  mehrKmSchwelle: string | number;
+  mehrKmCent2: string | number;
+  minderKmSchwelle: string | number;
+  minderKmCent2: string | number;
+  // Freibetrag: so viele km Abweichung bleiben in beide Richtungen unberechnet.
+  freigrenzeKm: string | number;
   // Ø Verbrauch in kWh/100 km (v2.47.00) – Grundlage der Kosten in der Planung
   verbrauchKwh100: string | number;
+  stammdaten: VehicleStammdaten;
+}
+
+// Reine Information zum Fahrzeug (v2.48.00), keine Rechenlogik. Persönliche Werte
+// stehen nur im Datensatz hinter dem PIN, nie im öffentlichen Code.
+export interface VehicleStammdaten {
+  modell: string;
+  farbe: string;
+  kennzeichen: string;
+  fin: string;
+  leasinggeber: string;
+  vertragsnummer: string;
+  haendler: string;
+  hauptfahrer: string;
 }
 
 export interface FeatureRequestEntry {
