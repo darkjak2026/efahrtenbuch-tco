@@ -22,6 +22,7 @@ import BottomNav, { TABS, type Tab } from "./BottomNav";
 import OverviewPanel from "./OverviewPanel";
 import PlanningPanel from "./PlanningPanel";
 import PlacesPanel from "./PlacesPanel";
+import LadeklappeErinnerung from "./LadeklappeErinnerung";
 import { CardIcon, CarIcon, ToolboxIcon, ReceiptIcon, ExportBoxIcon, InfoIcon, LocationPinIcon as PinIcon } from "./Icons";
 import { currentMonthKey } from "@/lib/constants";
 
@@ -505,6 +506,8 @@ export default function AppClient() {
         onEntryCompleted={celebrateCompletion}
         versteckt={tab === "planung"}
       />
+
+      <LadeklappeErinnerung />
 
       <div className={"toast" + (toast ? " show" : "")}>{toast}</div>
     </>

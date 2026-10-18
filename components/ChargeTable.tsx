@@ -10,6 +10,7 @@ import {
   isChargeIncomplete,
   isEmptyRow,
   ladeStand,
+  neuesteZuerst,
   maybeAutofillPreis,
   minutesToDuration,
   monthWeeks,
@@ -103,7 +104,7 @@ export default function ChargeTable({
   const visibleRows = rows
     .map((row, idx) => ({ row, idx }))
     .filter(({ row }) => !isEmptyRow(row))
-    .sort((a, b) => (b.row.datum || "").localeCompare(a.row.datum || ""));
+    .sort(neuesteZuerst);
 
   const commitEdit = (updated: ChargeRow, sourceIdx: number, message = "Ladevorgang aktualisiert") => {
     const targetMonth = monthKeyFromDate(updated.datum) ?? activeMonth;
@@ -178,6 +179,8 @@ export default function ChargeTable({
           {row.reichweiteNachher && (
             <span className={reichweiteColorClass(row.reichweiteNachher)}>{row.reichweiteNachher} km</span>
           )}
+          {row.voll && <span className="entry-ziel entry-ziel-voll">voll</span>}
+          {row.ziel80 && <span className="entry-ziel entry-ziel-80">80 %</span>}
           {row.kwh && <span>{row.kwh} kWh</span>}
           {row.dauer && (
             <span>
@@ -281,7 +284,7 @@ export default function ChargeTable({
                               <span className="wk-day" key={day}>
                                 {WEEKDAY_LABELS[i]}
                                 <DayRing
-                                  staende={amTag.map(({ row }) => ladeStand(data, row))}
+                                  staende={[...amTag].reverse().map(({ row }) => ladeStand(data, row))}
                                   count={n}
                                   className={
                                     "wk-dot" +

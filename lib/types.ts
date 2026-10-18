@@ -17,6 +17,9 @@ export interface ChargeRow {
   notiz: string;
   // „Akku ist voll geladen (100 %)“ bei „Reichweite neu“ (v2.39.00) – Maßstab für den Ladering
   voll?: boolean;
+  // Ladeziel 80 % (v2.49.00, Wunsch vom 18.10.2026): das Auto hat am Ladelimit aufgehört.
+  // Schließt voll aus; der Ladering endet bei 80 %, Reichweite ÷ 0,8 schätzt die volle Reichweite.
+  ziel80?: boolean;
   // Startzeit „HH:MM“ (v2.41.00), gespeichert beim Erfassen von „Vor“ – für „Laden abschließen!“
   start?: string;
 }

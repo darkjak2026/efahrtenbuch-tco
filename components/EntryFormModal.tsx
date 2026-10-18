@@ -29,6 +29,7 @@ import {
   PlugIcon,
   RoadIcon,
 } from "./Icons";
+import { erinnereLadeklappe } from "./LadeklappeErinnerung";
 
 // Eingabemaske (v2.38.00, Mockup "Kombination 2 + 5"): oben eine Plakette mit dem
 // freigestellten Auto und einem Fortschrittsring, darunter Schritt für Schritt
@@ -308,7 +309,7 @@ export default function EntryFormModal({
     rneu: {
       icon: <RoadIcon />,
       titel: "Reichweite neu",
-      wert: () => (form.reichweiteNachher ? `${parseNum(form.reichweiteNachher)} km${form.voll ? " · voll" : ""}` : ""),
+      wert: () => (form.reichweiteNachher ? `${parseNum(form.reichweiteNachher)} km${form.voll ? " · voll" : form.ziel80 ? " · 80 %" : ""}` : ""),
     },
     notiz: {
       icon: <NoteIcon />,
@@ -427,11 +428,29 @@ export default function EntryFormModal({
             </div>
             {meta.hilfe && <div className="efm-hilfe">{meta.hilfe}</div>}
             {id === "rneu" && (
-              // Das Auto zeigt keine Prozent, nur „voll“: dieser Haken ist der Maßstab für den Ladering
-              <label className={"efm-voll" + (form.voll ? " an" : "")}>
-                <input type="checkbox" checked={!!form.voll} onChange={(e) => patch({ voll: e.target.checked })} />
-                <span>Akku ist voll geladen (100 %)</span>
-              </label>
+              // Das Auto zeigt keine Prozent: das Ladeziel ist der Maßstab für den Ladering
+              // (v2.49.00: zusätzlich 80 % = am Ladelimit aufgehört, Wunsch vom 18.10.2026)
+              <div className="efm-ziel" role="group" aria-label="Ladeziel">
+                {([
+                  ["teil", "Teilweise", "abgebrochen"],
+                  ["80", "80 %", "Ladelimit"],
+                  ["voll", "Voll", "100 %"],
+                ] as const).map(([z, label, klein]) => {
+                  const an = z === "voll" ? !!form.voll : z === "80" ? !!form.ziel80 : !form.voll && !form.ziel80;
+                  return (
+                    <button
+                      type="button"
+                      key={z}
+                      className={an ? "an" : ""}
+                      aria-pressed={an}
+                      onClick={() => patch({ voll: z === "voll", ziel80: z === "80" })}
+                    >
+                      {label}
+                      <small>{klein}</small>
+                    </button>
+                  );
+                })}
+              </div>
             )}
             {id === "cent" && (
               <button type="button" className="efm-link" onClick={() => {
@@ -575,7 +594,11 @@ export default function EntryFormModal({
     // Erst mit "Nach" vollständig: Konfetti-Fontäne und "alles eingetragen", dann schließen
     if (hasNachValues(row) && !hasNachValues(initial)) {
       setFontaene(makePieces());
-      window.setTimeout(() => onSave(row), CELEBRATE_MS);
+      window.setTimeout(() => {
+        onSave(row);
+        // Nach dem Laden: an Kabel und Ladeklappe erinnern (Wunsch vom 18.10.2026)
+        erinnereLadeklappe();
+      }, CELEBRATE_MS);
     } else {
       onSave(row);
     }

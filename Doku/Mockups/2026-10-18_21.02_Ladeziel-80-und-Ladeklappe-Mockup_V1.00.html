@@ -1,0 +1,183 @@
+<!doctype html>
+<!--
+Projekt: eFahrtenbuch TCO
+Urheber: Jakobus Claudius Digitalensis (+KI-Claude)
+Version: V1.00 (Mockup, nicht Teil der App)
+Datei: 2026-10-18_21.02_Ladeziel-80-und-Ladeklappe-Mockup_V1.00.html
+Änderungen: erste Fassung.
+Inhalt: Wünsche vom 18.10.2026 – (A) Ladeziel 80 % / voll im Schritt „Reichweite neu“ samt Ladering,
+        (B) Ladeklappen-Erinnerung nach dem Speichern, (C) Reihenfolge am selben Tag in der Historie.
+        Zum Ausprobieren: Ladeziel antippen, „Fertig“ drücken. Alle Werte erfunden.
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ladeziel und Ladeklappe</title>
+<style>
+  :root {
+    --bg: #17141f; --panel: #221e2c; --ink: #ede9f5; --ink-soft: #a89fbf; --line: #3a3548; --lav: #2c2740;
+    --accent: #d8cbf2; --rot: #e2664a; --gruen: #4caf94; --gelb: #f0d84a; --b10: #b98fcb; --t03: #8fc6e0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, "Segoe UI", sans-serif; padding: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .lead { color: var(--ink-soft); margin: 0 0 16px; font-size: 13.5px; max-width: 900px; }
+  .buehne { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+  .spalte { width: min(360px, 100%); }
+  .tag { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px; }
+  .karte { background: linear-gradient(180deg, color-mix(in srgb, var(--b10) 25%, var(--panel)), var(--panel) 70%);
+           border: 2px solid var(--gruen); border-radius: 18px; padding: 14px; }
+  .kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .blase { width: 44px; height: 44px; border-radius: 50%; background: var(--b10); color: #17141f; font-weight: 800; display: grid; place-items: center; font-size: 13px; }
+  .schritt { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 8px; }
+  .schritt.fertig { color: var(--ink-soft); font-size: 13px; display: flex; justify-content: space-between; }
+  .schritt label.titel { font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px; }
+  .zeile { display: flex; gap: 8px; }
+  .zeile input { flex: 1; min-width: 0; background: var(--lav); border: 1px solid var(--line); color: var(--ink); border-radius: 8px; padding: 10px; font: inherit; font-size: 17px; }
+  .weiter { background: var(--gruen); color: #10241e; border: 0; border-radius: 8px; padding: 0 16px; font: inherit; font-weight: 800; cursor: pointer; min-height: 44px; }
+  .ziel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+  .ziel button { min-height: 44px; border-radius: 10px; border: 1px dashed var(--line); background: none; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; line-height: 1.15; }
+  .ziel button small { display: block; color: var(--ink-soft); font-size: 11px; }
+  .ziel button.an { border: 1px solid var(--gruen); background: color-mix(in srgb, var(--gruen) 16%, transparent); font-weight: 700; }
+  .hilfe { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+  .ringbox { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
+  .ringtext { font-size: 13px; color: var(--ink-soft); }
+  .ringtext b { color: var(--ink); font-size: 18px; display: block; }
+  /* Historie */
+  .tagkopf { font-size: 12px; color: var(--ink-soft); margin: 12px 0 6px; text-transform: uppercase; letter-spacing: .06em; }
+  .eintrag { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--b10); border-radius: 10px; padding: 9px 11px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; }
+  .eintrag .zeit { font-weight: 800; font-size: 15px; }
+  .badge { font-size: 11px; font-weight: 800; border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
+  .badge.b80 { background: color-mix(in srgb, var(--gelb) 25%, transparent); color: var(--gelb); }
+  .badge.b100 { background: color-mix(in srgb, var(--gruen) 25%, transparent); color: var(--gruen); }
+  .pfeil { color: var(--ink-soft); font-size: 12px; }
+  /* Ladeklappe */
+  .overlay { position: fixed; inset: 0; background: rgba(10, 8, 16, .78); display: none; place-items: center; padding: 16px; z-index: 5; }
+  .overlay.an { display: grid; }
+  .klappe { width: min(340px, 100%); background: var(--panel); border: 2px solid var(--gelb); border-radius: 18px; padding: 20px 18px; text-align: center;
+            box-shadow: 0 0 30px color-mix(in srgb, var(--gelb) 35%, transparent); animation: rein .25s ease-out; }
+  @keyframes rein { from { transform: scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
+  .klappe h2 { margin: 10px 0 4px; font-size: 20px; }
+  .klappe p { margin: 0 0 14px; color: var(--ink-soft); font-size: 14px; }
+  .check { text-align: left; margin: 0 auto 14px; display: grid; gap: 8px; max-width: 260px; }
+  .check label { display: flex; gap: 10px; align-items: center; min-height: 40px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; cursor: pointer; }
+  .check input { width: 20px; height: 20px; accent-color: var(--gruen); }
+  .ok { width: 100%; min-height: 48px; border: 0; border-radius: 12px; background: var(--gruen); color: #10241e; font: inherit; font-weight: 800; font-size: 16px; cursor: pointer; }
+  .ok:disabled { opacity: .4; cursor: default; }
+  .spaeter { background: none; border: 0; color: var(--ink-soft); font: inherit; font-size: 13px; margin-top: 8px; cursor: pointer; text-decoration: underline; }
+  .vergleich { font-size: 13px; color: var(--ink-soft); background: var(--panel); border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 14px; }
+  .vergleich b { color: var(--ink); }
+</style>
+</head>
+<body>
+<h1>Ladeziel 80 % und Ladeklappe</h1>
+<p class="lead">Drei Wünsche vom 18.10.2026. Zum Ausprobieren: Ladeziel antippen, dann „Fertig“. Alle Zahlen sind erfunden.</p>
+
+<div class="buehne">
+  <!-- A: Ladeziel -->
+  <div class="spalte">
+    <p class="tag">A · „Nach dem Laden“: Schritt Reichweite neu</p>
+    <div class="karte">
+      <div class="kopf"><div class="blase">B10</div><b>BIO-Leapy · Nach dem Laden</b></div>
+      <div class="schritt fertig"><span>⚡ 18,4 kWh</span><span>✓</span></div>
+      <div class="schritt fertig"><span>⏱️ 0:42</span><span>✓</span></div>
+      <div class="schritt">
+        <label class="titel" for="rneu">🔋 Reichweite neu (km)</label>
+        <div class="zeile"><input id="rneu" value="352" inputmode="numeric" /><button class="weiter" id="fertig">Fertig</button></div>
+        <div class="ziel" role="group" aria-label="Ladeziel">
+          <button data-ziel="teil">Teilweise<small>abgebrochen</small></button>
+          <button data-ziel="80" class="an">80 %<small>Ladelimit</small></button>
+          <button data-ziel="100">Voll<small>100 %</small></button>
+        </div>
+        <div class="hilfe" id="hilfe">80 % = das Auto hat am eingestellten Ladelimit aufgehört. Der Ladering zeigt 80 %, und aus 352 km schätzt die App die volle Reichweite (≈ 440 km).</div>
+      </div>
+      <div class="ringbox">
+        <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
+          <circle cx="42" cy="42" r="34" fill="none" stroke="#3a3548" stroke-width="9" />
+          <circle id="ringVor" cx="42" cy="42" r="34" fill="none" stroke="#e2664a" stroke-width="9" stroke-dasharray="0 214" transform="rotate(-90 42 42)" />
+          <circle id="ringNach" cx="42" cy="42" r="34" fill="none" stroke="#f0d84a" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 214" transform="rotate(-90 42 42)" />
+          <text id="ringZahl" x="42" y="47" text-anchor="middle" fill="#ede9f5" font-size="16" font-weight="800">80 %</text>
+        </svg>
+        <div class="ringtext"><b id="ringTitel">22 % → 80 %</b>Ladering der Wochenansicht<br />(gelb = 80 %-Ziel, grün = voll)</div>
+      </div>
+    </div>
+    <div class="vergleich"><b>Bisher:</b> nur ein Haken „Akku ist voll geladen (100 %)“. <b>Neu:</b> drei Knöpfe, „Teilweise“ wie heute ohne Haken. Alte Einträge mit Haken gelten weiter als „Voll“.</div>
+  </div>
+
+  <!-- B: Ladeklappe -->
+  <div class="spalte">
+    <p class="tag">B · Nach „Fertig“: Ladeklappen-Erinnerung</p>
+    <div class="karte" style="border-color: var(--line)">
+      <p style="margin:0 0 8px">Die Erinnerung kommt <b>jedes Mal nach dem Abschluss eines Ladevorgangs</b> (Schritt „Nach“), direkt nach dem Konfetti, also genau dann, wenn man die App zumacht und losfährt.</p>
+      <button class="weiter" id="zeigeKlappe" style="width:100%">Erinnerung ansehen</button>
+      <p class="hilfe">Erst „Alles zu“ schließt die Erinnerung. „Später“ schließt sie auch, dann bleibt bis zum nächsten Öffnen der App ein gelber Hinweis in der Übersicht stehen.</p>
+    </div>
+    <div class="vergleich"><b>Warum nicht beim Wegwischen der App?</b> Ein Browser darf beim Verlassen keine eigenen Hinweise zeigen. Eine Push-Benachrichtigung ginge nur mit Erlaubnis und einem Hintergrunddienst und wäre auf dem iPhone unzuverlässig. Der Hinweis direkt nach „Fertig“ kommt immer.</div>
+  </div>
+
+  <!-- C: Reihenfolge -->
+  <div class="spalte">
+    <p class="tag">C · Historie: mehrmals am Tag geladen</p>
+    <div class="tagkopf">Sa 18.10.</div>
+    <div class="eintrag"><span><span class="zeit">19:41</span> · 18,4 kWh <span class="badge b80">80 %</span></span><span class="pfeil">jüngster oben</span></div>
+    <div class="eintrag"><span><span class="zeit">12:05</span> · 9,1 kWh</span><span class="pfeil"></span></div>
+    <div class="eintrag"><span><span class="zeit">07:30</span> · 22,0 kWh <span class="badge b100">voll</span></span><span class="pfeil">ältester unten</span></div>
+    <div class="tagkopf">Fr 17.10.</div>
+    <div class="eintrag"><span><span class="zeit">18:12</span> · 15,2 kWh</span><span class="pfeil"></span></div>
+    <div class="vergleich">Sortiert wird nach Datum und Startzeit. Ältere Einträge ohne Startzeit sortiert die App nach der Reihenfolge der Eingabe, der zuletzt eingetragene steht oben. Diesen Teil sieht man nicht weiter, er wird nur umgestellt.</div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" role="dialog" aria-label="Ladeklappen-Erinnerung">
+  <div class="klappe">
+    <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
+      <rect x="8" y="14" width="56" height="44" rx="10" fill="none" stroke="#f0d84a" stroke-width="3" />
+      <path d="M36 22 L28 38 h8 l-4 14 l14 -20 h-9 l5 -10 z" fill="#f0d84a" />
+    </svg>
+    <h2>Ladeklappe zu?</h2>
+    <p>Kurz prüfen, bevor du losfährst.</p>
+    <div class="check">
+      <label><input type="checkbox" class="c" /> Ladekabel abgezogen und verstaut</label>
+      <label><input type="checkbox" class="c" /> Ladeklappe geschlossen</label>
+    </div>
+    <button class="ok" id="ok" disabled>Alles zu ✓</button><br />
+    <button class="spaeter" id="spaeter">Später</button>
+  </div>
+</div>
+
+<script>
+  const U = 2 * Math.PI * 34;
+  const rneu = document.getElementById("rneu");
+  let ziel = "80";
+  function ring() {
+    const vor = 22;
+    const voll = ziel === "100" ? 100 : ziel === "80" ? 80 : Math.min(99, Math.round((Number(rneu.value) || 0) / 440 * 100));
+    document.getElementById("ringVor").setAttribute("stroke-dasharray", `${U * vor / 100} ${U}`);
+    const n = document.getElementById("ringNach");
+    n.setAttribute("stroke-dasharray", `${U * voll / 100} ${U}`);
+    n.setAttribute("stroke", ziel === "100" ? "#4caf94" : ziel === "80" ? "#f0d84a" : "#8bc34a");
+    document.getElementById("ringZahl").textContent = voll + " %";
+    document.getElementById("ringTitel").textContent = `${vor} % → ${voll} %`;
+    document.getElementById("hilfe").textContent =
+      ziel === "80" ? `80 % = das Auto hat am eingestellten Ladelimit aufgehört. Der Ladering zeigt 80 %, und aus ${rneu.value} km schätzt die App die volle Reichweite (≈ ${Math.round((Number(rneu.value) || 0) / 0.8)} km).`
+      : ziel === "100" ? "Voll = 100 %. Wie bisher der Maßstab für die volle Reichweite."
+      : "Teilweise = vorher abgebrochen. Den Prozentwert schätzt die App aus der vollen Reichweite (höchstens 99 %).";
+  }
+  document.querySelectorAll(".ziel button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".ziel button").forEach((x) => x.classList.remove("an"));
+    b.classList.add("an"); ziel = b.dataset.ziel; ring();
+  }));
+  rneu.addEventListener("input", ring);
+  const ov = document.getElementById("overlay");
+  const zeigen = () => { ov.classList.add("an"); document.querySelectorAll(".c").forEach((c) => (c.checked = false)); ok.disabled = true; };
+  document.getElementById("fertig").addEventListener("click", zeigen);
+  document.getElementById("zeigeKlappe").addEventListener("click", zeigen);
+  const ok = document.getElementById("ok");
+  document.querySelectorAll(".c").forEach((c) => c.addEventListener("change", () => { ok.disabled = ![...document.querySelectorAll(".c")].every((x) => x.checked); }));
+  ok.addEventListener("click", () => ov.classList.remove("an"));
+  document.getElementById("spaeter").addEventListener("click", () => ov.classList.remove("an"));
+  ring();
+</script>
+</body>
+</html>

@@ -197,39 +197,57 @@ export function allRows(data: AppData): ChargeRow[] {
 
 // --- Ladering (v2.39.00): Ladestand in % aus den Reichweiten ---
 // Das Auto zeigt keine Prozent, nur „voll“. Maßstab für 100 % ist daher die
-// „Reichweite neu“ der letzten (bis zu drei) als voll markierten Ladevorgänge
-// bis zu diesem Tag (passt sich Sommer/Winter an); gibt es noch keine, die
-// höchste bisher erfasste „Reichweite neu“ des Autos.
+// „Reichweite neu“ der letzten (bis zu drei) als voll oder 80 % markierten
+// Ladevorgänge bis zu diesem Tag (80 %: Reichweite ÷ 0,8, seit v2.49.00) – passt
+// sich Sommer/Winter an; gibt es noch keine, die höchste bisher erfasste
+// „Reichweite neu“ des Autos.
+const ZIEL80 = 0.8;
+
+function volleReichweiteAus(r: ChargeRow): number {
+  const rn = parseNum(r.reichweiteNachher);
+  return r.voll ? rn : r.ziel80 ? rn / ZIEL80 : 0;
+}
+
 export function vollReichweite(data: AppData, v: VehicleKey, bisDatum?: string): number | null {
   const rows = allRows(data).filter((r) => r.fahrzeug === v && parseNum(r.reichweiteNachher) > 0);
-  const voll = rows
-    .filter((r) => r.voll && (!bisDatum || r.datum <= bisDatum))
-    .sort((a, b) => b.datum.localeCompare(a.datum))
-    .slice(0, 3);
-  const basis = voll.length ? voll : rows.filter((r) => r.voll);
+  const markiert = rows.filter((r) => r.voll || r.ziel80);
+  const bis = markiert.filter((r) => !bisDatum || r.datum <= bisDatum);
+  const basis = bis.length ? bis : markiert;
   if (basis.length) {
     const recent = [...basis].sort((a, b) => b.datum.localeCompare(a.datum)).slice(0, 3);
-    return recent.reduce((s, r) => s + parseNum(r.reichweiteNachher), 0) / recent.length;
+    return recent.reduce((s, r) => s + volleReichweiteAus(r), 0) / recent.length;
   }
   const max = Math.max(0, ...rows.map((r) => parseNum(r.reichweiteNachher)));
   return max > 0 ? max : null;
 }
 
 // Ladestand vor/nach dem Laden in % (0–100). nach = null, solange „Reichweite neu“
-// fehlt; ohne Haken „voll“ höchstens 99 %, damit „voll“ nur echtes 100 % bedeutet.
+// fehlt; „voll“ = 100 %, „80 %“ = 80 %, sonst höchstens 99 %, damit „voll“ nur echtes
+// 100 % bedeutet.
 export function ladeStand(data: AppData, row: ChargeRow): { vor: number; nach: number | null } | null {
   if (!row.fahrzeug) return null;
   const full = vollReichweite(data, row.fahrzeug, row.datum);
   const rv = parseNum(row.reichweiteVorher);
   const rn = parseNum(row.reichweiteNachher);
-  if (row.voll) {
-    const ref = full ?? rn;
-    return { vor: ref > 0 ? Math.min(100, Math.round((rv / ref) * 100)) : 0, nach: 100 };
+  if (row.voll || row.ziel80) {
+    const ziel = row.voll ? 100 : 80;
+    const ref = full ?? volleReichweiteAus(row);
+    return { vor: ref > 0 ? Math.min(ziel, Math.round((rv / ref) * 100)) : 0, nach: ziel };
   }
   if (!full) return null;
   const vor = Math.min(99, Math.round((rv / full) * 100));
   const nach = rn > 0 ? Math.max(vor, Math.min(99, Math.round((rn / full) * 100))) : null;
   return { vor, nach };
+}
+
+// Reihenfolge in der Lade-Historie (Wunsch vom 18.10.2026): neueste zuerst – nach
+// Datum, am selben Tag nach Startzeit; fehlt sie (Einträge vor v2.41.00), steht der
+// zuletzt eingetragene oben (höherer Index im Monat).
+export function neuesteZuerst(a: { row: ChargeRow; idx: number }, b: { row: ChargeRow; idx: number }): number {
+  const tag = (b.row.datum || "").localeCompare(a.row.datum || "");
+  if (tag !== 0) return tag;
+  if (a.row.start && b.row.start && a.row.start !== b.row.start) return b.row.start.localeCompare(a.row.start);
+  return b.idx - a.idx;
 }
 
 export interface VehicleStats {

@@ -4316,27 +4316,6 @@ section.split-section.month-view {
 }
 
 /* Haken „Akku ist voll geladen (100 %)“ bei Reichweite neu (v2.39.00) */
-.efm-voll {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  margin-top: 8px;
-  padding: 0 12px;
-  border-radius: 10px;
-  border: 1px dashed var(--line);
-  font-size: 14px;
-  cursor: pointer;
-}
-.efm-voll.an {
-  border: 1px solid var(--teal);
-  background: color-mix(in srgb, var(--teal) 15%, transparent);
-}
-.efm-voll input {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--teal);
-}
 
 /* Eingabemaske v2.39.00: Blase am Rand, Hintergrund und Leuchtrahmen erst ab dem ersten Kästchen */
 .fab-modal.efm {
@@ -4461,10 +4440,6 @@ section.split-section.month-view {
 }
 .efm-zeile > textarea {
   min-height: 56px;
-}
-.efm-voll {
-  min-height: 40px;
-  margin-top: 6px;
 }
 .efm-erkannt {
   margin: 8px 0 2px;
@@ -5143,4 +5118,138 @@ main.tab-rein-links {
 }
 .stamm-zeigen {
   flex-shrink: 0;
+}
+
+/* Ladeziel im Schritt „Reichweite neu“ (v2.49.00): Teilweise · 80 % · Voll */
+.efm-ziel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+.efm-ziel button {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.15;
+  cursor: pointer;
+}
+.efm-ziel button small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.efm-ziel button.an {
+  border: 1px solid var(--teal);
+  background: color-mix(in srgb, var(--teal) 15%, transparent);
+  font-weight: 700;
+}
+.efm-ziel button:focus-visible {
+  outline: 2px solid var(--focus);
+}
+
+/* Abzeichen „voll“ / „80 %“ in der Lade-Historie */
+.entry-ziel {
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+.entry-ziel-voll {
+  background: color-mix(in srgb, var(--teal) 25%, transparent);
+  color: var(--teal);
+}
+.entry-ziel-80 {
+  background: color-mix(in srgb, var(--range-yellow) 22%, transparent);
+  color: var(--range-yellow);
+}
+
+/* Ladeklappen-Erinnerung (v2.49.00): über allem, ohne „Später“ */
+.klappe-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 8, 14, 0.82);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 1400;
+}
+.klappe-karte {
+  width: min(340px, 100%);
+  background: var(--panel);
+  border: 2px solid var(--range-yellow);
+  border-radius: 18px;
+  padding: 20px 18px;
+  text-align: center;
+  color: var(--range-yellow);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--range-yellow) 35%, transparent);
+  animation: klappe-rein 0.25s ease-out;
+}
+@keyframes klappe-rein {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .klappe-karte { animation: none; }
+}
+.klappe-karte h2 {
+  margin: 10px 0 4px;
+  font-size: 20px;
+  color: var(--ink);
+}
+.klappe-karte p {
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+.klappe-check {
+  display: grid;
+  gap: 8px;
+  max-width: 280px;
+  margin: 0 auto 14px;
+  text-align: left;
+}
+.klappe-check label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 14px;
+  cursor: pointer;
+}
+.klappe-check label.an {
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 12%, transparent);
+}
+.klappe-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--teal);
+}
+.klappe-ok {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--teal);
+  color: #10241e;
+  font: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+}
+.klappe-ok:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.klappe-ok:focus-visible {
+  outline: 2px solid var(--focus);
 }

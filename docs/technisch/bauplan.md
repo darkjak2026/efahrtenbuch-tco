@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 18.10.2026 | 07:05
+Stand der Dokumentation: 18.10.2026 | 21:36
 
 ## Teil 1 – Beschreibung der App
 
@@ -16,7 +16,7 @@ Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern kon
 
 ### 1.2 Aktueller Funktionsumfang und Features
 
-Ein Menü unten führt zu Übersicht, Planung, Statistik, Historie und Einstellungen. Ladevorgänge werden Schritt für Schritt erfasst: „Vor“ dem Laden (Restreichweite, Gesamtkilometer (ODO), Cent-Preis pro kWh, Ladekarte; Fahrzeug, Datum und Standort per GPS erkennt die App selbst) und „Nach“ dem Laden (kWh, Dauer, Reichweite neu, Notiz, Preis) – mit Fortschrittsring um das Auto und Konfetti beim Abschluss. Daraus entstehen €/km je Auto (TCO), ein Freikilometer-Countdown, Monatskarten mit Ringen und eine Wochenübersicht, in der ein Ladering um jeden Ladetag den Ladestand vorher und nachher zeigt. Die Planung rechnet eine Strecke zwischen zwei Adressen durch und schlägt das Auto vor, das die Leasing-Freikilometer am besten ausnutzt. Seit 2.48.00 kennt die App die Mehrkilometer-Staffel der Leasingverträge samt Freigrenze: Die Planung zeigt, was eine Fahrt hochgerechnet am Vertragsende kostet, und die Gesamtübersicht der Leasingjahre eine Prognose zur Nachzahlung oder Erstattung. Unter Einstellungen stehen die Stammdaten jedes Autos.
+Ein Menü unten führt zu Übersicht, Planung, Statistik, Historie und Einstellungen. Ladevorgänge werden Schritt für Schritt erfasst: „Vor“ dem Laden (Restreichweite, Gesamtkilometer (ODO), Cent-Preis pro kWh, Ladekarte; Fahrzeug, Datum und Standort per GPS erkennt die App selbst) und „Nach“ dem Laden (kWh, Dauer, Reichweite neu, Notiz, Preis) – mit Fortschrittsring um das Auto und Konfetti beim Abschluss. Daraus entstehen €/km je Auto (TCO), ein Freikilometer-Countdown, Monatskarten mit Ringen und eine Wochenübersicht, in der ein Ladering um jeden Ladetag den Ladestand vorher und nachher zeigt. Die Planung rechnet eine Strecke zwischen zwei Adressen durch und schlägt das Auto vor, das die Leasing-Freikilometer am besten ausnutzt. Seit 2.48.00 kennt die App die Mehrkilometer-Staffel der Leasingverträge samt Freigrenze: Die Planung zeigt, was eine Fahrt hochgerechnet am Vertragsende kostet, und die Gesamtübersicht der Leasingjahre eine Prognose zur Nachzahlung oder Erstattung. Unter Einstellungen stehen die Stammdaten jedes Autos. Seit 2.49.00 lässt sich beim Laden ein Ladelimit von 80 % angeben, und nach jedem Abschluss erinnert ein Hinweis an Ladekabel und Ladeklappe.
 
 ### 1.3 Backup, Datensicherung, Datenschutz
 
@@ -130,6 +130,7 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 - 07.10.2026: Entwicklerbereich neu und Bauplan (2.26.00)
 - 08.10.2026: Umzug auf den eigenen netcup-Server (2.34.00), Planung (2.36.00), Monitoring (2.37.00)
 - 16.10.2026: BIO-Leapy übergeben; Mehrkilometer-Staffel, Prognose und Fahrzeug-Stammdaten (2.48.00)
+- 18.10.2026: Ladeziel 80 %, Ladeklappen-Erinnerung, jüngster Ladevorgang oben (2.49.00)
 
 ## Glossar
 
@@ -171,6 +172,7 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 - **Mehrkilometer-Staffel:** Im Leasingvertrag steht, was jeder Kilometer über den Freikilometern kostet und was jeder Kilometer darunter erstattet wird. Bei einer Staffel gibt es zwei Preise: bis zu einer bestimmten Gesamt-km-Zahl den ersten, darüber (bzw. bei Minderkilometern darunter) einen zweiten.
 - **Freigrenze (Freibetrag):** So viele Kilometer darf man über oder unter den Freikilometern liegen, ohne dass etwas berechnet wird (hier 2.500 km). Erst was darüber hinausgeht, wird bezahlt oder erstattet.
 - **Stammdaten:** Feste Angaben zu einem Auto, die sich kaum ändern: Modell, Farbe, Kennzeichen, Fahrgestellnummer (FIN), Leasinggeber, Vertragsnummer, Händler. Reine Information, sie fließen in keine Rechnung ein.
+- **Ladelimit:** Im Auto eingestellte Obergrenze, bis zu der geladen wird – hier meist 80 %, weil das den Akku schont. Danach hört das Auto von selbst auf. Die App rechnet aus der Reichweite bei 80 % die volle Reichweite hoch (÷ 0,8).
 
 ## Offene Punkte
 
