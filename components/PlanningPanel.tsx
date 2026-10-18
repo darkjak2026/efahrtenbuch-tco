@@ -9,15 +9,15 @@ import {
   suggestAddresses,
   type GeoPoint,
 } from "@/lib/client-api";
-import { allRows, fmtEUR, fmtNum } from "@/lib/data";
+import { allRows, fmtEUR, fmtNum, parseNum } from "@/lib/data";
 import { reverseGeocodeAddress } from "@/lib/gps";
 import { planeStrecke } from "@/lib/planning";
 import type { AppData, VehicleKey } from "@/lib/types";
 
 // Planung (Menüpunkt, v2.45.00, Mockup „Variante C“): eine Route aus ein oder zwei
 // Etappen (Hin- und Rückfahrt getrennt berechnet). Je Auto eine schmale Kachel: Linie
-// mit Wendepunkt, Ladekosten je Etappe und gesamt (km × Ladekosten je km seit Übergabe), darunter
-// die Leasingkilometer bis zum Stichtag. Eine Zeile darüber nennt die Empfehlung.
+// mit Wendepunkt, Kosten je Etappe und gesamt, darunter die Leasingkilometer bis zum
+// Stichtag. Seit v2.50.00 nur noch eine Rechnung: km × Ø Verbrauch × Ø Strompreis.
 
 type Field = "from" | "to";
 interface FieldState {
@@ -198,7 +198,7 @@ export default function PlanningPanel({
       : [];
   const km = etappen.reduce((s, e) => s + e.km, 0);
   const minuten = etappen.length > 0 && etappen.every((e) => e.minutes !== null) ? etappen.reduce((s, e) => s + (e.minutes ?? 0), 0) : null;
-  const plan = km > 0 ? planeStrecke(data, km) : null;
+  const plan = km > 0 ? planeStrecke(data) : null;
   const places = data.places || [];
 
   const fieldRow = (f: Field) => {
@@ -278,23 +278,17 @@ export default function PlanningPanel({
 
   // Schmale Kachel je Auto (Variante C): Linie mit Wendepunkt, Kosten je Etappe und gesamt
   const kachel = (v: VehicleKey) => {
-    const a = plan?.autos.find((x) => x.vehicle === v);
+    const a = plan?.find((x) => x.vehicle === v);
     if (!a) return null;
     const fp = a.preis;
     const preis = fp?.proKm ?? null;
-    const istEmpfohlen = plan?.empfehlung === v;
     const j = a.leasingJahr;
-    // Leasingkilometer und Mehrkilometer-Risiko gelten auch ohne Preis (v2.48.00)
+    // Leasingkilometer gelten auch ohne Preis
     const leasingZeile = j && j.rest !== null && (
       <div className={"plan2-leasing" + (j.rest - km < 0 ? " plan2-leasing-ueber" : "")}>
         {j.rest - km >= 0
           ? `Bis zum ${datum(j.stichtag)} verbleiben nach dieser Fahrt noch ${fmtNum(j.rest - km, 0)} km.`
           : `Bis zum ${datum(j.stichtag)} liegt diese Fahrt ${fmtNum(km - j.rest, 0)} km über dem Kontingent.`}
-      </div>
-    );
-    const risikoZeile = a.mehrKmRisiko !== null && a.mehrKmRisiko >= 0.01 && (
-      <div className="plan2-leasing plan2-leasing-ueber">
-        Hochgerechnet aufs Vertragsende kostet diese Fahrt ca. {fmtEUR(a.mehrKmRisiko)} Mehrkilometer (bzw. weniger Erstattung).
       </div>
     );
     if (!a.verfuegbar) {
@@ -307,26 +301,26 @@ export default function PlanningPanel({
         </div>
       );
     }
-    // Übergeben, aber noch ohne Ladedaten (z. B. am Übergabetag): Kachel aktiv, Preis folgt.
+    // Übergeben, aber Ø Verbrauch oder Ø Strompreis fehlt noch: Kachel aktiv, Preis folgt.
     if (preis === null) {
       return (
-        <div key={v} className={`plan2-kachel plan2-kachel-${v}` + (istEmpfohlen ? " plan2-empfohlen" : "")}>
+        <div key={v} className={`plan2-kachel plan2-kachel-${v}`}>
           <div className="plan2-kopf">
             <b>{a.name}</b>
             <span>Preis folgt</span>
           </div>
           <div className="plan2-rechnung">
-            Den Preis je km rechnet die App nach dem ersten Ladevorgang mit km-Stand – oder sofort, wenn ihr den Ø Verbrauch in
-            den Fixkosten eintragt.
+            {parseNum(data.vehicles[v].verbrauchKwh100) > 0
+              ? "Der Preis folgt mit dem ersten Ladevorgang mit kWh und Preis (Ø Strompreis)."
+              : "Für den Preis den Ø Verbrauch in den Fixkosten eintragen."}
           </div>
           {leasingZeile}
-          {risikoZeile}
         </div>
       );
     }
     const zwei = etappen.length === 2;
     return (
-      <div key={v} className={`plan2-kachel plan2-kachel-${v}` + (istEmpfohlen ? " plan2-empfohlen" : "")}>
+      <div key={v} className={`plan2-kachel plan2-kachel-${v}`}>
         <div className="plan2-kopf">
           <b>{a.name}</b>
           <span className="plan2-summe">{fmtEUR(km * preis)}</span>
@@ -347,33 +341,12 @@ export default function PlanningPanel({
           )}
         </svg>
         <div className="plan2-rechnung">
-          {fp!.art === "verbrauch"
-            ? `${fmtNum(km, 1)} km × ${fmtNum(fp!.verbrauch, 1)} kWh/100 km × ${fmtNum(fp!.proKwh, 2)} €/kWh`
-            : `${fmtNum(km, 1)} km × ${fmtNum(preis, 3)} €/km Ladekosten`}
-          <details>
-            <summary>So gerechnet</summary>
-            {fp!.art === "verbrauch" ? (
-              <p>
-                {fmtNum(km, 1)} km × {fmtNum(fp!.verbrauch, 1)} kWh/100 km = {fmtNum((km * fp!.verbrauch) / 100, 1)} kWh. Mal{" "}
-                {fmtNum(fp!.proKwh, 2)} €/kWh – dem Durchschnitt eurer erfassten Ladevorgänge – sind das {fmtEUR(km * preis)}. Den
-                Verbrauch des {a.name} tragt ihr in den Fixkosten ein; der Strompreis läuft mit jedem Ladevorgang mit. Leasing,
-                Versicherung und Abos zählen hier nicht – sie verteilen sich auf alle Fahrten des Monats.
-              </p>
-            ) : (
-              <p>
-                Ladekosten seit der Übergabe des {a.name}: {fmtEUR(fp!.ladekosten)} ÷ {fmtNum(fp!.km, 0)} gefahrene km ={" "}
-                {fmtNum(preis, 3)} €/km. Genauer wird es mit dem Ø Verbrauch in den Fixkosten.
-              </p>
-            )}
-          </details>
+          {fmtNum(km, 1)} km × {fmtNum(fp!.verbrauch, 1)} kWh/100 km × {fmtNum(fp!.proKwh, 2)} €/kWh
         </div>
         {leasingZeile}
-        {risikoZeile}
       </div>
     );
   };
-
-  const empfohlen = plan?.autos.find((a) => a.vehicle === plan.empfehlung);
 
   return (
     <div className="plan">
@@ -442,11 +415,6 @@ export default function PlanningPanel({
               {route && ` · ${route.source}`}
             </span>
           </div>
-          {empfohlen && (
-            <div className={`plan2-empfehlung plan2-empfehlung-${empfohlen.vehicle}`}>
-              <b>Empfehlung: {empfohlen.name}</b> – {plan.grund}
-            </div>
-          )}
           <div className="plan2-kacheln">{(["b10", "t03"] as VehicleKey[]).map((v) => kachel(v))}</div>
         </section>
       )}

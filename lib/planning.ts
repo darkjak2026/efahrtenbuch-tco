@@ -1,44 +1,13 @@
 import { VEHICLES } from "./constants";
-import { allRows, fmtNum, kmAusgleich, leasingJahr, leasingKm, parseNum, rowKmDriven, vehicleStats, type LeasingJahr } from "./data";
+import { allRows, leasingJahr, parseNum, type LeasingJahr } from "./data";
 import type { AppData, VehicleKey } from "./types";
 
-// Planung: Kosten einer Strecke je Auto und der Vorschlag, welches Auto die
-// Leasing-Freikilometer am besten ausnutzt. Reine Funktionen, siehe planning.test.ts.
+// Planung (v2.50.00, Entscheidung des Urhebers 18.10.2026): eine einzige Rechnung –
+// Kosten einer Strecke = km × Ø Verbrauch (fester Wert je Auto aus den Fixkosten) ×
+// Ø Strompreis. Alle anderen Formeln (Ladekosten ÷ km, TCO je km, Empfehlung,
+// Ladestopps, Mehrkilometer-Risiko) sind entfernt. Reine Funktionen, siehe planning.test.ts.
 
 const ORDER: VehicleKey[] = ["b10", "t03"];
-const DAY = 86_400_000;
-// Lokales Datum "JJJJ-MM-TT" (Einträge mit Datum nach heute zählen nicht)
-const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
-// Ladekosten je km aus den Ladevorgängen der letzten 90 Tage (sonst aller):
-// Summe Preis ÷ Summe "km seit letztem Laden". Das sind die echten Zusatzkosten
-// einer Fahrt - Leasing und Versicherung fallen ohnehin an.
-export function ladenProKm(data: AppData, v: VehicleKey, today: Date = new Date()): number | null {
-  const bis = isoDay(today);
-  const rows = allRows(data).filter((r) => r.fahrzeug === v && r.datum && r.datum <= bis);
-  const since = isoDay(new Date(today.getTime() - 90 * DAY));
-  const pick = (rs: typeof rows) => {
-    let eur = 0;
-    let km = 0;
-    for (const r of rs) {
-      const d = rowKmDriven(data, r);
-      if (d && d > 0 && parseNum(r.preis) > 0) {
-        eur += parseNum(r.preis);
-        km += d;
-      }
-    }
-    return km > 0 ? eur / km : null;
-  };
-  return pick(rows.filter((r) => r.datum >= since)) ?? pick(rows);
-}
-
-// Ladekosten je km seit Übergabe (v2.46.00, Grundlage der Planung): die Ladekosten-Seite
-// von TCO/Alltime – alle Ladekosten ÷ alle gefahrenen km. Leasing, Versicherung usw.
-// verteilen sich auf alle Fahrten des Monats und zählen für eine einzelne Fahrt nicht.
-export function ladenAlltimeProKm(data: AppData, v: VehicleKey): { proKm: number; ladekosten: number; km: number } | null {
-  const s = vehicleStats(data, v);
-  return s.kmStand > 0 && s.ladekosten > 0 ? { proKm: s.ladekosten / s.kmStand, ladekosten: s.ladekosten, km: s.kmStand } : null;
-}
 
 // Ø Strompreis je kWh aus den erfassten Ladevorgängen (Summe Preis ÷ Summe kWh,
 // nur Vorgänge mit beidem) – die Pauschale „Ladekosten bis Stichtag“ hat keine kWh.
@@ -57,159 +26,32 @@ export function strompreisProKwh(data: AppData, v: VehicleKey): { proKwh: number
   return kwh > 0 ? { proKwh: eur / kwh, kwh, eur } : null;
 }
 
-// Kosten je km für die Planung (v2.47.00): Ø Verbrauch (fester Wert je Auto aus den
-// Fixkosten) × Ø Strompreis. Ohne Verbrauch: Ladekosten seit Übergabe ÷ km (Ersatz).
-export type FahrtPreis =
-  | { art: "verbrauch"; proKm: number; verbrauch: number; proKwh: number }
-  | { art: "ladekosten"; proKm: number; ladekosten: number; km: number };
+// Kosten je km: Ø Verbrauch × Ø Strompreis. null, solange eins von beiden fehlt.
+export interface FahrtPreis {
+  proKm: number;
+  verbrauch: number; // kWh/100 km
+  proKwh: number; // €/kWh
+}
 export function fahrtPreisProKm(data: AppData, v: VehicleKey): FahrtPreis | null {
   const verbrauch = parseNum(data.vehicles[v].verbrauchKwh100);
   const strom = strompreisProKwh(data, v);
-  if (verbrauch > 0 && strom) return { art: "verbrauch", proKm: (verbrauch / 100) * strom.proKwh, verbrauch, proKwh: strom.proKwh };
-  const l = ladenAlltimeProKm(data, v);
-  return l ? { art: "ladekosten", proKm: l.proKm, ladekosten: l.ladekosten, km: l.km } : null;
-}
-
-// TCO je km wie in den Karten oben (alle Kosten seit Leasingbeginn ÷ km-Stand).
-export function tcoProKm(data: AppData, v: VehicleKey): number | null {
-  const s = vehicleStats(data, v);
-  return s.kmStand > 0 ? s.tco / s.kmStand : null;
-}
-
-// Typische volle Reichweite: der obere Wert (80. Perzentil) der Reichweite nach
-// dem Laden in den letzten 60 Tagen (sonst aller) - passt sich Sommer/Winter an.
-export function typischeReichweite(data: AppData, v: VehicleKey, today: Date = new Date()): number | null {
-  const bis = isoDay(today);
-  const rows = allRows(data).filter((r) => r.fahrzeug === v && r.datum && r.datum <= bis && parseNum(r.reichweiteNachher) > 0);
-  const since = isoDay(new Date(today.getTime() - 60 * DAY));
-  const pick = (rs: typeof rows) => {
-    const vals = rs.map((r) => parseNum(r.reichweiteNachher)).sort((a, b) => a - b);
-    if (!vals.length) return null;
-    return vals[Math.min(vals.length - 1, Math.floor(vals.length * 0.8))];
-  };
-  return pick(rows.filter((r) => r.datum >= since)) ?? pick(rows);
-}
-
-// Zuletzt erfasster Akkustand: Reichweite nach dem letzten vollständigen Ladevorgang.
-export function letzteReichweite(data: AppData, v: VehicleKey, today: Date = new Date()): { km: number; datum: string } | null {
-  const bis = isoDay(today);
-  const rows = allRows(data)
-    .filter((r) => r.fahrzeug === v && r.datum && r.datum <= bis && parseNum(r.reichweiteNachher) > 0)
-    .sort((a, b) => b.datum.localeCompare(a.datum));
-  return rows.length ? { km: parseNum(rows[0].reichweiteNachher), datum: rows[0].datum } : null;
-}
-
-// Ladestopps für eine Strecke: erst die aktuelle Reichweite, danach je volle Ladung
-// ca. 80 % der typischen Reichweite (man lädt unterwegs selten auf 100 %).
-export function ladestopps(km: number, aktuell: number | null, typisch: number | null): number | null {
-  if (!typisch || typisch <= 0) return null;
-  const start = aktuell ?? typisch;
-  if (km <= start) return 0;
-  return Math.ceil((km - start) / (typisch * 0.8));
+  return verbrauch > 0 && strom ? { proKm: (verbrauch / 100) * strom.proKwh, verbrauch, proKwh: strom.proKwh } : null;
 }
 
 export interface PlanAuto {
   vehicle: VehicleKey;
   name: string;
   verfuegbar: boolean; // Übergabedatum gesetzt
-  zusatzkosten: number | null; // km × Ladekosten je km seit Übergabe (Preis der Fahrt)
-  preis: FahrtPreis | null; // Grundlage dafür (Verbrauch × Strompreis bzw. Ladekosten je km)
-  vollkosten: number | null; // km × TCO je km
-  puffer: number | null; // Leasingkilometer Luft (+) bzw. voraus (−) gegenüber dem gleichmäßigen Plan
+  preis: FahrtPreis | null;
   leasingJahr: LeasingJahr | null; // laufendes Jahreskontingent (Rest bis zum Stichtag)
-  leasingText: string | null; // Satz für die Erklärung, z. B. „… bleiben noch 1.104 Leasingkilometer“
-  restKm: number | null; // übrige Freikilometer
-  mehrKmRisiko: number | null; // € falls die Fahrt am Ende Mehrkilometer verursacht
-  ladestopps: number | null;
-  reichweite: { typisch: number | null; letzte: { km: number; datum: string } | null };
 }
 
-export interface PlanErgebnis {
-  autos: PlanAuto[];
-  empfehlung: VehicleKey | null;
-  grund: string;
-}
-
-// Vorschlag "Freikilometer ausgleichen": das Auto mit mehr Puffer gegenüber seinem
-// zeitanteiligen Plan. Bei fast gleichem Puffer (< 2 % der Freikilometer) zählen
-// Ladestopps, dann die Zusatzkosten.
-export function planeStrecke(data: AppData, km: number, today: Date = new Date()): PlanErgebnis {
-  const autos: PlanAuto[] = ORDER.map((v) => {
-    const veh = data.vehicles[v];
-    const verfuegbar = !!veh.start;
-    const l = leasingKm(data, v, today);
-    const preis = fahrtPreisProKm(data, v);
-    const tco = tcoProKm(data, v);
-    const typisch = typischeReichweite(data, v, today);
-    const letzte = letzteReichweite(data, v, today);
-    const jahr = leasingJahr(data, v, today);
-    const puffer = jahr?.voraus === null || jahr?.voraus === undefined ? null : -jahr.voraus;
-    const stich = jahr ? jahr.stichtag.split("-").reverse().join(".") : "";
-    const leasingText =
-      jahr && jahr.rest !== null
-        ? jahr.rest >= 0
-          ? `Im ${jahr.nr}. Leasingjahr bleiben bis zum Stichtag ${stich} noch ${fmtNum(jahr.rest, 0)} Leasingkilometer` +
-            (jahr.rest - km >= 0
-              ? ` – nach dieser Fahrt ${fmtNum(jahr.rest - km, 0)}.`
-              : ` – diese Fahrt ginge ${fmtNum(km - jahr.rest, 0)} km darüber.`)
-          : `Im ${jahr.nr}. Leasingjahr ist das Kontingent schon um ${fmtNum(-jahr.rest, 0)} km überschritten (Stichtag ${stich}); es wird ins nächste Jahr übertragen.`
-        : null;
-    // Hochgerechneter Stand am Leasingende: was ändert diese Fahrt an der Abrechnung
-    // zum Vertragsende (Staffel und Freibetrag, v2.48.00)? Mehr Nachzahlung oder
-    // weniger Minderkilometer-Erstattung zählen beide als Risiko.
-    let mehrKmRisiko: number | null = null;
-    const preise = parseNum(veh.mehrKmCent) > 0 || parseNum(veh.minderKmCent) > 0;
-    if (preise && l.gefahren !== null && l.anteilZeit && l.anteilZeit > 0) {
-      const hochgerechnet = l.gefahren / l.anteilZeit;
-      const vorher = kmAusgleich(veh, l.inklusiveKm, hochgerechnet).betrag;
-      const nachher = kmAusgleich(veh, l.inklusiveKm, hochgerechnet + km).betrag;
-      mehrKmRisiko = Math.max(0, nachher - vorher);
-    }
-    return {
-      vehicle: v,
-      name: VEHICLES[v].nickname,
-      verfuegbar,
-      zusatzkosten: preis === null ? null : preis.proKm * km,
-      preis,
-      vollkosten: tco === null ? null : tco * km,
-      puffer,
-      leasingJahr: jahr,
-      leasingText,
-      restKm: l.rest,
-      mehrKmRisiko,
-      ladestopps: ladestopps(km, letzte?.km ?? null, typisch),
-      reichweite: { typisch, letzte },
-    };
-  });
-
-  const kandidaten = autos.filter((a) => a.verfuegbar);
-  if (kandidaten.length === 0) return { autos, empfehlung: null, grund: "Für kein Auto ist ein Übergabedatum eingetragen." };
-  if (kandidaten.length === 1) {
-    const a = kandidaten[0];
-    const andere = autos.find((x) => x !== a)!;
-    return { autos, empfehlung: a.vehicle, grund: `${andere.name} ist noch nicht übergeben – ${a.name} ist das einzige Auto.` };
-  }
-  const [x, y] = kandidaten;
-  const inkl = (v: VehicleKey) => leasingKm(data, v, today).inklusiveKm || 1;
-  const px = x.puffer ?? 0;
-  const py = y.puffer ?? 0;
-  const knapp = Math.abs(px / inkl(x.vehicle) - py / inkl(y.vehicle)) < 0.02;
-  let sieger = px >= py ? x : y;
-  const p = sieger.puffer ?? 0;
-  let grund =
-    p >= 0
-      ? `${sieger.name} hat im laufenden Leasingjahr mehr Leasingkilometer übrig – ${fmtNum(Math.round(p), 0)} km Luft gegenüber einer gleichmäßigen Verteilung.`
-      : `${sieger.name} ist bei den Leasingkilometern weniger weit voraus (${fmtNum(Math.round(-p), 0)} km) – so verteilen sich die Kilometer gleichmäßiger.`;
-  if (knapp) {
-    const sx = x.ladestopps ?? 0;
-    const sy = y.ladestopps ?? 0;
-    if (sx !== sy) {
-      sieger = sx < sy ? x : y;
-      grund = `Bei den Leasingkilometern liegen beide etwa gleich – ${sieger.name} braucht weniger Ladestopps.`;
-    } else {
-      sieger = (x.zusatzkosten ?? Infinity) <= (y.zusatzkosten ?? Infinity) ? x : y;
-      grund = `Bei den Leasingkilometern liegen beide etwa gleich – ${sieger.name} ist für diese Fahrt günstiger.`;
-    }
-  }
-  return { autos, empfehlung: sieger.vehicle, grund };
+export function planeStrecke(data: AppData, today: Date = new Date()): PlanAuto[] {
+  return ORDER.map((v) => ({
+    vehicle: v,
+    name: VEHICLES[v].nickname,
+    verfuegbar: !!data.vehicles[v].start,
+    preis: fahrtPreisProKm(data, v),
+    leasingJahr: leasingJahr(data, v, today),
+  }));
 }

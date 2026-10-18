@@ -4908,21 +4908,6 @@ main.tab-rein-links {
   color: var(--ink-soft);
   text-align: right;
 }
-.plan2-empfehlung {
-  padding: 7px 12px;
-  border-radius: 10px;
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--ink);
-  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
-  border-left: 4px solid var(--accent);
-}
-.plan2-empfehlung-b10 {
-  border-left-color: var(--b10);
-}
-.plan2-empfehlung-t03 {
-  border-left-color: var(--t03);
-}
 .plan2-kacheln {
   display: flex;
   flex-direction: column;
@@ -4941,10 +4926,6 @@ main.tab-rein-links {
 }
 .plan2-kachel-t03 {
   --car: var(--t03);
-}
-.plan2-empfohlen {
-  border-color: var(--car);
-  box-shadow: 0 0 0 1px var(--car);
 }
 .plan2-aus {
   opacity: 0.55;
@@ -4997,22 +4978,6 @@ main.tab-rein-links {
   font-size: 12px;
   color: var(--ink-soft);
   font-family: var(--font-jetbrains-mono), monospace;
-}
-.plan2-rechnung details {
-  font-family: var(--font-inter), system-ui, sans-serif;
-  margin-top: 2px;
-}
-.plan2-rechnung summary {
-  cursor: pointer;
-  color: var(--accent);
-  min-height: 28px;
-  display: flex;
-  align-items: center;
-}
-.plan2-rechnung details p {
-  margin: 2px 0 0;
-  line-height: 1.5;
-  color: var(--ink-soft);
 }
 .plan2-leasing {
   margin-top: 6px;
