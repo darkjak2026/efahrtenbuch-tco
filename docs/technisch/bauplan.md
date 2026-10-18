@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 16.10.2026 | 12:11
+Stand der Dokumentation: 18.10.2026 | 07:05
 
 ## Teil 1 – Beschreibung der App
 
@@ -175,4 +175,4 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 ## Offene Punkte
 
 - OFFEN: Vercel-Projekt abschalten und Upstash-Datenbank löschen (Urheber; die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis).
-- OFFEN: BIO-Leapy – km-Stand bei Übergabe, Versicherung, Kennzeichen und FIN noch eintragen; Vertragsnummern beider Autos, FIN des Leapy und Hauptfahrer:in fehlen ebenfalls (Urheber, in der App oder per server/vertragsdaten_einspielen.sh).
+- OFFEN: Ø Verbrauch des BIO-Leapy in den Fixkosten nachtragen, sobald es Erfahrungswerte gibt (Urheber).

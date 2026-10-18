@@ -3,7 +3,7 @@
   "urheber": "Jakobus Claudius Digitalensis (+KI-Claude)",
   "status": "aktiv",
   "live_seit": "05.07.2026",
-  "aktualisiert": "16.10.2026",
+  "aktualisiert": "18.10.2026",
   "naechste_pruefung": "15.11.2026",
   "absicht": "Familie Liese-Held fährt zwei Elektroautos (Leapmotor B10 'BIO-Leapy' und Leapmotor T03 'Leapy') und wollte die echten laufenden Kosten pro gefahrenem Kilometer sehen, nicht nur die Stromrechnung. Die App ist ein gemeinsames, PIN-geschütztes Ladeprotokoll: jeder Ladevorgang wird mit Ladekarte, kWh, Preis, Kilometerstand und Standort erfasst, daraus berechnet die App laufend die TCO (Total Cost of Ownership) je Fahrzeug und für den Haushalt insgesamt (Ladekosten + Leasing + Versicherung + Investitionen + wiederkehrende Kosten, geteilt durch die gefahrenen Kilometer). Ursprünglich eine statische HTML-Datei, vom 05.07.2026 bis 08.10.2026 als Next.js-App auf Vercel mit Upstash Redis, seit 08.10.2026 auf dem eigenen netcup-Server (Next.js als abgeschotteter Dienst, PostgreSQL), damit beide Haushaltsmitglieder vom Handy aus eintragen können.",
   "funktionen": [
@@ -146,8 +146,7 @@
     "Wo genau die Passwörter/2FA für die Vercel- und GitHub-Accounts (darkjak2026) hinterlegt sind, ist der KI nicht bekannt - bitte von Jakob ergänzen (Passwort-Manager?).",
     "Vercel-Projekt abschalten und die Upstash-Datenbank löschen (Urheber, im jeweiligen Dashboard). Die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis.",
     "dsgvo_status ist noch nicht bewertet (auf Wunsch leer gelassen). Speicherort und AVV sind seit dem Umzug geklärt (eigener Server, netcup-AVV).",
-    "BIO-Leapy: km-Stand bei Übergabe (laut Übergabeprotokoll) in den Fixkosten bei „km-Stand bei Übergabe“ und „km-Stand am Stichtag“ eintragen, ebenso die Versicherung je Monat.",
-    "Stammdaten: Kennzeichen und FIN des BIO-Leapy, Vertragsnummern beider Autos und FIN des Leapy sowie Hauptfahrer:in eintragen – in der App (Einstellungen → Fahrzeug-Stammdaten) oder über server/private/vertragsdaten.local.json und server/vertragsdaten_einspielen.sh.",
+    "BIO-Leapy: Ø Verbrauch (kWh/100 km) in den Fixkosten eintragen, sobald der Bordcomputer nach einigen Wochen verlässliche Werte zeigt – bis dahin rechnet die Planung mit Ladekosten ÷ km.",
     "Monitoring: bei Gelegenheit eine Benachrichtigung, wenn die nächtliche Sicherung oder der Schnappschuss ausfällt (bisher nur sichtbar im Bauplan).",
     "GraphHopper: wo ist der Konto-Login (E-Mail/Passwort) hinterlegt? Im Projekt-Pass unter accounts ergänzen (nur den Ort, kein Passwort)."
   ],

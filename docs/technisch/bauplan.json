@@ -1,6 +1,6 @@
 {
   "app": "eFahrtenbuch",
-  "stand": "16.10.2026 | 12:11",
+  "stand": "18.10.2026 | 07:05",
   "beschreibung": {
     "kurz": "Das eFahrtenbuch ist ein gemeinsames Ladeprotokoll für die zwei E-Autos der Familie Liese-Held (Leapmotor B10 „BIO-Leapy“ und T03 „Leapy“). Aus jedem Ladevorgang und den Fixkosten rechnet es laufend aus, was ein gefahrener Kilometer wirklich kostet ([TCO](g:tco)). Die App läuft im Handy-Browser, die Daten liegen seit dem 08.10.2026 im [Laderaum](b:laderaum) des eigenen Schiffs auf dem eigenen Server ([Rumpf](b:rumpf)).",
     "ausgangslage_ziel": "Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern konnte. Ziel war, dass beide Haushaltsmitglieder vom eigenen Handy aus Ladevorgänge eintragen und dieselben Zahlen sehen. Deshalb wurde die App am 05.07.2026 auf [Next.js](g:nextjs) umgebaut, zunächst gemietet bei [Vercel](g:vercel) mit Upstash-[Redis](g:redis) als Speicher. Am 08.10.2026 zog sie auf den eigenen Server um (Daten in der EU, eigene Sicherung, keine Abhängigkeit von zwei fremden Anbietern). Bewusst klein gehalten: ein gemeinsamer [PIN](g:pin) statt Benutzerkonten, ein einziger Datensatz.",
@@ -353,6 +353,6 @@
   ],
   "offen": [
     "OFFEN: Vercel-Projekt abschalten und Upstash-Datenbank löschen (Urheber; die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis).",
-    "OFFEN: BIO-Leapy – km-Stand bei Übergabe, Versicherung, Kennzeichen und FIN noch eintragen; Vertragsnummern beider Autos, FIN des Leapy und Hauptfahrer:in fehlen ebenfalls (Urheber, in der App oder per server/vertragsdaten_einspielen.sh)."
+    "OFFEN: Ø Verbrauch des BIO-Leapy in den Fixkosten nachtragen, sobald es Erfahrungswerte gibt (Urheber)."
   ]
 }
