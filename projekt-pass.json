@@ -150,7 +150,6 @@
     "Wo genau die Passwörter/2FA für die Vercel- und GitHub-Accounts (darkjak2026) hinterlegt sind, ist der KI nicht bekannt - bitte von Jakob ergänzen (Passwort-Manager?).",
     "Vercel-Projekt abschalten und die Upstash-Datenbank löschen (Urheber, im jeweiligen Dashboard). Die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis.",
     "dsgvo_status ist noch nicht bewertet (auf Wunsch leer gelassen). Speicherort und AVV sind seit dem Umzug geklärt (eigener Server, netcup-AVV).",
-    "BIO-Leapy: Ø Verbrauch (kWh/100 km) in den Fixkosten eintragen, sobald der Bordcomputer nach einigen Wochen verlässliche Werte zeigt – bis dahin rechnet die Planung mit Ladekosten ÷ km.",
     "Monitoring: bei Gelegenheit eine Benachrichtigung, wenn die nächtliche Sicherung oder der Schnappschuss ausfällt (bisher nur sichtbar im Bauplan).",
     "GraphHopper: wo ist der Konto-Login (E-Mail/Passwort) hinterlegt? Im Projekt-Pass unter accounts ergänzen (nur den Ort, kein Passwort)."
   ],

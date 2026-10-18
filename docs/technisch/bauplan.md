@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 18.10.2026 | 21:36
+Stand der Dokumentation: 18.10.2026 | 21:54
 
 ## Teil 1 – Beschreibung der App
 
@@ -177,4 +177,3 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 ## Offene Punkte
 
 - OFFEN: Vercel-Projekt abschalten und Upstash-Datenbank löschen (Urheber; die alte Adresse zeigt seit 08.10.2026 nur noch den Umzugshinweis).
-- OFFEN: Ø Verbrauch des BIO-Leapy in den Fixkosten nachtragen, sobald es Erfahrungswerte gibt (Urheber).
