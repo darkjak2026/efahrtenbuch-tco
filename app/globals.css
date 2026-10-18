@@ -690,6 +690,27 @@ section.tco {
   white-space: nowrap;
   flex: 0 0 auto;
 }
+/* Schmale Bildschirme: Beschriftung über dem Feld, damit Betrag und Monatsrate lesbar bleiben */
+@media (max-width: 520px) {
+  .recurring-row--stack {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+  .recurring-row--stack label {
+    flex: 1 1 100%;
+  }
+  .recurring-row--stack > input {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+  .recurring-row--stack .recurring-row-combo {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+  .recurring-row--stack .monthly-equiv {
+    white-space: normal;
+  }
+}
 .recurring-meta {
   display: flex;
   align-items: center;

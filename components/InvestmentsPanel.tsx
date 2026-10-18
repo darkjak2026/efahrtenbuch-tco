@@ -27,7 +27,7 @@ export default function InvestmentsPanel({
           const monthly = parseNum(inv.betrag) / 36;
           return (
             <div className="recurring-card" key={idx}>
-              <div className="recurring-row">
+              <div className="recurring-row recurring-row--stack">
                 <label>Beschreibung</label>
                 <input
                   type="text"
@@ -36,7 +36,7 @@ export default function InvestmentsPanel({
                   onChange={(e) => updateData((d) => { d.investitionen[idx].beschreibung = e.target.value; })}
                 />
               </div>
-              <div className="recurring-row">
+              <div className="recurring-row recurring-row--stack">
                 <label>Datum &amp; Fahrzeug</label>
                 <div className="recurring-row-combo">
                   <input
@@ -56,7 +56,7 @@ export default function InvestmentsPanel({
                   </select>
                 </div>
               </div>
-              <div className="recurring-row">
+              <div className="recurring-row recurring-row--stack">
                 <label>Betrag €</label>
                 <div className="recurring-row-combo">
                   <input
