@@ -18,10 +18,10 @@ const RECURRING_FAHRZEUG_OPTIONS: Array<["" | VehicleKey | "beide", string]> = [
 
 // Staffel der Mehr-/Minderkilometer (v2.48.00): optionale 2. Stufe und Freibetrag.
 const STAFFEL: Array<[keyof Pick<VehicleFixedCosts, "mehrKmSchwelle" | "mehrKmCent2" | "minderKmSchwelle" | "minderKmCent2" | "freigrenzeKm">, string, string]> = [
-  ["mehrKmSchwelle", "➕ 2. Stufe ab km gesamt (leer = keine)", "100"],
-  ["mehrKmCent2", "➕ Mehrkilometer darüber (Cent je km)", "0.01"],
-  ["minderKmSchwelle", "➖ 2. Stufe unter km gesamt (leer = keine)", "100"],
-  ["minderKmCent2", "➖ Minderkilometer darunter (Cent je km)", "0.01"],
+  ["mehrKmSchwelle", "➕ Schwelle 2. Stufe Mehr-km (km gesamt, leer = keine)", "100"],
+  ["mehrKmCent2", "➕ Preis 2. Stufe Mehr-km (Cent je km)", "0.01"],
+  ["minderKmSchwelle", "➖ Schwelle 2. Stufe Minder-km (km gesamt, leer = keine)", "100"],
+  ["minderKmCent2", "➖ Preis 2. Stufe Minder-km (Cent je km)", "0.01"],
   ["freigrenzeKm", "↔️ Freibetrag Mehr-/Minder-km (km)", "100"],
 ];
 

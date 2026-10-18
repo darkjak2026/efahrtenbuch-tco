@@ -5113,5 +5113,13 @@ main.tab-rein-links {
 }
 .stamm-grid {
   display: grid;
+  /* minmax(0, …): sonst wächst die Spalte auf die volle Textbreite und schiebt die Seite übers Handy hinaus */
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
+}
+.stamm-maske {
+  min-width: 0;
+}
+.stamm-zeigen {
+  flex-shrink: 0;
 }
