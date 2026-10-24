@@ -51,6 +51,7 @@ test("ohne Stände ist die Summe leer statt 0", () => {
 test("Monats-TCO je Auto: Laden + Leasing + Versicherung + Abos (beide = Hälfte) + Investitionsrate", () => {
   const d = dataWith([row("2026-09-30", "t03", 10000), { ...row("2026-10-20", "t03", 11000), preis: "50" }]);
   d.vehicles.t03.start = "2026-07-01";
+  d.vehicles.b10.start = "2026-07-01"; // beide übergeben -> „beide“ wird halbiert (v2.50.01)
   d.vehicles.t03.leasing = 149;
   d.vehicles.t03.versicherung = 40;
   d.recurringCosts = [

@@ -262,6 +262,21 @@ export interface VehicleStats {
   months: number;
 }
 
+// Wiederkehrende Kosten „Beide (50/50)“ (v2.50.01): Jedes Auto trägt sie frühestens ab
+// seiner Übergabe; geteilt wird erst, wenn beide Autos übergeben sind – vorher trägt das
+// schon übergebene Auto sie allein (Aral Pulse lief ab 03/2026 nur für den Leapy).
+// Ergebnis: Anzahl Monate, gewichtet (allein × 1 + gemeinsam × 0,5).
+function beideMonate(data: AppData, key: VehicleKey, aboStart: string, bis?: Date): number {
+  const v = data.vehicles[key];
+  const andere = data.vehicles[key === "b10" ? "t03" : "b10"];
+  if (!v.start) return 0;
+  const ab = aboStart > v.start ? aboStart : v.start;
+  const gesamt = monthsElapsed(ab, bis);
+  if (!andere.start) return gesamt;
+  const gemeinsam = monthsElapsed(andere.start > ab ? andere.start : ab, bis);
+  return gesamt - gemeinsam + gemeinsam * 0.5;
+}
+
 export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
   const rows = allRows(data).filter((r) => r.fahrzeug === key);
   const v = data.vehicles[key];
@@ -282,8 +297,8 @@ export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
   const recurringKosten = data.recurringCosts
     .filter((r) => r.fahrzeug === key || r.fahrzeug === "beide")
     .reduce((s, r) => {
-      const weight = r.fahrzeug === "beide" ? 0.5 : 1;
-      return s + parseNum(r.betrag) * weight * monthsElapsed(r.start || v.start || data.erfassungStart);
+      if (r.fahrzeug !== "beide") return s + parseNum(r.betrag) * monthsElapsed(r.start || v.start || data.erfassungStart);
+      return s + parseNum(r.betrag) * beideMonate(data, key, r.start || data.erfassungStart);
     }, 0);
   const tco = ladekosten + leasingKosten + versicherungKosten + investKosten + recurringKosten;
   return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmStand, kmCount: kms.length, months };
@@ -691,7 +706,7 @@ export interface VehicleMonthCosts {
   laden: number;
   leasing: number;
   versicherung: number;
-  abos: number; // wiederkehrende Kosten: eigene voll, "beide" zur Hälfte
+  abos: number; // wiederkehrende Kosten: eigene voll, "beide" zur Hälfte (solange beide übergeben sind)
   invest: number; // Monatsrate (Betrag / 36) der eigenen Investitionen
   gesamt: number;
   km: number | null;
@@ -733,13 +748,17 @@ export function monthCosts(data: AppData, monthKey: string): MonthCosts {
     const rateNr = veh.start ? monthDiff(veh.start.slice(0, 7), monthKey) : -1;
     const leasing = active && rateNr < (parseNum(veh.leasingMonate) || 36) ? parseNum(veh.leasing) : 0;
     const versicherung = active ? parseNum(veh.versicherung) : 0;
+    // „Beide“: nur ab Übergabe dieses Autos, halbiert nur in Monaten, in denen auch das
+    // andere Auto schon übergeben ist (v2.50.01, siehe beideMonate)
+    const andere = data.vehicles[v === "b10" ? "t03" : "b10"];
+    const andereAktiv = !!andere.start && andere.start <= lastDay;
     const abos = data.recurringCosts
-      .filter((r) => r.fahrzeug === v || r.fahrzeug === "beide")
+      .filter((r) => r.fahrzeug === v || (r.fahrzeug === "beide" && active))
       .filter((r) => {
         const start = r.start || veh.start || data.erfassungStart;
         return !!start && start <= lastDay;
       })
-      .reduce((s, r) => s + parseNum(r.betrag) * (r.fahrzeug === "beide" ? 0.5 : 1), 0);
+      .reduce((s, r) => s + parseNum(r.betrag) * (r.fahrzeug === "beide" && andereAktiv ? 0.5 : 1), 0);
     const invest = data.investitionen
       .filter((i) => i.fahrzeug === v)
       .reduce((s, i) => s + investRateInMonth(parseNum(i.betrag), i.datum, monthKey), 0);
