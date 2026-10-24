@@ -52,7 +52,7 @@ export const COST_META: Record<CostKey, { label: string; short: string; color: s
   leasing: { label: "Leasing", short: "Leasing", color: "var(--plum)" },
   versicherung: { label: "Versicherung", short: "Versich.", color: "var(--range-yellow)" },
   abos: { label: "Abos", short: "Abos", color: "var(--danger)" },
-  invest: { label: "Investitionen", short: "Invest.", color: "var(--range-green)" },
+  invest: { label: "Anschaffungen", short: "Anschaff.", color: "var(--range-green)" },
 };
 
 export function CostIcon({ k, size = 14, color = "currentColor", strokeWidth = 2 }: { k: CostKey; size?: number; color?: string; strokeWidth?: number }) {

@@ -47,6 +47,10 @@ export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; m
       <div className="mvc-sub">
         {c.km === null ? <span className="mvc-missing">km-Stand fehlt</span> : <>{fmtNum(c.km, 0)} <span>km</span></>}
       </div>
+      {/* v2.54.01: die Monatssumme steht hier statt in der Übersicht */}
+      <div className="mvc-sub">
+        {fmtEUR(c.gesamt)} <span>Strom+Fixkosten</span>
+      </div>
       {/* key: a new month starts without a highlighted ring again */}
       <CostRing key={monthKey} costs={c} stats={stats} onOpenStats={() => setStatsOpen(true)} />
       <button type="button" className="mvc-more" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
@@ -67,7 +71,7 @@ export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; m
             </div>
           ))}
           <div className="mvc-detail-sum">
-            <span>Gesamt</span>
+            <span>Strom+Fixkosten</span>
             <span>{fmtEUR(c.gesamt)}</span>
           </div>
         </div>

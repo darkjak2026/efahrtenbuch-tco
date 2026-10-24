@@ -137,7 +137,7 @@ export function CostStatsSheet({
       <div className={`fab-modal cstat cstat-${vehicle}`} onClick={(e) => e.stopPropagation()}>
         <h3>{title}</h3>
         <p className="cstat-sub">
-          Gesamt {fmtEUR(gesamt)} · Min/Max über alle bisherigen Monate · Trend gegen Ø der letzten 3 Monate
+          Strom+Fixkosten {fmtEUR(gesamt)} · Min/Max über alle bisherigen Monate · Trend gegen Ø der letzten 3 Monate
         </p>
         {COST_KEYS.map((k) => {
           const s = stats[k];

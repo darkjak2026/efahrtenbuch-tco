@@ -40,18 +40,10 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
                   <small>Stromkosten</small>
                   <span className="ov-wert">{fmtEUR(c.laden)}</span>
                 </span>
-                {/* v2.54.00: was abgebucht wird getrennt von schon bezahlten Anschaffungen */}
+                {/* v2.54.00/2.54.01: nur, was abgebucht wird; Anschaffungen und Summe in der Statistik */}
                 <span className="ov-zeile">
                   <small>Laufend</small>
                   <span className="ov-wert">{fmtEUR(c.leasing + c.versicherung + c.abos)}</span>
-                </span>
-                <span className="ov-zeile">
-                  <small>Anschaffungen</small>
-                  <span className="ov-wert">{fmtEUR(c.invest)}</span>
-                </span>
-                <span className="ov-zeile ov-zeile-gesamt">
-                  <small>Strom+Fixkosten</small>
-                  <span className="ov-wert">{fmtEUR(c.gesamt)}</span>
                 </span>
                 <span className="ov-line">
                   {c.km === null ? "–" : fmtNum(c.km, 0)} km im {label}
@@ -61,8 +53,7 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
           })}
         </span>
         <span className="ov-hinweis">
-          Laufend = Leasing, Versicherung, Abos (wird abgebucht). Anschaffungen = schon bezahlt, auf 36 Monate verteilt. Fixkosten = beides, voll je
-          angefangenem Monat.
+          Laufend = Leasing, Versicherung, Abos (wird abgebucht). Anschaffungen und die Monatssumme stehen in der Statistik.
         </span>
       </button>
     </div>
