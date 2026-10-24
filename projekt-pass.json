@@ -151,7 +151,8 @@
     ["24.10.2026", "2.52.00", "Neu: „km-Stand aktualisieren“ unter dem Tachostand in der Kachel jedes Autos: aktuellen km-Stand mit Datum eintragen, ohne einen Ladevorgang anzulegen. Er zählt für TCO je km, die Leasingkilometer und die km im Monat, nicht aber für „km seit letztem Laden“. Ein kleinerer Wert als der letzte bekannte Stand wird abgelehnt; die eigenen km-Stände lassen sich im selben Fenster wieder löschen (mit Rückfrage). Anlass: Der BIO-Leapy stand bei 451 km, die App kannte nur 403 km vom letzten Laden."],
     ["24.10.2026", "2.52.00", "Design: In der Übersicht heißt es jetzt „Insgesamt (Laden + Fixkosten)“; die Fußnote erklärt, was zu den Fixkosten gehört."],
     ["24.10.2026", "2.52.01", "Design: In der Übersicht heißt „Laden“ jetzt „Stromkosten“, entsprechend „Insgesamt (Stromkosten + Fixkosten)“."],
-    ["24.10.2026", "2.52.02", "Design: Die Monatskarte der Übersicht zeigt TCO/Alltime nicht mehr (steht oben in der Kachel). Der Monatsname („OKTOBER“) ist so groß und fett wie der Autoname oben."]
+    ["24.10.2026", "2.52.02", "Design: Die Monatskarte der Übersicht zeigt TCO/Alltime nicht mehr (steht oben in der Kachel). Der Monatsname („OKTOBER“) ist so groß und fett wie der Autoname oben."],
+    ["24.10.2026", "2.52.03", "Design: In der Monatskarte heißt die Summe kurz „Strom+Fixkosten“ und bricht nicht mehr um; auf schmalen Handys steht der Betrag groß und rechtsbündig in der Zeile darunter."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [

@@ -5237,6 +5237,13 @@ main.tab-rein-links {
 .ov-zeile-gesamt .ov-wert {
   font-size: 17px;
 }
+/* Beschriftung nie umbrechen (v2.52.03); reicht der Platz nicht, rutscht nur der Betrag */
+.ov-zeile small {
+  white-space: nowrap;
+}
+.ov-wert {
+  margin-left: auto; /* auch in der eigenen Zeile rechtsbündig */
+}
 .ov-hinweis {
   display: block;
   margin-top: 8px;

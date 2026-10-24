@@ -41,7 +41,7 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
                   <span className="ov-wert">{fmtEUR(c.laden)}</span>
                 </span>
                 <span className="ov-zeile ov-zeile-gesamt">
-                  <small>Insgesamt (Stromkosten + Fixkosten)</small>
+                  <small>Strom+Fixkosten</small>
                   <span className="ov-wert">{fmtEUR(c.gesamt)}</span>
                 </span>
                 <span className="ov-line">
