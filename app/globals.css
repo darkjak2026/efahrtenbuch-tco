@@ -5218,3 +5218,28 @@ main.tab-rein-links {
 .klappe-ok:focus-visible {
   outline: 2px solid var(--focus);
 }
+
+/* Übersicht „Monat bisher“ (v2.51.00): Laden, Insgesamt, TCO/Alltime je Auto */
+.ov-zeile {
+  display: flex;
+  flex-wrap: wrap; /* schmale Spalte: Betrag rutscht unter die Beschriftung statt überzulaufen */
+  justify-content: space-between;
+  align-items: baseline;
+  column-gap: 6px;
+  margin-top: 4px;
+}
+.ov-wert {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ov-zeile-gesamt .ov-wert {
+  font-size: 17px;
+}
+.ov-hinweis {
+  display: block;
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}

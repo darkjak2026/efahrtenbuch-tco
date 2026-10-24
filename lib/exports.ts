@@ -181,7 +181,7 @@ export function exportXlsx(data: AppData, testMode = false): boolean {
   const t03 = vehicleStats(data, "t03");
   const house = householdStats(data, b10, t03);
   const tcoData = [
-    ["Bereich", "Ladekosten €", "Leasing+Vers. €", "Wiederk. Kosten €", "Investitionen €", "TCO gesamt €", "km-Stand", "€/km"],
+    ["Bereich", "Ladekosten €", "Leasing+Vers. €", "Wiederk. Kosten €", "Investitionen €", "TCO gesamt €", "km seit Übergabe", "€/km"],
     [
       vehicleFullLabel("b10"),
       b10.ladekosten,
@@ -189,8 +189,8 @@ export function exportXlsx(data: AppData, testMode = false): boolean {
       b10.recurringKosten,
       b10.investKosten,
       b10.tco,
-      b10.kmStand,
-      b10.kmStand > 0 ? Number((b10.tco / b10.kmStand).toFixed(3)) : "",
+      b10.kmGefahren,
+      b10.kmGefahren > 0 ? Number((b10.tco / b10.kmGefahren).toFixed(3)) : "",
     ],
     [
       vehicleFullLabel("t03"),
@@ -199,8 +199,8 @@ export function exportXlsx(data: AppData, testMode = false): boolean {
       t03.recurringKosten,
       t03.investKosten,
       t03.tco,
-      t03.kmStand,
-      t03.kmStand > 0 ? Number((t03.tco / t03.kmStand).toFixed(3)) : "",
+      t03.kmGefahren,
+      t03.kmGefahren > 0 ? Number((t03.tco / t03.kmGefahren).toFixed(3)) : "",
     ],
     [
       "Haushalt gesamt",

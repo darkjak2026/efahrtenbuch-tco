@@ -1,4 +1,4 @@
-import { MONTHS, DEFAULT_CARDS, LAST_MONTH_FALLBACK, monthLastDay } from "./constants";
+import { MONTHS, DEFAULT_CARDS, LAST_MONTH_FALLBACK, monthLastDay, todayStr } from "./constants";
 import type { AppData, ChargeRow, Investition, MonthMeta, RecurringCost, VehicleFixedCosts, VehicleKey, VehicleStammdaten } from "./types";
 
 export function emptyRow(): ChargeRow {
@@ -181,13 +181,91 @@ function monthDiff(fromKey: string, toKey: string): number {
   return (ty - fy) * 12 + (tm - fm);
 }
 
-// Investments amortize over the 36-month lease term, like a monthly leasing rate,
-// instead of hitting the TCO as a one-time lump sum in the month of purchase.
-export function amortizedInvestment(betrag: number, startDate: string): number {
-  const monthly = betrag / INVEST_AMORTIZATION_MONTHS;
-  const months = Math.min(INVEST_AMORTIZATION_MONTHS, monthsElapsed(startDate));
-  return monthly * months;
+// --- Tagesgenaue Verteilung (v2.51.00, Entscheidung des Urhebers 24.10.2026) ---
+// Eine einheitliche Grundlage für Monatsübersicht, TCO/Alltime und PDF: Jeder
+// Monatsbetrag (Leasing, Versicherung, Abo, Investitionsrate = Betrag ÷ 36) zählt in
+// jedem Kalendermonat mit dem Anteil „Tage ÷ Tage im Monat“ für die Tage, an denen er
+// gilt – bis einschließlich heute. Alltime ist damit genau die Summe der Monate.
+// Ladekosten sind echte Einzelbeträge am Ladetag und werden nicht verteilt.
+const TAG_MS = 86_400_000;
+const utcTag = (iso: string) => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10));
+const isoAusUtc = (t: number) => new Date(t).toISOString().slice(0, 10);
+const spaeter = (a: string, b: string) => (!a ? b : !b ? a : a > b ? a : b);
+const frueher = (a: string, b: string) => (!a ? b : !b ? a : a < b ? a : b);
+
+// Letzter Tag nach n Monaten ab start: 28.11.2025 + 36 Monate -> 27.11.2028
+function letzterTag(start: string, monate: number): string {
+  const d = new Date(utcTag(start));
+  return isoAusUtc(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + monate, d.getUTCDate()) - TAG_MS);
 }
+const tagDavor = (iso: string) => isoAusUtc(utcTag(iso) - TAG_MS);
+
+// Monatsbetrag × Tage-Anteil je Kalendermonat für von–bis (beide einschließlich)
+export function tageAnteil(betrag: number, von: string, bis: string): number {
+  if (!betrag || !von || !bis || von > bis) return 0;
+  let summe = 0;
+  let t = utcTag(von);
+  const ende = utcTag(bis);
+  while (t <= ende) {
+    const d = new Date(t);
+    const tageImMonat = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+    const monatsEnde = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), tageImMonat);
+    const bisHier = Math.min(ende, monatsEnde);
+    summe += (betrag * (Math.round((bisHier - t) / TAG_MS) + 1)) / tageImMonat;
+    t = monatsEnde + TAG_MS;
+  }
+  return summe;
+}
+
+export interface Fixkosten {
+  leasing: number;
+  versicherung: number;
+  abos: number;
+  invest: number;
+}
+
+// Fixkosten eines Autos im Zeitraum von–bis (einschließlich), tagesgenau.
+// Leasing nur innerhalb der Laufzeit, Investitionsraten 36 Monate ab Kaufdatum.
+// „Beide (50/50)“ (v2.50.01): jedes Auto erst ab seiner Übergabe, halbiert erst ab der
+// Übergabe des anderen Autos – vorher trägt das schon übergebene Auto sie allein.
+export function fixkostenImZeitraum(data: AppData, key: VehicleKey, von: string, bis: string): Fixkosten {
+  const v = data.vehicles[key];
+  const andere = data.vehicles[key === "b10" ? "t03" : "b10"];
+  const anteil = (betrag: number, ab: string, ende: string) => tageAnteil(betrag, spaeter(ab, von), frueher(ende, bis));
+  const leasing = v.start ? anteil(parseNum(v.leasing), v.start, letzterTag(v.start, parseNum(v.leasingMonate) || 36)) : 0;
+  const versicherung = v.start ? anteil(parseNum(v.versicherung), v.start, bis) : 0;
+  const abos = data.recurringCosts.reduce((s, r) => {
+    const betrag = parseNum(r.betrag);
+    if (r.fahrzeug === key) return s + anteil(betrag, r.start || v.start || data.erfassungStart, bis);
+    if (r.fahrzeug !== "beide" || !v.start) return s;
+    const ab = spaeter(r.start || data.erfassungStart, v.start);
+    if (!andere.start) return s + anteil(betrag, ab, bis);
+    const gemeinsamAb = spaeter(ab, andere.start);
+    return s + (gemeinsamAb > ab ? anteil(betrag, ab, tagDavor(gemeinsamAb)) : 0) + anteil(betrag / 2, gemeinsamAb, bis);
+  }, 0);
+  const invest = data.investitionen
+    .filter((i) => i.fahrzeug === key)
+    .reduce((s, i) => {
+      const ab = i.datum || v.start || data.erfassungStart;
+      return s + anteil(parseNum(i.betrag) / INVEST_AMORTIZATION_MONTHS, ab, letzterTag(ab, INVEST_AMORTIZATION_MONTHS));
+    }, 0);
+  return { leasing, versicherung, abos, invest };
+}
+
+// Kosten ohne Fahrzeug (Haushalt): Abos und Investitionsraten, tagesgenau
+export function haushaltImZeitraum(data: AppData, von: string, bis: string): { abos: number; invest: number } {
+  const anteil = (betrag: number, ab: string, ende: string) => tageAnteil(betrag, spaeter(ab, von), frueher(ende, bis));
+  const abos = data.recurringCosts.filter((r) => !r.fahrzeug).reduce((s, r) => s + anteil(parseNum(r.betrag), r.start || data.erfassungStart, bis), 0);
+  const invest = data.investitionen
+    .filter((i) => i.fahrzeug !== "b10" && i.fahrzeug !== "t03")
+    .reduce((s, i) => {
+      const ab = i.datum || data.erfassungStart;
+      return s + anteil(parseNum(i.betrag) / INVEST_AMORTIZATION_MONTHS, ab, letzterTag(ab, INVEST_AMORTIZATION_MONTHS));
+    }, 0);
+  return { abos, invest };
+}
+
+const ANFANG = "1900-01-01";
 
 export function allRows(data: AppData): ChargeRow[] {
   const out: ChargeRow[] = [];
@@ -257,51 +335,39 @@ export interface VehicleStats {
   investKosten: number;
   recurringKosten: number;
   tco: number;
-  kmStand: number;
+  kmStand: number; // Tachostand (ODO)
+  kmGefahren: number; // seit Übergabe (ODO − km bei Übergabe) – Grundlage für €/km
   kmCount: number;
   months: number;
 }
 
-// Wiederkehrende Kosten „Beide (50/50)“ (v2.50.01): Jedes Auto trägt sie frühestens ab
-// seiner Übergabe; geteilt wird erst, wenn beide Autos übergeben sind – vorher trägt das
-// schon übergebene Auto sie allein (Aral Pulse lief ab 03/2026 nur für den Leapy).
-// Ergebnis: Anzahl Monate, gewichtet (allein × 1 + gemeinsam × 0,5).
-function beideMonate(data: AppData, key: VehicleKey, aboStart: string, bis?: Date): number {
-  const v = data.vehicles[key];
-  const andere = data.vehicles[key === "b10" ? "t03" : "b10"];
-  if (!v.start) return 0;
-  const ab = aboStart > v.start ? aboStart : v.start;
-  const gesamt = monthsElapsed(ab, bis);
-  if (!andere.start) return gesamt;
-  const gemeinsam = monthsElapsed(andere.start > ab ? andere.start : ab, bis);
-  return gesamt - gemeinsam + gemeinsam * 0.5;
-}
-
-export function vehicleStats(data: AppData, key: VehicleKey): VehicleStats {
+// TCO/Alltime: Ladekosten (erfasst + Pauschale bis Stichtag) + Fixkosten tagesgenau
+// bis heute. €/km = TCO ÷ gefahrene km seit Übergabe (v2.51.00; vorher ÷ Tachostand).
+export function vehicleStats(data: AppData, key: VehicleKey, heute: string = todayStr()): VehicleStats {
   const rows = allRows(data).filter((r) => r.fahrzeug === key);
   const v = data.vehicles[key];
   const ladekosten = rows.reduce((s, r) => s + parseNum(r.preis), 0) + parseNum(v.stichtagLadekosten);
   const kms = rows.map((r) => parseNum(r.km)).filter((n) => n > 0);
   const stichtagKm = parseNum(v.stichtagKm);
   if (stichtagKm > 0) kms.push(stichtagKm);
-  // Gesamt-km-Stand = höchster bekannter Wert (Baseline oder geloggt). Ein einziger
-  // bekannter Wert genügt bereits, um €/km anzuzeigen — keine Differenzbildung mehr.
+  // Gesamt-km-Stand = höchster bekannter Wert (Baseline oder geloggt).
   const kmStand = kms.length > 0 ? Math.max(...kms) : 0;
+  const kmGefahren = kmStand > 0 ? Math.max(0, kmStand - parseNum(v.kmBeiLeasingbeginn)) : 0;
   const months = monthsElapsed(v.start);
-  // Leasingraten nur für die Laufzeit (z. B. 36 Raten), danach nicht weiter.
-  const leasingKosten = parseNum(v.leasing) * Math.min(months, parseNum(v.leasingMonate) || 36);
-  const versicherungKosten = parseNum(v.versicherung) * months;
-  const investKosten = data.investitionen
-    .filter((i) => i.fahrzeug === key)
-    .reduce((s, i) => s + amortizedInvestment(parseNum(i.betrag), i.datum || v.start || data.erfassungStart), 0);
-  const recurringKosten = data.recurringCosts
-    .filter((r) => r.fahrzeug === key || r.fahrzeug === "beide")
-    .reduce((s, r) => {
-      if (r.fahrzeug !== "beide") return s + parseNum(r.betrag) * monthsElapsed(r.start || v.start || data.erfassungStart);
-      return s + parseNum(r.betrag) * beideMonate(data, key, r.start || data.erfassungStart);
-    }, 0);
-  const tco = ladekosten + leasingKosten + versicherungKosten + investKosten + recurringKosten;
-  return { ladekosten, leasingKosten, versicherungKosten, investKosten, recurringKosten, tco, kmStand, kmCount: kms.length, months };
+  const f = fixkostenImZeitraum(data, key, ANFANG, heute);
+  const tco = ladekosten + f.leasing + f.versicherung + f.invest + f.abos;
+  return {
+    ladekosten,
+    leasingKosten: f.leasing,
+    versicherungKosten: f.versicherung,
+    investKosten: f.invest,
+    recurringKosten: f.abos,
+    tco,
+    kmStand,
+    kmGefahren,
+    kmCount: kms.length,
+    months,
+  };
 }
 
 // Local calendar date as "JJJJ-MM-TT" - Date#toISOString would shift a local
@@ -506,10 +572,8 @@ export function dateRangeMax(data: AppData): string {
   return monthLastDay(list[list.length - 1].key);
 }
 
-export function householdRecurring(data: AppData): number {
-  return data.recurringCosts
-    .filter((r) => !r.fahrzeug)
-    .reduce((s, r) => s + parseNum(r.betrag) * monthsElapsed(r.start || data.erfassungStart), 0);
+export function householdRecurring(data: AppData, heute: string = todayStr()): number {
+  return haushaltImZeitraum(data, ANFANG, heute).abos;
 }
 
 export interface HouseholdStats {
@@ -520,12 +584,12 @@ export interface HouseholdStats {
 }
 
 export function householdStats(data: AppData, b10: VehicleStats, t03: VehicleStats): HouseholdStats {
-  const investHaushalt = data.investitionen
-    .filter((i) => i.fahrzeug !== "b10" && i.fahrzeug !== "t03")
-    .reduce((s, i) => s + amortizedInvestment(parseNum(i.betrag), i.datum || data.erfassungStart), 0);
-  const recurring = householdRecurring(data);
+  const h = haushaltImZeitraum(data, ANFANG, todayStr());
+  const investHaushalt = h.invest;
+  const recurring = h.abos;
   const tco = b10.tco + t03.tco + recurring + investHaushalt;
-  const kmStand = b10.kmStand + t03.kmStand;
+  // gefahrene km seit Übergabe beider Autos (v2.51.00)
+  const kmStand = b10.kmGefahren + t03.kmGefahren;
   return { tco, kmStand, recurring, investHaushalt };
 }
 
@@ -707,7 +771,7 @@ export interface VehicleMonthCosts {
   leasing: number;
   versicherung: number;
   abos: number; // wiederkehrende Kosten: eigene voll, "beide" zur Hälfte (solange beide übergeben sind)
-  invest: number; // Monatsrate (Betrag / 36) der eigenen Investitionen
+  invest: number; // Investitionsraten (Betrag ÷ 36), tagesgenau
   gesamt: number;
   km: number | null;
   ladenKm: number | null;
@@ -725,68 +789,33 @@ export interface MonthCosts {
   ladenKm: number | null;
 }
 
-function investRateInMonth(betrag: number, datum: string, monthKey: string): number {
-  if (!datum) return 0;
-  const rate = monthDiff(datum.slice(0, 7), monthKey);
-  return rate >= 0 && rate < INVEST_AMORTIZATION_MONTHS ? betrag / INVEST_AMORTIZATION_MONTHS : 0;
-}
-
-// Monthly TCO per vehicle (Monatsübersicht): fixed costs count in full for every
-// month from their start date on (no day-proration, same as the PDF statement).
-export function monthCosts(data: AppData, monthKey: string): MonthCosts {
-  const [y, m] = monthKey.split("-").map(Number);
-  const lastDay = isoLocalDate(new Date(y, m, 0));
+// Monatsübersicht je Auto (v2.51.00): Ladekosten des Monats + Fixkosten tagesgenau für
+// die Tage dieses Monats bis einschließlich heute – dieselbe Rechnung wie TCO/Alltime.
+export function monthCosts(data: AppData, monthKey: string, heute: string = todayStr()): MonthCosts {
+  const von = `${monthKey}-01`;
+  const bis = frueher(monthLastDay(monthKey), heute);
   const km = monthKmDriven(data, monthKey).perVehicle;
   const rows = data.months[monthKey] || [];
   const perVehicle = {} as Record<VehicleKey, VehicleMonthCosts>;
   (["b10", "t03"] as VehicleKey[]).forEach((v) => {
-    const veh = data.vehicles[v];
-    const active = !!veh.start && veh.start <= lastDay;
     const laden = rows.filter((r) => r.fahrzeug === v).reduce((s, r) => s + parseNum(r.preis), 0);
-    // Die n-te Rate fällt im n-ten Monat ab Übergabe an; nach der letzten Rate keine mehr
-    // (Leapy: 28.11.2025 + 36 Raten -> letzte im Oktober 2028, November 2028 frei).
-    const rateNr = veh.start ? monthDiff(veh.start.slice(0, 7), monthKey) : -1;
-    const leasing = active && rateNr < (parseNum(veh.leasingMonate) || 36) ? parseNum(veh.leasing) : 0;
-    const versicherung = active ? parseNum(veh.versicherung) : 0;
-    // „Beide“: nur ab Übergabe dieses Autos, halbiert nur in Monaten, in denen auch das
-    // andere Auto schon übergeben ist (v2.50.01, siehe beideMonate)
-    const andere = data.vehicles[v === "b10" ? "t03" : "b10"];
-    const andereAktiv = !!andere.start && andere.start <= lastDay;
-    const abos = data.recurringCosts
-      .filter((r) => r.fahrzeug === v || (r.fahrzeug === "beide" && active))
-      .filter((r) => {
-        const start = r.start || veh.start || data.erfassungStart;
-        return !!start && start <= lastDay;
-      })
-      .reduce((s, r) => s + parseNum(r.betrag) * (r.fahrzeug === "beide" && andereAktiv ? 0.5 : 1), 0);
-    const invest = data.investitionen
-      .filter((i) => i.fahrzeug === v)
-      .reduce((s, i) => s + investRateInMonth(parseNum(i.betrag), i.datum, monthKey), 0);
-    const gesamt = laden + leasing + versicherung + abos + invest;
+    const f = fixkostenImZeitraum(data, v, von, bis);
+    const gesamt = laden + f.leasing + f.versicherung + f.abos + f.invest;
     const k = km[v];
     perVehicle[v] = {
       laden,
-      leasing,
-      versicherung,
-      abos,
-      invest,
+      leasing: f.leasing,
+      versicherung: f.versicherung,
+      abos: f.abos,
+      invest: f.invest,
       gesamt,
       km: k,
       ladenKm: k ? laden / k : null,
       tcoKm: k ? gesamt / k : null,
     };
   });
-  const haushaltOnly =
-    data.recurringCosts
-      .filter((r) => !r.fahrzeug)
-      .filter((r) => {
-        const start = r.start || data.erfassungStart;
-        return !!start && start <= lastDay;
-      })
-      .reduce((s, r) => s + parseNum(r.betrag), 0) +
-    data.investitionen
-      .filter((i) => i.fahrzeug !== "b10" && i.fahrzeug !== "t03")
-      .reduce((s, i) => s + investRateInMonth(parseNum(i.betrag), i.datum, monthKey), 0);
+  const h = haushaltImZeitraum(data, von, bis);
+  const haushaltOnly = h.abos + h.invest;
   const gesamt = perVehicle.b10.gesamt + perVehicle.t03.gesamt + haushaltOnly;
   const kmB = perVehicle.b10.km;
   const kmT = perVehicle.t03.km;
@@ -890,11 +919,11 @@ export function trendDegrees(dev: number | null): number {
 // (Betrag und Anteil getrennt, jeweils mit Monat) über alle bisherigen Monate
 // des sichtbaren Zeitraums, Trend gegen den Ø der letzten 3 Vormonate. Monate,
 // in denen für das Auto noch gar keine Kosten anfallen, zählen nicht mit.
-export function costStats(data: AppData, vehicle: VehicleKey, monthKey: string): Record<CostKey, CostStat> {
+export function costStats(data: AppData, vehicle: VehicleKey, monthKey: string, heute: string = todayStr()): Record<CostKey, CostStat> {
   const hist = visibleMonths(data)
     .map((m) => m.key)
     .filter((k) => k <= monthKey)
-    .map((k) => ({ k, c: monthCosts(data, k).perVehicle[vehicle] }))
+    .map((k) => ({ k, c: monthCosts(data, k, heute).perVehicle[vehicle] }))
     .filter((h) => h.c.gesamt > 0 || h.k === monthKey);
   const cur = hist[hist.length - 1];
   const prev = hist.slice(0, -1);
@@ -970,34 +999,45 @@ export function computeMonthStatement(data: AppData, monthKey: string): MonthSta
   const kmInfo = monthKmDriven(data, monthKey).perVehicle;
   const kmCombined = kmInfo.b10 !== null && kmInfo.t03 !== null ? kmInfo.b10 + kmInfo.t03 : null;
 
+  // Gleiche Grundlage wie Monatsübersicht und TCO/Alltime (v2.51.00): tagesgenau für die
+  // Tage dieses Monats bis einschließlich heute.
+  const von = `${monthKey}-01`;
+  const bis = lastDay < todayStr() ? lastDay : todayStr();
   const fixcosts: MonthStatementFixItem[] = [];
+  const fix = { b10: fixkostenImZeitraum(data, "b10", von, bis), t03: fixkostenImZeitraum(data, "t03", von, bis) };
   (["b10", "t03"] as VehicleKey[]).forEach((v) => {
-    const veh = data.vehicles[v];
-    if (veh.start && veh.start <= lastDay) {
-      // nur innerhalb der Laufzeit (siehe monthCosts)
-      const rateNr = monthDiff(veh.start.slice(0, 7), monthKey);
-      if (parseNum(veh.leasing) > 0 && rateNr < (parseNum(veh.leasingMonate) || 36))
-        fixcosts.push({ label: `Leasing ${v.toUpperCase()}`, betrag: parseNum(veh.leasing) });
-      if (parseNum(veh.versicherung) > 0) fixcosts.push({ label: `Versicherung ${v.toUpperCase()}`, betrag: parseNum(veh.versicherung) });
-    }
+    if (fix[v].leasing > 0) fixcosts.push({ label: `Leasing ${v.toUpperCase()}`, betrag: fix[v].leasing });
+    if (fix[v].versicherung > 0) fixcosts.push({ label: `Versicherung ${v.toUpperCase()}`, betrag: fix[v].versicherung });
   });
+  // Wiederkehrende Kosten einzeln: dieselbe Rechnung, nur mit diesem einen Eintrag
   data.recurringCosts.forEach((r) => {
-    const start = r.start || data.erfassungStart;
-    if (start && start <= lastDay && parseNum(r.betrag) > 0) {
+    if (!(parseNum(r.betrag) > 0)) return;
+    const nur = { ...data, recurringCosts: [r] };
+    const betrag = r.fahrzeug
+      ? fixkostenImZeitraum(nur, "b10", von, bis).abos + fixkostenImZeitraum(nur, "t03", von, bis).abos
+      : haushaltImZeitraum(nur, von, bis).abos;
+    if (betrag > 0) {
       const scope = r.fahrzeug === "beide" ? "Beide, 50/50" : r.fahrzeug ? r.fahrzeug.toUpperCase() : "Haushalt";
       const desc = [r.anbieter, r.zweck].filter(Boolean).join(" – ") || "Wiederkehrende Kosten";
-      fixcosts.push({ label: `${desc} (${scope})`, betrag: parseNum(r.betrag) });
+      fixcosts.push({ label: `${desc} (${scope})`, betrag });
     }
   });
 
   const investThisMonth = data.investitionen
-    .filter((i) => i.datum)
-    .map((i) => ({ i, rate: monthDiff(i.datum.slice(0, 7), monthKey) }))
-    .filter(({ rate }) => rate >= 0 && rate < INVEST_AMORTIZATION_MONTHS)
-    .map(({ i, rate }) => ({
-      label: `${i.beschreibung || "Investition"} (${i.fahrzeug ? i.fahrzeug.toUpperCase() : "Haushalt"}, Rate ${rate + 1}/${INVEST_AMORTIZATION_MONTHS})`,
-      betrag: parseNum(i.betrag) / INVEST_AMORTIZATION_MONTHS,
-    }));
+    .filter((i) => i.datum && parseNum(i.betrag) > 0)
+    .map((i) => {
+      const nur = { ...data, investitionen: [i] };
+      const betrag =
+        i.fahrzeug === "b10" || i.fahrzeug === "t03" ? fixkostenImZeitraum(nur, i.fahrzeug, von, bis).invest : haushaltImZeitraum(nur, von, bis).invest;
+      const rate = monthDiff(i.datum.slice(0, 7), monthKey);
+      // tagesgenau: Kauf am Monatsersten = 36 Monate, sonst angebrochener erster und letzter Monat = 37
+      const monate = i.datum.slice(8, 10) === "01" ? INVEST_AMORTIZATION_MONTHS : INVEST_AMORTIZATION_MONTHS + 1;
+      return {
+        label: `${i.beschreibung || "Investition"} (${i.fahrzeug ? i.fahrzeug.toUpperCase() : "Haushalt"}, Monat ${rate + 1}/${monate})`,
+        betrag,
+      };
+    })
+    .filter((x) => x.betrag > 0);
 
   const fixSum = fixcosts.reduce((s, f) => s + f.betrag, 0);
   const investSum = investThisMonth.reduce((s, f) => s + f.betrag, 0);

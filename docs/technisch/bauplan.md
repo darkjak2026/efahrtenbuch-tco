@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 18.10.2026 | 22:00
+Stand der Dokumentation: 24.10.2026 | 23:26
 
 ## Teil 1 – Beschreibung der App
 
@@ -16,7 +16,7 @@ Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern kon
 
 ### 1.2 Aktueller Funktionsumfang und Features
 
-Ein Menü unten führt zu Übersicht, Planung, Statistik, Historie und Einstellungen. Ladevorgänge werden Schritt für Schritt erfasst: „Vor“ dem Laden (Restreichweite, Gesamtkilometer (ODO), Cent-Preis pro kWh, Ladekarte; Fahrzeug, Datum und Standort per GPS erkennt die App selbst) und „Nach“ dem Laden (kWh, Dauer, Reichweite neu, Notiz, Preis) – mit Fortschrittsring um das Auto und Konfetti beim Abschluss. Daraus entstehen €/km je Auto (TCO), ein Freikilometer-Countdown, Monatskarten mit Ringen und eine Wochenübersicht, in der ein Ladering um jeden Ladetag den Ladestand vorher und nachher zeigt. Die Planung rechnet eine Strecke zwischen zwei Adressen durch: km × Ø Verbrauch × Ø Strompreis je Auto (seit 2.50.00 die einzige Rechnung dort), dazu die Leasingkilometer bis zum Stichtag. Seit 2.48.00 kennt die App die Mehrkilometer-Staffel der Leasingverträge samt Freigrenze: Die Gesamtübersicht der Leasingjahre zeigt eine Prognose zur Nachzahlung oder Erstattung. Unter Einstellungen stehen die Stammdaten jedes Autos. Seit 2.49.00 lässt sich beim Laden ein Ladelimit von 80 % angeben, und nach jedem Abschluss erinnert ein Hinweis an Ladekabel und Ladeklappe.
+Ein Menü unten führt zu Übersicht, Planung, Statistik, Historie und Einstellungen. Ladevorgänge werden Schritt für Schritt erfasst: „Vor“ dem Laden (Restreichweite, Gesamtkilometer (ODO), Cent-Preis pro kWh, Ladekarte; Fahrzeug, Datum und Standort per GPS erkennt die App selbst) und „Nach“ dem Laden (kWh, Dauer, Reichweite neu, Notiz, Preis) – mit Fortschrittsring um das Auto und Konfetti beim Abschluss. Daraus entstehen €/km je Auto (TCO), ein Freikilometer-Countdown, Monatskarten mit Ringen und eine Wochenübersicht, in der ein Ladering um jeden Ladetag den Ladestand vorher und nachher zeigt. Die Planung rechnet eine Strecke zwischen zwei Adressen durch: km × Ø Verbrauch × Ø Strompreis je Auto (seit 2.50.00 die einzige Rechnung dort), dazu die Leasingkilometer bis zum Stichtag. Seit 2.48.00 kennt die App die Mehrkilometer-Staffel der Leasingverträge samt Freigrenze: Die Gesamtübersicht der Leasingjahre zeigt eine Prognose zur Nachzahlung oder Erstattung. Unter Einstellungen stehen die Stammdaten jedes Autos. Seit 2.49.00 lässt sich beim Laden ein Ladelimit von 80 % angeben, und nach jedem Abschluss erinnert ein Hinweis an Ladekabel und Ladeklappe. Seit 2.51.00 rechnet die App alle Fixkosten tagesgenau: Monatsübersicht, TCO/Alltime und PDF haben dieselbe Grundlage, und €/km teilt durch die gefahrenen km seit Übergabe.
 
 ### 1.3 Backup, Datensicherung, Datenschutz
 
@@ -132,6 +132,7 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 - 16.10.2026: BIO-Leapy übergeben; Mehrkilometer-Staffel, Prognose und Fahrzeug-Stammdaten (2.48.00)
 - 18.10.2026: Ladeziel 80 %, Ladeklappen-Erinnerung, jüngster Ladevorgang oben (2.49.00)
 - 18.10.2026: Planung vereinfacht: nur noch km × Ø Verbrauch × Ø Strompreis (2.50.00)
+- 24.10.2026: Einheitliche tagesgenaue TCO-Rechnung, €/km je gefahrenem km, Monatskarte Laden/Insgesamt (2.51.00)
 
 ## Glossar
 
@@ -174,6 +175,7 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 - **Freigrenze (Freibetrag):** So viele Kilometer darf man über oder unter den Freikilometern liegen, ohne dass etwas berechnet wird (hier 2.500 km). Erst was darüber hinausgeht, wird bezahlt oder erstattet.
 - **Stammdaten:** Feste Angaben zu einem Auto, die sich kaum ändern: Modell, Farbe, Kennzeichen, Fahrgestellnummer (FIN), Leasinggeber, Vertragsnummer, Händler. Reine Information, sie fließen in keine Rechnung ein.
 - **Ladelimit:** Im Auto eingestellte Obergrenze, bis zu der geladen wird – hier meist 80 %, weil das den Akku schont. Danach hört das Auto von selbst auf. Die App rechnet aus der Reichweite bei 80 % die volle Reichweite hoch (÷ 0,8).
+- **Tagesgenaue Verteilung:** Ein Monatsbetrag (z. B. die Leasingrate) zählt in einem Monat nur für die Tage, an denen er gilt: Betrag × Tage ÷ Tage im Monat. Beispiel: Übergabe am 16.10. – im Oktober zählen 16 von 31 Tagen. So ergibt die Summe aller Monate genau den Gesamtwert.
 
 ## Offene Punkte
 

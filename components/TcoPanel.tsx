@@ -27,6 +27,7 @@ function TcoCard({
   title,
   dotClass,
   kmStand,
+  kmGefahren,
   tco,
   months,
   extraRows,
@@ -35,13 +36,14 @@ function TcoCard({
   title: React.ReactNode;
   dotClass: string;
   kmStand: number;
+  kmGefahren: number; // seit Übergabe – €/km teilt durch diese km (v2.51.00), nicht durch den Tachostand
   tco: number;
   months: number;
   extraRows: TcoRow[];
   countdown?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const kmPreis = kmStand > 0 ? tco / kmStand : null;
+  const kmPreis = kmGefahren > 0 ? tco / kmGefahren : null;
   const tcoProMonat = months > 0 ? tco / months : null;
   const rows: TcoRow[] = [
     { label: "TCO / Monat", value: tcoProMonat !== null ? fmtEUR(tcoProMonat) : "–" },
@@ -93,6 +95,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           title={<VehicleName vehicleKey="b10" />}
           dotClass="b10"
           kmStand={b10.kmStand}
+          kmGefahren={b10.kmGefahren}
           tco={b10.tco}
           months={b10.months}
           countdown={<LeasingCountdown data={data} vehicle="b10" />}
@@ -107,6 +110,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           title={<VehicleName vehicleKey="t03" />}
           dotClass="t03"
           kmStand={t03.kmStand}
+          kmGefahren={t03.kmGefahren}
           tco={t03.tco}
           months={t03.months}
           countdown={<LeasingCountdown data={data} vehicle="t03" />}
