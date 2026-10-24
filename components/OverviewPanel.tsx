@@ -7,7 +7,7 @@ import type { Tab } from "./BottomNav";
 
 // Übersicht unter dem Kopfbereich: Hinweis auf unvollständige Ladevorgänge und der
 // laufende Monat kurz je Auto (antippen führt in Statistik bzw. Historie).
-// v2.51.00 (Entscheidung des Urhebers 24.10.2026): je Auto die Ladekosten des Monats,
+// v2.51.00 (Entscheidung des Urhebers 24.10.2026): je Auto die Stromkosten des Monats,
 // was das Auto im Monat insgesamt gekostet hat (Laden + Fixkosten tagesgenau bis heute)
 // und TCO/Alltime in €/km.
 export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t: Tab) => void }) {
@@ -36,11 +36,11 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
               <span key={v} className={`ov-car ov-car-${v}`}>
                 <b>{VEHICLES[v].nickname}</b>
                 <span className="ov-zeile">
-                  <small>Laden</small>
+                  <small>Stromkosten</small>
                   <span className="ov-wert">{fmtEUR(c.laden)}</span>
                 </span>
                 <span className="ov-zeile ov-zeile-gesamt">
-                  <small>Insgesamt (Laden + Fixkosten)</small>
+                  <small>Insgesamt (Stromkosten + Fixkosten)</small>
                   <span className="ov-wert">{fmtEUR(c.gesamt)}</span>
                 </span>
                 <span className="ov-zeile">
