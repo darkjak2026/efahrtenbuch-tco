@@ -5323,3 +5323,19 @@ main.tab-rein-links {
   color: var(--danger);
   margin-right: 6px;
 }
+
+/* Übersicht: Monatsname so groß und fett wie der Autoname oben (v2.52.02) */
+.ov-month-t {
+  align-items: baseline;
+}
+/* .ov-month-t span (für „Statistik ▸“) nicht auf den Monatsnamen anwenden */
+.ov-month-t .ov-monat {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+.ov-monat b {
+  font-size: 17px; /* wie .vehicle-nickname in der Kachel oben */
+  font-weight: 800;
+  color: var(--accent);
+}
