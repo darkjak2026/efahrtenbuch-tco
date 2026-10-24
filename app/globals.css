@@ -5243,3 +5243,83 @@ main.tab-rein-links {
   font-size: 10.5px;
   color: var(--ink-soft);
 }
+
+/* km-Stand aktualisieren (v2.52.00) */
+.tco-kmstand {
+  display: block;
+  margin-top: 4px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  min-height: 28px;
+}
+.kms h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+.kms-b10 h3 {
+  color: var(--b10);
+}
+.kms-t03 h3 {
+  color: var(--t03);
+}
+.kms-bisher,
+.kms-hinweis {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+.kms .field-row input {
+  flex: 0 0 50%;
+  text-align: right;
+}
+.kms-fehler {
+  font-size: 13px;
+  color: var(--danger);
+  margin: 0 0 8px;
+}
+.kms-knoepfe {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.kms-liste {
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.kms-liste-t {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.kms-eintrag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 36px;
+  font-size: 13px;
+}
+.kms-x,
+.kms-ja,
+.kms-nein {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 12px;
+  min-height: 32px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+.kms-ja {
+  border-color: var(--danger);
+  color: var(--danger);
+  margin-right: 6px;
+}

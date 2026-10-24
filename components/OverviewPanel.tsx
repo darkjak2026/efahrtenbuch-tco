@@ -40,7 +40,7 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
                   <span className="ov-wert">{fmtEUR(c.laden)}</span>
                 </span>
                 <span className="ov-zeile ov-zeile-gesamt">
-                  <small>Insgesamt</small>
+                  <small>Insgesamt (Laden + Fixkosten)</small>
                   <span className="ov-wert">{fmtEUR(c.gesamt)}</span>
                 </span>
                 <span className="ov-zeile">
@@ -54,7 +54,7 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
             );
           })}
         </span>
-        <span className="ov-hinweis">Insgesamt = Laden + Leasing, Versicherung, Abos und Investitionsrate anteilig bis heute</span>
+        <span className="ov-hinweis">Fixkosten = Leasing, Versicherung, Abos und Investitionsraten, anteilig bis heute</span>
       </button>
     </div>
   );

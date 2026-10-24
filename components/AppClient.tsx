@@ -283,7 +283,7 @@ export default function AppClient() {
             TCO - Leapmotor
           </h1>
           <div className="hero-inner">
-            <TcoPanel data={data} />
+            <TcoPanel data={data} updateData={updateData} showToast={showToast} />
           </div>
         </header>
       ) : (

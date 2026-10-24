@@ -59,6 +59,7 @@ export function defaultData(): AppData {
     months,
     featureRequests: [],
     places: [],
+    kmStaende: [],
   };
 }
 
@@ -84,6 +85,7 @@ export function migrate(raw: unknown): AppData {
   if (!d.months) d.months = def.months;
   if (!d.featureRequests) d.featureRequests = def.featureRequests;
   if (!Array.isArray(d.places)) d.places = def.places;
+  if (!Array.isArray(d.kmStaende)) d.kmStaende = [];
   if (typeof d._rev !== "number") d._rev = 0;
 
   if (!d.recurringCosts) {
@@ -347,9 +349,8 @@ export function vehicleStats(data: AppData, key: VehicleKey, heute: string = tod
   const rows = allRows(data).filter((r) => r.fahrzeug === key);
   const v = data.vehicles[key];
   const ladekosten = rows.reduce((s, r) => s + parseNum(r.preis), 0) + parseNum(v.stichtagLadekosten);
-  const kms = rows.map((r) => parseNum(r.km)).filter((n) => n > 0);
-  const stichtagKm = parseNum(v.stichtagKm);
-  if (stichtagKm > 0) kms.push(stichtagKm);
+  // km aus Ladevorgängen, eigenen km-Ständen (v2.52.00) und dem Stichtag
+  const kms = kmPunkte(data, key).map((p) => p.km);
   // Gesamt-km-Stand = höchster bekannter Wert (Baseline oder geloggt).
   const kmStand = kms.length > 0 ? Math.max(...kms) : 0;
   const kmGefahren = kmStand > 0 ? Math.max(0, kmStand - parseNum(v.kmBeiLeasingbeginn)) : 0;
@@ -522,9 +523,9 @@ export function leasingJahr(data: AppData, key: VehicleKey, today: Date = new Da
   let gefahrenBisJahresbeginn: number | null = 0;
   if (nr > 1) {
     const von = isoLocalDate(vonD);
-    const vorher = allRows(data)
-      .filter((r) => r.fahrzeug === key && r.datum && r.datum < von && parseNum(r.km) > 0)
-      .map((r) => parseNum(r.km));
+    const vorher = kmPunkte(data, key)
+      .filter((p) => p.datum < von)
+      .map((p) => p.km);
     gefahrenBisJahresbeginn = vorher.length ? Math.max(0, Math.max(...vorher) - parseNum(v.kmBeiLeasingbeginn)) : null;
   }
   const uebertrag = gefahrenBisJahresbeginn === null ? null : Math.round((nr - 1) * kontingent - gefahrenBisJahresbeginn);
@@ -688,26 +689,34 @@ export function maybeAutofillPreis(row: ChargeRow): void {
   }
 }
 
-export function vehicleKmWindowUpTo(data: AppData, vehicleKey: VehicleKey, cutoffDateStr: string | null): number | null {
-  const cutoff = cutoffDateStr ? new Date(cutoffDateStr) : null;
-  let best: number | null = null;
-  let bestDate: Date | null = null;
-  const consider = (km: number, dateStr: string) => {
-    if (km <= 0 || !dateStr) return;
-    const d = new Date(dateStr);
-    if (cutoff && d > cutoff) return;
-    if (!bestDate || d > bestDate) {
-      bestDate = d;
-      best = km;
-    }
-  };
+// Alle bekannten km-Stände eines Autos mit Datum: Ladevorgänge, der Stichtag (Baseline)
+// und – außer bei nurLaden – die eigenen km-Stände ohne Ladevorgang (v2.52.00).
+export function kmPunkte(data: AppData, key: VehicleKey, nurLaden = false): { datum: string; km: number }[] {
+  const out: { datum: string; km: number }[] = [];
   allRows(data).forEach((r) => {
-    if (r.fahrzeug !== vehicleKey) return;
-    consider(parseNum(r.km), r.datum);
+    if (r.fahrzeug === key && r.datum && parseNum(r.km) > 0) out.push({ datum: r.datum, km: parseNum(r.km) });
   });
-  // Die Baseline (Stichtag) zählt als zusätzlicher gültiger Messpunkt zum Stichtag-Datum.
-  const veh = data.vehicles[vehicleKey];
-  consider(parseNum(veh.stichtagKm), typeof veh.stichtag === "string" ? veh.stichtag : "");
+  const veh = data.vehicles[key];
+  if (typeof veh.stichtag === "string" && veh.stichtag && parseNum(veh.stichtagKm) > 0) out.push({ datum: veh.stichtag, km: parseNum(veh.stichtagKm) });
+  if (!nurLaden) {
+    (data.kmStaende || []).forEach((k) => {
+      if (k.fahrzeug === key && k.datum && k.km > 0) out.push({ datum: k.datum, km: k.km });
+    });
+  }
+  return out;
+}
+
+// Letzter bekannter km-Stand bis einschließlich cutoff (am selben Tag der höchste).
+export function vehicleKmWindowUpTo(data: AppData, vehicleKey: VehicleKey, cutoffDateStr: string | null, nurLaden = false): number | null {
+  let best: number | null = null;
+  let bestDate = "";
+  for (const p of kmPunkte(data, vehicleKey, nurLaden)) {
+    if (cutoffDateStr && p.datum > cutoffDateStr) continue;
+    if (p.datum > bestDate || (p.datum === bestDate && best !== null && p.km > best)) {
+      bestDate = p.datum;
+      best = p.km;
+    }
+  }
   return best;
 }
 
@@ -722,7 +731,8 @@ export function rowKmDriven(data: AppData, row: ChargeRow): number | null {
   if (rowKm <= 0) return null;
   const dayBefore = new Date(row.datum);
   dayBefore.setDate(dayBefore.getDate() - 1);
-  const prevKm = vehicleKmWindowUpTo(data, row.fahrzeug, dayBefore.toISOString().slice(0, 10));
+  // „seit letztem Laden“: eigene km-Stände ohne Ladevorgang zählen hier nicht (v2.52.00)
+  const prevKm = vehicleKmWindowUpTo(data, row.fahrzeug, dayBefore.toISOString().slice(0, 10), true);
   if (prevKm === null) return null;
   const driven = rowKm - prevKm;
   return driven >= 0 ? driven : null;
@@ -732,14 +742,9 @@ export function rowKmDriven(data: AppData, row: ChargeRow): number | null {
 // baseline) - the starting point for a vehicle's very first logged month, when
 // there is no reading from before the month to subtract from.
 function firstKmInMonth(data: AppData, vehicleKey: VehicleKey, monthKey: string): number | null {
-  const kms: number[] = [];
-  allRows(data).forEach((r) => {
-    if (r.fahrzeug === vehicleKey && r.datum.startsWith(monthKey) && parseNum(r.km) > 0) kms.push(parseNum(r.km));
-  });
-  const veh = data.vehicles[vehicleKey];
-  if (typeof veh.stichtag === "string" && veh.stichtag.startsWith(monthKey) && parseNum(veh.stichtagKm) > 0) {
-    kms.push(parseNum(veh.stichtagKm));
-  }
+  const kms = kmPunkte(data, vehicleKey)
+    .filter((p) => p.datum.startsWith(monthKey))
+    .map((p) => p.km);
   return kms.length > 0 ? Math.min(...kms) : null;
 }
 

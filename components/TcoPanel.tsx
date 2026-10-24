@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { fmtEUR, fmtNum, vehicleStats } from "@/lib/data";
 import { VEHICLES } from "@/lib/constants";
 import type { AppData, VehicleKey } from "@/lib/types";
+import KmStandDialog from "./KmStandDialog";
 import LeasingCountdown from "./LeasingCountdown";
 
 function VehicleName({ vehicleKey }: { vehicleKey: VehicleKey }) {
@@ -32,6 +33,7 @@ function TcoCard({
   months,
   extraRows,
   countdown,
+  onKmStand,
 }: {
   title: React.ReactNode;
   dotClass: string;
@@ -41,6 +43,7 @@ function TcoCard({
   months: number;
   extraRows: TcoRow[];
   countdown?: React.ReactNode;
+  onKmStand?: () => void; // „km-Stand aktualisieren“ (v2.52.00)
 }) {
   const [open, setOpen] = useState(false);
   const kmPreis = kmGefahren > 0 ? tco / kmGefahren : null;
@@ -65,6 +68,11 @@ function TcoCard({
         <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b> (ODO)
       </div>
       {kmStand === 0 && <div className="warn">Noch kein km-Stand erfasst — €/km folgt automatisch.</div>}
+      {onKmStand && (
+        <button type="button" className="tco-kmstand" onClick={onKmStand}>
+          km-Stand aktualisieren
+        </button>
+      )}
       <button type="button" className="tco-toggle" onClick={() => setOpen((v) => !v)}>
         {open ? "Details ausblenden ▾" : "Details anzeigen ▸"}
       </button>
@@ -84,9 +92,18 @@ function TcoCard({
   );
 }
 
-export default function TcoPanel({ data }: { data: AppData }) {
+export default function TcoPanel({
+  data,
+  updateData,
+  showToast,
+}: {
+  data: AppData;
+  updateData: (fn: (d: AppData) => void) => void;
+  showToast: (msg: string) => void;
+}) {
   const b10 = vehicleStats(data, "b10");
   const t03 = vehicleStats(data, "t03");
+  const [kmFuer, setKmFuer] = useState<VehicleKey | null>(null);
 
   return (
     <div className="tco-cards">
@@ -99,6 +116,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           tco={b10.tco}
           months={b10.months}
           countdown={<LeasingCountdown data={data} vehicle="b10" />}
+          onKmStand={() => setKmFuer("b10")}
           extraRows={[
             { label: "Ladekosten", value: fmtEUR(b10.ladekosten) },
             { label: "Leasing+Vers.", value: fmtEUR(b10.leasingKosten + b10.versicherungKosten) },
@@ -114,6 +132,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           tco={t03.tco}
           months={t03.months}
           countdown={<LeasingCountdown data={data} vehicle="t03" />}
+          onKmStand={() => setKmFuer("t03")}
           extraRows={[
             { label: "Ladekosten", value: fmtEUR(t03.ladekosten) },
             { label: "Leasing+Vers.", value: fmtEUR(t03.leasingKosten + t03.versicherungKosten) },
@@ -122,6 +141,7 @@ export default function TcoPanel({ data }: { data: AppData }) {
           ]}
         />
       </div>
+      {kmFuer && <KmStandDialog data={data} vehicle={kmFuer} updateData={updateData} showToast={showToast} onClose={() => setKmFuer(null)} />}
     </div>
   );
 }

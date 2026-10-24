@@ -116,5 +116,6 @@ MONTHS.filter((m) => m.key <= LAST_MONTH_FALLBACK).forEach((m) => {
       { name: "Zuhause", label: "Marktplatz 1, 06108 Halle (Saale)", lat: 51.4828, lon: 11.9697 },
       { name: "Arbeit", label: "Hauptbahnhof, 99084 Erfurt", lat: 50.9725, lon: 11.0383 },
     ],
+    kmStaende: [],
   };
 }

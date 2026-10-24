@@ -90,6 +90,14 @@ export interface FeatureRequestEntry {
   doneAt?: string; // "JJJJ-MM-TT||HH:MM" - wann auf "erledigt" gesetzt wurde
 }
 
+// km-Stand ohne Ladevorgang (v2.52.00): „km-Stand aktualisieren“ in der Kachel oben.
+// Zählt für TCO je km, Leasingkilometer und Monats-km, aber nicht als Ladevorgang.
+export interface KmStand {
+  datum: string; // "JJJJ-MM-TT"
+  fahrzeug: VehicleKey;
+  km: number;
+}
+
 // Gespeicherter Ort für den Streckenrechner (Planung)
 export interface Place {
   name: string;
@@ -114,6 +122,7 @@ export interface AppData {
   months: Record<string, ChargeRow[]>;
   featureRequests: FeatureRequestEntry[];
   places: Place[];
+  kmStaende: KmStand[];
   // Umzug: gesetzt im alten Speicher (Upstash/Vercel), sobald die App auf den
   // eigenen Server umgezogen ist - die alte Adresse zeigt dann nur noch einen
   // Hinweis mit Link und nimmt keine Änderungen mehr an. Steht bewusst im
