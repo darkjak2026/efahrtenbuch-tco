@@ -115,16 +115,15 @@ test("Freikilometer gesamt laut Vertrag gehen vor Freikilometer pro Jahr", () =>
   assert.equal(l.ende, "2028-11-28");
 });
 
-test("Leasing nur für die Laufzeit (tagesgenau, v2.51.00): 28.11.2025 bis 27.11.2028", () => {
+test("Leasingrate nur für die Laufzeit: 36 Raten ab 28.11.2025, letzte im Oktober 2028", () => {
   const d = dataWith([]);
   d.vehicles.t03.start = "2025-11-28";
   d.vehicles.t03.leasingMonate = 36;
   d.vehicles.t03.leasing = 149;
   const heute = "2029-12-31";
-  assert.ok(Math.abs(monthCosts(d, "2025-11", heute).perVehicle.t03.leasing - (149 * 3) / 30) < 1e-9); // 28.–30.11.
+  assert.equal(monthCosts(d, "2025-11", heute).perVehicle.t03.leasing, 149);
   assert.equal(monthCosts(d, "2028-10", heute).perVehicle.t03.leasing, 149);
-  assert.ok(Math.abs(monthCosts(d, "2028-11", heute).perVehicle.t03.leasing - (149 * 27) / 30) < 1e-9); // 1.–27.11.
-  assert.equal(monthCosts(d, "2028-12", heute).perVehicle.t03.leasing, 0);
+  assert.equal(monthCosts(d, "2028-11", heute).perVehicle.t03.leasing, 0);
   assert.equal(leaseLastMonth(d, "t03"), "2028-11");
 });
 test("Leasingende und sichtbare Monate: 28.11.2025 + 36 Monate -> bis November 2028", () => {

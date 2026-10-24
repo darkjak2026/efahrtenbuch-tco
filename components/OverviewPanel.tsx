@@ -8,8 +8,8 @@ import type { Tab } from "./BottomNav";
 // Übersicht unter dem Kopfbereich: Hinweis auf unvollständige Ladevorgänge und der
 // laufende Monat kurz je Auto (antippen führt in Statistik bzw. Historie).
 // v2.51.00 (Entscheidung des Urhebers 24.10.2026): je Auto die Stromkosten des Monats,
-// was das Auto im Monat insgesamt gekostet hat (Stromkosten + Fixkosten tagesgenau bis
-// heute). TCO/Alltime steht nur oben in der Kachel (v2.52.02).
+// was das Auto im Monat insgesamt gekostet hat (Stromkosten + Fixkosten, seit v2.53.00
+// voll je angefangenem Monat). TCO/Alltime steht nur oben in der Kachel (v2.52.02).
 export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t: Tab) => void }) {
   const month = currentMonthKey();
   const label = MONTHS.find((m) => m.key === month)?.label ?? month;
@@ -51,7 +51,7 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
             );
           })}
         </span>
-        <span className="ov-hinweis">Fixkosten = Leasing, Versicherung, Abos und Investitionsraten, anteilig bis heute</span>
+        <span className="ov-hinweis">Fixkosten = Leasing, Versicherung, Abos und Investitionsraten, voll je angefangenem Monat</span>
       </button>
     </div>
   );

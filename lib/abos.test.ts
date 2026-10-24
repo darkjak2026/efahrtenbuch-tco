@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { MONTHS } from "./constants";
-import { defaultData, monthCosts, tageAnteil, vehicleStats } from "./data";
+import { defaultData, monthCosts, vehicleStats } from "./data";
 
 // v2.50.01: wiederkehrende Kosten „Beide (50/50)“ werden erst geteilt, wenn beide Autos
-// übergeben sind. v2.51.00: alles tagesgenau; Alltime = Summe der Monate.
+// übergeben sind. v2.53.00: Fixkosten je angefangenem Monat voll (wie abgebucht);
+// Alltime = Summe der Monate.
 
 const nah = (a: number, b: number) => Math.abs(a - b) < 1e-6;
 
@@ -16,40 +17,48 @@ function daten(t03Start: string, b10Start: string, aboStart: string, betrag: str
   return d;
 }
 
-test("tageAnteil: Tage ÷ Tage im Monat, über Monatsgrenzen hinweg", () => {
-  assert.ok(nah(tageAnteil(31, "2026-10-16", "2026-10-24"), 9)); // 9 von 31 Tagen
-  assert.ok(nah(tageAnteil(30, "2026-11-01", "2026-11-30"), 30));
-  assert.ok(nah(tageAnteil(100, "2026-10-01", "2026-11-30"), 200)); // zwei volle Monate
-  assert.ok(nah(tageAnteil(28, "2027-02-28", "2027-03-01"), 1 + 28 / 31));
-  assert.equal(tageAnteil(100, "2026-11-01", "2026-10-31"), 0);
-});
-
-test("Alltime: allein, solange das andere Auto fehlt, danach 50/50 – zusammen der volle Betrag", () => {
-  // 31 € je Monat; Abo ab 01.03.2026, B10 ab 16.10.2026, Stand 31.10.2026
-  const d = daten("2025-11-28", "2026-10-16", "2026-03-01", "31");
+test("Alltime: allein, solange das andere Auto fehlt, ab dessen Übergabemonat 50/50", () => {
+  // 30 € je Monat; Abo ab 03/2026, B10 ab 16.10.2026, Stand 31.10.2026
+  const d = daten("2025-11-28", "2026-10-16", "2026-03-01", "30");
   const t03 = vehicleStats(d, "t03", "2026-10-31").recurringKosten;
   const b10 = vehicleStats(d, "b10", "2026-10-31").recurringKosten;
-  assert.ok(nah(t03, 7 * 31 + 15 + 8), `t03 ${t03}`); // März–Sept voll, 1.–15.10. voll, 16.–31.10. halb
-  assert.ok(nah(b10, 8), `b10 ${b10}`); // 16.–31.10. halb
-  assert.ok(nah(t03 + b10, 8 * 31));
+  assert.ok(nah(t03, 7 * 30 + 15), `t03 ${t03}`); // März–Sept voll, Oktober halb
+  assert.ok(nah(b10, 15), `b10 ${b10}`); // Oktober halb
+  assert.ok(nah(t03 + b10, 8 * 30));
 });
 
 test("Alltime: Auto ohne Übergabedatum trägt nichts, das andere alles", () => {
-  const d = daten("2025-11-28", "", "2026-03-01", "31");
+  const d = daten("2025-11-28", "", "2026-03-01", "30");
   assert.equal(vehicleStats(d, "b10", "2026-10-31").recurringKosten, 0);
-  assert.ok(nah(vehicleStats(d, "t03", "2026-10-31").recurringKosten, 8 * 31));
+  assert.ok(nah(vehicleStats(d, "t03", "2026-10-31").recurringKosten, 8 * 30));
 });
 
-test("Monatsübersicht: vor der zweiten Übergabe voll beim Leapy, im Übergabemonat ab dem Tag halbiert", () => {
+test("Monatsübersicht: vor der zweiten Übergabe voll beim Leapy, ab dem Übergabemonat halbiert", () => {
   const d = daten("2025-11-28", "2026-10-16", "2026-03-01", "2.99");
   const sep = monthCosts(d, "2026-09", "2026-12-31").perVehicle;
   assert.ok(nah(sep.t03.abos, 2.99));
   assert.equal(sep.b10.abos, 0);
   const okt = monthCosts(d, "2026-10", "2026-12-31").perVehicle;
-  assert.ok(nah(okt.t03.abos, (2.99 * 15) / 31 + (1.495 * 16) / 31));
-  assert.ok(nah(okt.b10.abos, (1.495 * 16) / 31));
-  const nov = monthCosts(d, "2026-11", "2026-12-31").perVehicle;
-  assert.ok(nah(nov.t03.abos, 1.495) && nah(nov.b10.abos, 1.495));
+  assert.ok(nah(okt.t03.abos, 1.495) && nah(okt.b10.abos, 1.495));
+});
+
+test("voll ab dem Übergabetag: vorher im selben Monat noch nichts, danach die ganze Rate", () => {
+  const d = daten("2025-11-28", "2026-10-16", "2026-03-01", "0");
+  d.vehicles.b10.leasing = 300;
+  d.vehicles.b10.versicherung = 120;
+  assert.equal(monthCosts(d, "2026-10", "2026-10-15").perVehicle.b10.leasing, 0);
+  const okt = monthCosts(d, "2026-10", "2026-10-16").perVehicle.b10;
+  assert.equal(okt.leasing, 300);
+  assert.equal(okt.versicherung, 120);
+});
+
+test("Leasing: 36 Raten ab dem Übergabemonat (BIO-Leapy 10/2026 bis 09/2029)", () => {
+  const d = daten("2025-11-28", "2026-10-16", "2026-03-01", "0");
+  d.vehicles.b10.leasing = 300;
+  const heute = "2030-12-31";
+  assert.equal(monthCosts(d, "2029-09", heute).perVehicle.b10.leasing, 300);
+  assert.equal(monthCosts(d, "2029-10", heute).perVehicle.b10.leasing, 0);
+  assert.equal(vehicleStats(d, "b10", heute).leasingKosten, 36 * 300);
 });
 
 test("einheitliche Grundlage: Summe der Monate = TCO/Alltime (B10, Stand mitten im Monat)", () => {
@@ -66,9 +75,11 @@ test("einheitliche Grundlage: Summe der Monate = TCO/Alltime (B10, Stand mitten 
   const monate = MONTHS.map((m) => m.key).filter((k) => k <= heute.slice(0, 7));
   const summe = monate.reduce((acc, k) => acc + monthCosts(d, k, heute).perVehicle.b10.gesamt, 0);
   assert.ok(nah(summe, s.tco), `Monate ${summe} vs Alltime ${s.tco}`);
-  // Oktober: 16 von 31 Tagen; Investitionsrate 3600 ÷ 36 = 100 je Monat
+  // Oktober bis Februar = 5 angefangene Monate; Investitionsrate 3600 ÷ 36 = 100
+  assert.equal(s.leasingKosten, 5 * 300);
+  assert.ok(nah(s.investKosten, 5 * 100));
   const okt = monthCosts(d, "2026-10", heute).perVehicle.b10;
-  assert.ok(nah(okt.leasing, (300 * 16) / 31) && nah(okt.invest, (100 * 16) / 31));
+  assert.equal(okt.leasing, 300);
   assert.equal(okt.laden, 40);
 });
 
