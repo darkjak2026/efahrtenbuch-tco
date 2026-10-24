@@ -66,7 +66,8 @@ function TcoCard({
         {kmPreis !== null ? `${fmtNum(kmPreis, 2)} €/km` : "–"} <small>TCO/Alltime</small>
       </div>
       <div className="odo">
-        <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b> (ODO)
+        {/* ohne „(ODO)“ (v2.54.03) – der Tachostand ist auch so klar */}
+        <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b>
         {onKmStand && (
           // kleiner Stift statt Textlink (v2.54.02): km-Stand manuell aktualisieren
           <button type="button" className="tco-kmstand" aria-label="km-Stand manuell aktualisieren" title="km-Stand manuell aktualisieren" onClick={onKmStand}>
