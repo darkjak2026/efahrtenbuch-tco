@@ -42,7 +42,7 @@ export function VehicleMonthCard({ data, monthKey, vehicle }: { data: AppData; m
         {perKm(c.tcoKm)} <small>€/km TCO</small>
       </div>
       <div className="mvc-sub">
-        {perKm(c.ladenKm)} <span>€/km Laden</span>
+        {perKm(c.ladenKm)} <span>€/km Strom</span>
       </div>
       <div className="mvc-sub">
         {c.km === null ? <span className="mvc-missing">km-Stand fehlt</span> : <>{fmtNum(c.km, 0)} <span>km</span></>}
@@ -117,7 +117,7 @@ export function HouseholdMonthSummary({
             <span className="mvc-missing">TCO je km erst, wenn beide Autos km haben</span>
           ) : (
             <span className="mvc-house-val">
-              {fmtNum(costs.tcoKm, 3)} € <small>/km TCO · Laden {perKm(costs.ladenKm)} €</small>
+              {fmtNum(costs.tcoKm, 3)} € <small>/km TCO · Strom {perKm(costs.ladenKm)} €</small>
             </span>
           )}
         </div>
@@ -126,7 +126,7 @@ export function HouseholdMonthSummary({
             <b>{fmtNum(all.kwh, 1)}</b> kWh
           </span>
           <span>
-            <b>{fmtEUR(all.laden)}</b> Laden
+            <b>{fmtEUR(all.laden)}</b> Strom
           </span>
           <span>
             <b>{minutesToDuration(all.min)}</b> h

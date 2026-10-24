@@ -152,7 +152,8 @@
     ["24.10.2026", "2.52.00", "Design: In der Übersicht heißt es jetzt „Insgesamt (Laden + Fixkosten)“; die Fußnote erklärt, was zu den Fixkosten gehört."],
     ["24.10.2026", "2.52.01", "Design: In der Übersicht heißt „Laden“ jetzt „Stromkosten“, entsprechend „Insgesamt (Stromkosten + Fixkosten)“."],
     ["24.10.2026", "2.52.02", "Design: Die Monatskarte der Übersicht zeigt TCO/Alltime nicht mehr (steht oben in der Kachel). Der Monatsname („OKTOBER“) ist so groß und fett wie der Autoname oben."],
-    ["24.10.2026", "2.52.03", "Design: In der Monatskarte heißt die Summe kurz „Strom+Fixkosten“ und bricht nicht mehr um; auf schmalen Handys steht der Betrag groß und rechtsbündig in der Zeile darunter."]
+    ["24.10.2026", "2.52.03", "Design: In der Monatskarte heißt die Summe kurz „Strom+Fixkosten“ und bricht nicht mehr um; auf schmalen Handys steht der Betrag groß und rechtsbündig in der Zeile darunter."],
+    ["24.10.2026", "2.52.04", "Design: Auch in der Statistik heißt „Laden“ jetzt „Strom“ bzw. „Stromkosten“ (Details, Legende, Kostenring, €/km Strom, Haushaltszeile)."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [

@@ -48,7 +48,7 @@ const PATHS: Record<CostKey, React.ReactNode> = {
 };
 
 export const COST_META: Record<CostKey, { label: string; short: string; color: string }> = {
-  laden: { label: "Laden", short: "Laden", color: "var(--teal)" },
+  laden: { label: "Stromkosten", short: "Strom", color: "var(--teal)" },
   leasing: { label: "Leasing", short: "Leasing", color: "var(--plum)" },
   versicherung: { label: "Versicherung", short: "Versich.", color: "var(--range-yellow)" },
   abos: { label: "Abos", short: "Abos", color: "var(--danger)" },
