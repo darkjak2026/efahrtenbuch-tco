@@ -145,3 +145,13 @@ export function LocationPinIcon({ size = 16 }: IconProps) {
     </svg>
   );
 }
+
+// Stift: km-Stand manuell aktualisieren (v2.54.02)
+export function PencilIcon({ size = 14 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden="true">
+      <path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3Z" />
+      <path d="m14 7 3 3" />
+    </svg>
+  );
+}

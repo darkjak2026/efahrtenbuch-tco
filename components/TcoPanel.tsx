@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import { fmtEUR, fmtNum, vehicleStats } from "@/lib/data";
 import { VEHICLES } from "@/lib/constants";
 import type { AppData, VehicleKey } from "@/lib/types";
+import { PencilIcon } from "./Icons";
 import KmStandDialog from "./KmStandDialog";
 import LeasingCountdown from "./LeasingCountdown";
 
@@ -66,13 +67,14 @@ function TcoCard({
       </div>
       <div className="odo">
         <b>{kmStand > 0 ? `${fmtNum(kmStand, 0)} km` : "–"}</b> (ODO)
+        {onKmStand && (
+          // kleiner Stift statt Textlink (v2.54.02): km-Stand manuell aktualisieren
+          <button type="button" className="tco-kmstand" aria-label="km-Stand manuell aktualisieren" title="km-Stand manuell aktualisieren" onClick={onKmStand}>
+            <PencilIcon size={14} />
+          </button>
+        )}
       </div>
       {kmStand === 0 && <div className="warn">Noch kein km-Stand erfasst — €/km folgt automatisch.</div>}
-      {onKmStand && (
-        <button type="button" className="tco-kmstand" onClick={onKmStand}>
-          km-Stand aktualisieren
-        </button>
-      )}
       <button type="button" className="tco-toggle" onClick={() => setOpen((v) => !v)}>
         {open ? "Details ausblenden ▾" : "Details anzeigen ▸"}
       </button>

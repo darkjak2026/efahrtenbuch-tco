@@ -36,24 +36,26 @@ export default function OverviewPanel({ data, onGo }: { data: AppData; onGo: (t:
             return (
               <span key={v} className={`ov-car ov-car-${v}`}>
                 <b>{VEHICLES[v].nickname}</b>
+                {/* v2.54.02: km zuerst, dann Strom, dann was monatlich abgebucht wird;
+                    Anschaffungen und Monatssumme stehen in der Statistik */}
                 <span className="ov-zeile">
-                  <small>Stromkosten</small>
+                  <small>km gefahren:</small>
+                  <span className="ov-wert">{c.km === null ? "–" : `${fmtNum(c.km, 0)} km`}</span>
+                </span>
+                <span className="ov-zeile">
+                  <small>Stromkosten:</small>
                   <span className="ov-wert">{fmtEUR(c.laden)}</span>
                 </span>
-                {/* v2.54.00/2.54.01: nur, was abgebucht wird; Anschaffungen und Summe in der Statistik */}
                 <span className="ov-zeile">
-                  <small>Laufend</small>
+                  <small>mon. Kosten:</small>
                   <span className="ov-wert">{fmtEUR(c.leasing + c.versicherung + c.abos)}</span>
-                </span>
-                <span className="ov-line">
-                  {c.km === null ? "–" : fmtNum(c.km, 0)} km im {label}
                 </span>
               </span>
             );
           })}
         </span>
         <span className="ov-hinweis">
-          Laufend = Leasing, Versicherung, Abos (wird abgebucht). Anschaffungen und die Monatssumme stehen in der Statistik.
+          mon. Kosten = Leasing, Versicherung, Abos (wird abgebucht). Anschaffungen und die Monatssumme stehen in der Statistik.
         </span>
       </button>
     </div>

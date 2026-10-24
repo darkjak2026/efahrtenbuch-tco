@@ -5253,17 +5253,23 @@ main.tab-rein-links {
 
 /* km-Stand aktualisieren (v2.52.00) */
 .tco-kmstand {
-  display: block;
-  margin-top: 4px;
+  /* kleiner Stift neben dem Tachostand; Tippfläche 32 px trotz kleinem Symbol */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: -8px 0 -8px 2px;
   padding: 0;
+  vertical-align: middle;
   background: none;
   border: 0;
+  border-radius: 8px;
   color: var(--accent);
-  font: inherit;
-  font-size: 12px;
-  text-decoration: underline;
   cursor: pointer;
-  min-height: 28px;
+}
+.tco-kmstand:focus-visible {
+  outline: 2px solid var(--focus);
 }
 .kms h3 {
   margin: 0 0 6px;
