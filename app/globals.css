@@ -5352,3 +5352,95 @@ main.tab-rein-links {
   font-weight: 800;
   color: var(--accent);
 }
+
+/* * am €/km-Wert (v2.55.00): führt zur Erklärung in der Statistik */
+.tco-stern {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 24px;
+  height: 28px;
+  margin: -6px 0 -6px 1px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  vertical-align: top;
+}
+.tco-stern:focus-visible {
+  outline: 2px solid var(--focus);
+  border-radius: 6px;
+}
+
+/* „So entsteht der Preis je km“ in der Statistik */
+.tcoe {
+  margin: 20px 0;
+  scroll-margin-top: 90px;
+}
+.tcoe-text {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+.tcoe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+.tcoe-auto {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 12px;
+}
+.tcoe-b10 {
+  border-left-color: var(--b10);
+}
+.tcoe-t03 {
+  border-left-color: var(--t03);
+}
+.tcoe-auto h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.tcoe-b10 h3 {
+  color: var(--b10);
+}
+.tcoe-t03 h3 {
+  color: var(--t03);
+}
+.tcoe-zeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  padding: 3px 0;
+}
+.tcoe-zeile > span:last-child {
+  font-family: var(--font-jetbrains-mono), monospace;
+  white-space: nowrap;
+}
+.tcoe-zeile small {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.tcoe-summe {
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+  padding-top: 6px;
+  font-weight: 700;
+}
+.tcoe-ergebnis {
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+  padding-top: 6px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--accent);
+}

@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 25.10.2026 | 00:07
+Stand der Dokumentation: 25.10.2026 | 00:46
 
 ## Teil 1 – Beschreibung der App
 
@@ -16,7 +16,7 @@ Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern kon
 
 ### 1.2 Aktueller Funktionsumfang und Features
 
-Ein Menü unten führt zu Übersicht, Planung, Statistik, Historie und Einstellungen. Ladevorgänge werden Schritt für Schritt erfasst: „Vor“ dem Laden (Restreichweite, Gesamtkilometer (ODO), Cent-Preis pro kWh, Ladekarte; Fahrzeug, Datum und Standort per GPS erkennt die App selbst) und „Nach“ dem Laden (kWh, Dauer, Reichweite neu, Notiz, Preis) – mit Fortschrittsring um das Auto und Konfetti beim Abschluss. Daraus entstehen €/km je Auto (TCO), ein Freikilometer-Countdown, Monatskarten mit Ringen und eine Wochenübersicht, in der ein Ladering um jeden Ladetag den Ladestand vorher und nachher zeigt. Die Planung rechnet eine Strecke zwischen zwei Adressen durch: km × Ø Verbrauch × Ø Strompreis je Auto (seit 2.50.00 die einzige Rechnung dort), dazu die Leasingkilometer bis zum Stichtag. Seit 2.48.00 kennt die App die Mehrkilometer-Staffel der Leasingverträge samt Freigrenze: Die Gesamtübersicht der Leasingjahre zeigt eine Prognose zur Nachzahlung oder Erstattung. Unter Einstellungen stehen die Stammdaten jedes Autos. Seit 2.49.00 lässt sich beim Laden ein Ladelimit von 80 % angeben, und nach jedem Abschluss erinnert ein Hinweis an Ladekabel und Ladeklappe. Seit 2.53.00 rechnet die App alle Fixkosten monatsweise wie abgebucht: Monatsübersicht, TCO/Alltime und PDF haben dieselbe Grundlage, und €/km teilt durch die gefahrenen km seit Übergabe. Seit 2.52.00 lässt sich der Tachostand (ODO) auch ohne Laden eintragen („km-Stand aktualisieren“).
+Ein Menü unten führt zu Übersicht, Planung, Statistik, Historie und Einstellungen. Ladevorgänge werden Schritt für Schritt erfasst: „Vor“ dem Laden (Restreichweite, Gesamtkilometer (ODO), Cent-Preis pro kWh, Ladekarte; Fahrzeug, Datum und Standort per GPS erkennt die App selbst) und „Nach“ dem Laden (kWh, Dauer, Reichweite neu, Notiz, Preis) – mit Fortschrittsring um das Auto und Konfetti beim Abschluss. Daraus entstehen €/km je Auto (TCO), ein Freikilometer-Countdown, Monatskarten mit Ringen und eine Wochenübersicht, in der ein Ladering um jeden Ladetag den Ladestand vorher und nachher zeigt. Die Planung rechnet eine Strecke zwischen zwei Adressen durch: km × Ø Verbrauch × Ø Strompreis je Auto (seit 2.50.00 die einzige Rechnung dort), dazu die Leasingkilometer bis zum Stichtag. Seit 2.48.00 kennt die App die Mehrkilometer-Staffel der Leasingverträge samt Freigrenze: Die Gesamtübersicht der Leasingjahre zeigt eine Prognose zur Nachzahlung oder Erstattung. Unter Einstellungen stehen die Stammdaten jedes Autos. Seit 2.49.00 lässt sich beim Laden ein Ladelimit von 80 % angeben, und nach jedem Abschluss erinnert ein Hinweis an Ladekabel und Ladeklappe. Seit 2.53.00 rechnet die App alle Fixkosten monatsweise wie abgebucht: Monatsübersicht, TCO/Alltime und PDF haben dieselbe Grundlage, und €/km teilt durch die gefahrenen km seit Übergabe. Seit 2.52.00 lässt sich der Tachostand (ODO) auch ohne Laden eintragen („km-Stand aktualisieren“). Seit 2.55.00 erklärt die Statistik unter „So entsteht der Preis je km“, wie der TCO-Wert je Auto zustande kommt (Sprung über das * am Preis).
 
 ### 1.3 Backup, Datensicherung, Datenschutz
 
@@ -135,6 +135,7 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 - 24.10.2026: Einheitliche tagesgenaue TCO-Rechnung, €/km je gefahrenem km, Monatskarte Laden/Insgesamt (2.51.00)
 - 24.10.2026: km-Stand ohne Ladevorgang (2.52.00)
 - 25.10.2026: Fixkosten wie abgebucht statt tagesgenau (2.53.00)
+- 25.10.2026: Erklärung „So entsteht der Preis je km“ (2.55.00)
 
 ## Glossar
 

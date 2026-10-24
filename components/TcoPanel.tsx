@@ -35,6 +35,7 @@ function TcoCard({
   extraRows,
   countdown,
   onKmStand,
+  onErklaerung,
 }: {
   title: React.ReactNode;
   dotClass: string;
@@ -45,6 +46,7 @@ function TcoCard({
   extraRows: TcoRow[];
   countdown?: React.ReactNode;
   onKmStand?: () => void; // „km-Stand aktualisieren“ (v2.52.00)
+  onErklaerung?: () => void; // * am €/km-Wert -> Erklärung in der Statistik (v2.55.00)
 }) {
   const [open, setOpen] = useState(false);
   const kmPreis = kmGefahren > 0 ? tco / kmGefahren : null;
@@ -63,7 +65,13 @@ function TcoCard({
         {title}
       </div>
       <div className="kmpreis">
-        {kmPreis !== null ? `${fmtNum(kmPreis, 2)} €/km` : "–"} <small>TCO/Alltime</small>
+        {kmPreis !== null ? `${fmtNum(kmPreis, 2)} €/km` : "–"}
+        {/* v2.55.00: statt „TCO/Alltime“ ein * – führt zur Erklärung in der Statistik */}
+        {onErklaerung && (
+          <button type="button" className="tco-stern" aria-label="So entsteht der Preis je km" title="So entsteht der Preis je km" onClick={onErklaerung}>
+            *
+          </button>
+        )}
       </div>
       <div className="odo">
         {/* ohne „(ODO)“ (v2.54.03) – der Tachostand ist auch so klar */}
@@ -99,10 +107,12 @@ export default function TcoPanel({
   data,
   updateData,
   showToast,
+  onErklaerung,
 }: {
   data: AppData;
   updateData: (fn: (d: AppData) => void) => void;
   showToast: (msg: string) => void;
+  onErklaerung: () => void;
 }) {
   const b10 = vehicleStats(data, "b10");
   const t03 = vehicleStats(data, "t03");
@@ -120,6 +130,7 @@ export default function TcoPanel({
           months={b10.months}
           countdown={<LeasingCountdown data={data} vehicle="b10" />}
           onKmStand={() => setKmFuer("b10")}
+          onErklaerung={onErklaerung}
           extraRows={[
             { label: "Ladekosten", value: fmtEUR(b10.ladekosten) },
             { label: "Leasing+Vers.", value: fmtEUR(b10.leasingKosten + b10.versicherungKosten) },
@@ -136,6 +147,7 @@ export default function TcoPanel({
           months={t03.months}
           countdown={<LeasingCountdown data={data} vehicle="t03" />}
           onKmStand={() => setKmFuer("t03")}
+          onErklaerung={onErklaerung}
           extraRows={[
             { label: "Ladekosten", value: fmtEUR(t03.ladekosten) },
             { label: "Leasing+Vers.", value: fmtEUR(t03.leasingKosten + t03.versicherungKosten) },

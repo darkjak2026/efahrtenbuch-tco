@@ -23,6 +23,7 @@
     ["Ladeklappen-Erinnerung", "Nach jedem abgeschlossenen „Nach dem Laden“ ein Hinweis „Ladeklappe zu?“ mit zwei Häkchen (Kabel verstaut, Klappe geschlossen), ohne „Später“; bleibt bis zur Bestätigung auch über ein Schließen der App hinweg stehen (Gerätespeicher)"],
     ["Laden abschließen", "Ist ein Ladevorgang unvollständig, pulsiert der Knopf des Autos (Akku + Laufzeit) und über dem Menü steht „Laden abschließen!“ mit Startzeit; Antippen öffnet direkt „Nach“, langes Drücken startet einen neuen Ladevorgang"],
     ["km-Stand aktualisieren", "Tachostand ohne Ladevorgang je Auto eintragen (Stift neben dem Tachostand in der Kachel oben); zählt für TCO je km, Leasingkilometer und Monats-km, eigene Stände im selben Fenster löschbar"],
+    ["Erklärung Preis je km", "Statistik → „So entsteht der Preis je km“: Rechnung von TCO/Alltime je Auto mit den echten Zahlen; erreichbar über das * am €/km-Wert in der Kachel oben"],
     ["Leasingjahre", "Gesamt-Leasingkilometer ÷ Leasingjahre = Jahreskontingent von Stichtag zu Stichtag mit Übertrag; Countdown in der Box oben, Gesamtübersicht per Tipp auf die Zahl, in der Planung als „verbleiben nach dieser Fahrt noch … km“"],
     ["Kosten einer Route", "km × Ø Verbrauch (kWh/100 km, fester Wert je Auto in den Fixkosten) × Ø Strompreis der erfassten Ladevorgänge; je Etappe und gesamt. Einzige Rechnung der Planung (seit 2.50.00)"],
     ["Mehr-/Minderkilometer-Staffel", "Je Auto Preis je Mehr- und Minderkilometer, optionale 2. Stufe ab einer Gesamt-km-Schwelle und Freibetrag (Standard 2.500 km); genutzt für die Prognose zum Vertragsende in der Gesamtübersicht der Leasingjahre"],
@@ -158,7 +159,8 @@
     ["25.10.2026", "2.54.00", "Neu: Die Monatskarte der Übersicht trennt je Auto, was jeden Monat abgebucht wird („Laufend“: Leasing, Versicherung, Abos), von den schon bezahlten Anschaffungen, die auf 36 Monate verteilt sind („Anschaffungen“). Darunter weiterhin Stromkosten und Strom+Fixkosten."],
     ["25.10.2026", "2.54.01", "Design: Die Übersicht zeigt je Auto nur noch Stromkosten und die laufenden Kosten (was abgebucht wird). Anschaffungen und die Monatssumme „Strom+Fixkosten“ stehen jetzt in der Statistik (Summe sichtbar unter den km, Details mit „Anschaff.“); dort heißen Investitionen jetzt Anschaffungen."],
     ["25.10.2026", "2.54.02", "Design: Monatskarte der Übersicht je Auto in einer Liste: „km gefahren:“, „Stromkosten:“, „mon. Kosten:“ (Leasing, Versicherung, Abos). „km-Stand aktualisieren“ ist jetzt ein kleiner Stift neben dem Tachostand in der Kachel oben."],
-    ["25.10.2026", "2.54.03", "Design: In der Kachel oben steht nur noch der km-Stand ohne „(ODO)“; der Stift passt jetzt auch bei fünfstelligen km-Ständen daneben."]
+    ["25.10.2026", "2.54.03", "Design: In der Kachel oben steht nur noch der km-Stand ohne „(ODO)“; der Stift passt jetzt auch bei fünfstelligen km-Ständen daneben."],
+    ["25.10.2026", "2.55.00", "Neu: In der Kachel oben steht statt „TCO/Alltime“ ein kleines * hinter dem Preis je km. Antippen führt in die Statistik zum neuen Abschnitt „So entsteht der Preis je km“: je Auto Stromkosten (inkl. Pauschale bis Stichtag), Leasing, Versicherung, Abos, Anschaffungen, Kosten seit Übergabe, ÷ gefahrene km (Tachostand minus km bei Übergabe) = Preis je km – mit den echten Zahlen."]
   ],
   "rhythmus": "Alle 3 Monate prüfen, ob Abschnitt 2-4 noch stimmen.",
   "offene_punkte": [

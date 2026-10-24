@@ -12,6 +12,7 @@ import FixedCostsPanel from "./FixedCostsPanel";
 import CardsPanel from "./CardsPanel";
 import InvestmentsPanel from "./InvestmentsPanel";
 import StammdatenPanel from "./StammdatenPanel";
+import TcoErklaerung, { TCO_ERKLAERUNG_ID } from "./TcoErklaerung";
 import MonthNav from "./MonthNav";
 import ChargeTable from "./ChargeTable";
 import AddEntryFab from "./AddEntryFab";
@@ -49,6 +50,22 @@ export default function AppClient() {
   }, []);
   // Richtung des letzten Wechsels für die kurze Einblend-Bewegung beim Wischen
   const [richtung, setRichtung] = useState<"links" | "rechts" | null>(null);
+  // * am €/km-Wert (v2.55.00): nach dem Wechsel in die Statistik zur Erklärung scrollen
+  const [zurErklaerung, setZurErklaerung] = useState(false);
+  useEffect(() => {
+    if (!zurErklaerung || tab !== "statistik") return;
+    // kurz warten, bis die Statistik aufgebaut ist, dann direkt springen: die Seite scrollt
+    // per CSS „smooth“, und dieser sanfte Bildlauf wird vom Aufbau der Kostenringe abgebrochen
+    const id = window.setTimeout(() => {
+      const el = document.getElementById(TCO_ERKLAERUNG_ID);
+      // Abstand oben: 70 px, im Testmodus zusätzlich der gelbe Hinweisbalken
+      const oben = 70 + (document.querySelector<HTMLElement>(".testmode-banner")?.offsetHeight ?? 0);
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - oben, behavior: "instant" });
+      setZurErklaerung(false);
+    }, 250);
+    return () => window.clearTimeout(id);
+  }, [zurErklaerung, tab]);
+
   const goTab = useCallback((t: Tab) => {
     setTab(t);
     window.history.replaceState(null, "", t === "uebersicht" ? window.location.pathname + window.location.search : `#${t}`);
@@ -283,7 +300,16 @@ export default function AppClient() {
             TCO - Leapmotor
           </h1>
           <div className="hero-inner">
-            <TcoPanel data={data} updateData={updateData} showToast={showToast} />
+            <TcoPanel
+              data={data}
+              updateData={updateData}
+              showToast={showToast}
+              onErklaerung={() => {
+                // * am Preis: in die Statistik wechseln, gescrollt wird nach dem Darstellen (Effekt unten)
+                goTab("statistik");
+                setZurErklaerung(true);
+              }}
+            />
           </div>
         </header>
       ) : (
@@ -341,6 +367,8 @@ export default function AppClient() {
             />
           </section>
         )}
+
+        {tab === "statistik" && <TcoErklaerung data={data} />}
 
         {tab === "einstellungen" && (
           <>
