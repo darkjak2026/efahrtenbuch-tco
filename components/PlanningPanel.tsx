@@ -9,6 +9,7 @@ import {
   suggestAddresses,
   type GeoPoint,
 } from "@/lib/client-api";
+import { VEHICLES } from "@/lib/constants";
 import { allRows, fmtEUR, fmtNum, parseNum } from "@/lib/data";
 import { reverseGeocodeAddress } from "@/lib/gps";
 import { planeStrecke } from "@/lib/planning";
@@ -312,7 +313,7 @@ export default function PlanningPanel({
           <div className="plan2-rechnung">
             {parseNum(data.vehicles[v].verbrauchKwh100) > 0
               ? "Der Preis folgt mit dem ersten Ladevorgang mit kWh und Preis (Ø Strompreis)."
-              : "Für den Preis den Ø Verbrauch in den Fixkosten eintragen."}
+              : "Für den Preis oben unter „Ø Verbrauch“ den Verbrauch eintragen."}
           </div>
           {leasingZeile}
         </div>
@@ -403,6 +404,31 @@ export default function PlanningPanel({
               km lieber selbst eingeben
             </button>
           ))}
+        {/* Ø Verbrauch je Auto direkt hier anpassbar (Wunsch vom 28.10.2026). Derselbe Wert wie in den
+            Fixkosten; das Feld steht bewusst außerhalb der Kacheln, damit es beim Tippen nicht neu
+            aufgebaut wird, wenn die Kachel zwischen „Preis folgt“ und Preis wechselt. */}
+        <div className="plan2-verbrauch">
+          <span className="plan2-verbrauch-titel">⚡ Ø Verbrauch</span>
+          {(["b10", "t03"] as VehicleKey[]).map((v) => (
+            <label key={v} className={`plan2-verbrauch-feld plan2-verbrauch-${v}`}>
+              <span>{VEHICLES[v].nickname}</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                step="0.1"
+                min="0"
+                aria-label={`Ø Verbrauch ${VEHICLES[v].nickname} in kWh pro 100 km`}
+                value={data.vehicles[v].verbrauchKwh100}
+                onChange={(e) =>
+                  updateData((d) => {
+                    d.vehicles[v].verbrauchKwh100 = e.target.value.replace(/-/g, "");
+                  })
+                }
+              />
+              <span>kWh/100 km</span>
+            </label>
+          ))}
+        </div>
       </section>
 
       {plan && (

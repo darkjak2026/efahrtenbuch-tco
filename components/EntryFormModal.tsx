@@ -12,6 +12,7 @@ import {
   monthKeyFromDate,
   parseNum,
   reichweiteColorClass,
+  reichweiteEinheit,
   dateRangeMax,
 } from "@/lib/data";
 import { applyLocation, geolocationPermission, locateStation, mayAutoLocate } from "@/lib/gps";
@@ -295,7 +296,7 @@ export default function EntryFormModal({
   };
 
   const STEP_META: Record<StepId, { icon: ReactNode; titel: string; wert: () => string; hilfe?: ReactNode }> = {
-    rest: { icon: <BatteryOutlineIcon />, titel: "Restreichweite vor dem Laden", wert: () => (form.reichweiteVorher ? `${parseNum(form.reichweiteVorher)} km` : "") },
+    rest: { icon: <BatteryOutlineIcon />, titel: "Restreichweite vor dem Laden", wert: () => (form.reichweiteVorher ? `${parseNum(form.reichweiteVorher)} ${reichweiteEinheit(form.fahrzeug)}` : "") },
     odo: {
       icon: <RoadIcon />,
       titel: "Gesamtkilometer (ODO) vor dem Laden",
@@ -318,7 +319,7 @@ export default function EntryFormModal({
     rneu: {
       icon: <RoadIcon />,
       titel: "Reichweite neu",
-      wert: () => (form.reichweiteNachher ? `${parseNum(form.reichweiteNachher)} km${form.voll ? " · voll" : form.ziel80 ? " · 80 %" : ""}` : ""),
+      wert: () => (form.reichweiteNachher ? `${parseNum(form.reichweiteNachher)} ${reichweiteEinheit(form.fahrzeug)}${form.voll ? " · voll" : form.ziel80 ? " · 80 %" : ""}` : ""),
     },
     notiz: {
       icon: <NoteIcon />,
@@ -334,7 +335,7 @@ export default function EntryFormModal({
     switch (id) {
       case "rest":
         return (
-          <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="km" aria-label="Restreichweite vor dem Laden in km"
+          <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder={reichweiteEinheit(form.fahrzeug)} aria-label="Restreichweite vor dem Laden in km"
             className={reichweiteColorClass(form.reichweiteVorher)} value={form.reichweiteVorher} onKeyDown={onKey}
             onChange={(e) => patch({ reichweiteVorher: e.target.value.replace(/\D/g, "") })} />
         );
@@ -393,7 +394,7 @@ export default function EntryFormModal({
         );
       case "rneu":
         return (
-          <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="km" aria-label="Reichweite neu in km"
+          <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder={reichweiteEinheit(form.fahrzeug)} aria-label="Reichweite neu in km"
             className={reichweiteColorClass(form.reichweiteNachher)} value={form.reichweiteNachher} onKeyDown={onKey}
             onChange={(e) => patch({ reichweiteNachher: e.target.value.replace(/\D/g, "") })} />
         );
@@ -542,7 +543,7 @@ export default function EntryFormModal({
         </span>{" "}
         bei einem <span style={{ whiteSpace: "nowrap" }}>km-Stand</span> von{" "}
         <span className="sentence-value">{form.km ? fmtNum(parseNum(form.km), 0) : "–"} km</span> und einer Restreichweite von{" "}
-        <span className="sentence-value">{form.reichweiteVorher ? parseNum(form.reichweiteVorher) : "–"} km</span>{" "}
+        <span className="sentence-value">{form.reichweiteVorher ? parseNum(form.reichweiteVorher) : "–"} {reichweiteEinheit(form.fahrzeug)}</span>{" "}
         {isNewEntry ? (
           <>
             geladen. Die Startzeit ist ca. <span className="sentence-value">{chargeStartLabel} Uhr</span>.

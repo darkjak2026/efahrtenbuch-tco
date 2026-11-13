@@ -145,6 +145,13 @@ export function reichweiteColorClass(value: string | number | undefined | null):
   return "range-peak";
 }
 
+// Einheit hinter einer Reichweitenangabe (v2.57.00, Wunsch vom 30.10.2026): Beim B10 sind alle
+// Reichweiten seit Beginn der Aufzeichnung die dynamische Anzeige des Autos, deshalb steht
+// dort hinter jeder Angabe „dyn“. Beim t03 bleibt es bei „km“.
+export function reichweiteEinheit(fahrzeug: "" | VehicleKey | undefined): string {
+  return fahrzeug === "b10" ? "km dyn" : "km";
+}
+
 export function durationToMinutes(v: string): number {
   if (!v) return 0;
   const m = /^(\d{1,3}):([0-5]\d)$/.exec(v.trim());

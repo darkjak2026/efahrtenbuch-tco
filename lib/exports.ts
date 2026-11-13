@@ -78,7 +78,9 @@ export function exportPdf(data: AppData, activeMonth: string, testMode = false):
       (r.fahrzeug || "").toUpperCase(),
       r.karte || "",
       r.ladestation || "",
-      r.reichweiteVorher || r.reichweiteNachher ? `${r.reichweiteVorher || "?"}→${r.reichweiteNachher || "?"}` : "",
+      r.reichweiteVorher || r.reichweiteNachher
+        ? `${r.reichweiteVorher || "?"}→${r.reichweiteNachher || "?"}${r.fahrzeug === "b10" ? " dyn" : ""}`
+        : "",
       r.dauer || "",
       r.kwh ? fmtNum(parseNum(r.kwh)) : "",
       r.preis ? fmtEUR(parseNum(r.preis)) : "",
@@ -145,8 +147,8 @@ export function exportXlsx(data: AppData, testMode = false): boolean {
         r.fahrzeug,
         r.karte,
         r.ladestation,
-        r.reichweiteVorher ? String(parseNum(r.reichweiteVorher)) : "",
-        r.reichweiteNachher ? String(parseNum(r.reichweiteNachher)) : "",
+        r.reichweiteVorher ? String(parseNum(r.reichweiteVorher)) + (r.fahrzeug === "b10" ? " dyn" : "") : "",
+        r.reichweiteNachher ? String(parseNum(r.reichweiteNachher)) + (r.fahrzeug === "b10" ? " dyn" : "") : "",
         r.dauer,
         String(parseNum(r.kwh)),
         String(parseNum(r.preis)),

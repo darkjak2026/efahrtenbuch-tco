@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, laufzeitText, migrate, offeneLadevorgaenge, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingJahr, leasingKm, monthCosts, monthKmDriven, rowKmDriven, visibleMonths } from "./data";
+import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, laufzeitText, migrate, offeneLadevorgaenge, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingJahr, leasingKm, monthCosts, monthKmDriven, reichweiteEinheit, rowKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -210,6 +210,11 @@ test("zwei Ladungen am selben Tag: die km dazwischen zählen nicht doppelt (v2.5
   assert.equal(rowKmDriven(d, b1), 69);
   assert.equal(rowKmDriven(d, b2), 124); // vorher 193 (gegen den Vortag gerechnet)
   assert.equal(weekSums(d, [a, b1, b2]).km, 2585 - 2232);
+});
+test("Reichweite: beim B10 steht „dyn“ dahinter, beim t03 und ohne Fahrzeug nur „km“ (v2.57.00)", () => {
+  assert.equal(reichweiteEinheit("b10"), "km dyn");
+  assert.equal(reichweiteEinheit("t03"), "km");
+  assert.equal(reichweiteEinheit(""), "km");
 });
 test("Kreditkarte heißt AdHoc Kreditkarte – in der Liste und in den Ladevorgängen", () => {
   const raw = defaultData();

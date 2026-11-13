@@ -19,6 +19,7 @@ import {
   monthTotals,
   parseNum,
   reichweiteColorClass,
+  reichweiteEinheit,
   rowKmDriven,
   visibleMonths,
   weekSums,
@@ -173,11 +174,11 @@ export default function ChargeTable({
         )}
         <div className="entry-card-bottom">
           {row.reichweiteVorher && (
-            <span className={reichweiteColorClass(row.reichweiteVorher)}>{row.reichweiteVorher} km</span>
+            <span className={reichweiteColorClass(row.reichweiteVorher)}>{row.reichweiteVorher} {reichweiteEinheit(row.fahrzeug)}</span>
           )}
           {row.reichweiteVorher && row.reichweiteNachher && <span className="entry-battery-arrow">→</span>}
           {row.reichweiteNachher && (
-            <span className={reichweiteColorClass(row.reichweiteNachher)}>{row.reichweiteNachher} km</span>
+            <span className={reichweiteColorClass(row.reichweiteNachher)}>{row.reichweiteNachher} {reichweiteEinheit(row.fahrzeug)}</span>
           )}
           {row.voll && <span className="entry-ziel entry-ziel-voll">voll</span>}
           {row.ziel80 && <span className="entry-ziel entry-ziel-80">80 %</span>}
