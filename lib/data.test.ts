@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, laufzeitText, migrate, offeneLadevorgaenge, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingJahr, leasingKm, monthCosts, monthKmDriven, visibleMonths } from "./data";
+import { costStats, dateRangeMax, defaultData, isoWeek, ladeStand, laufzeitText, migrate, offeneLadevorgaenge, vollReichweite, monthWeeks, trendDegrees, weekSums, emptyRow, leaseLastMonth, leasingJahr, leasingKm, monthCosts, monthKmDriven, rowKmDriven, visibleMonths } from "./data";
 import type { AppData, ChargeRow, VehicleKey } from "./types";
 
 function row(datum: string, fahrzeug: VehicleKey, km: number): ChargeRow {
@@ -199,6 +199,17 @@ test("Wochensummen: Dauer, km seit letztem Laden, Kosten, kWh", () => {
   assert.equal(s.km, 479);
   assert.equal(Math.round(s.eur * 100), 1600);
   assert.equal(Math.round(s.kwh * 100), 4578);
+});
+test("zwei Ladungen am selben Tag: die km dazwischen zählen nicht doppelt (v2.56.01)", () => {
+  const vor = row("2026-10-05", "t03", 2232);
+  const a = row("2026-10-06", "t03", 2392);
+  const b1 = row("2026-10-08", "t03", 2461);
+  const b2 = row("2026-10-08", "t03", 2585);
+  const d = dataWith([vor, a, b2, b1]); // Reihenfolge der Ablage spielt keine Rolle
+  assert.equal(rowKmDriven(d, a), 160);
+  assert.equal(rowKmDriven(d, b1), 69);
+  assert.equal(rowKmDriven(d, b2), 124); // vorher 193 (gegen den Vortag gerechnet)
+  assert.equal(weekSums(d, [a, b1, b2]).km, 2585 - 2232);
 });
 test("Kreditkarte heißt AdHoc Kreditkarte – in der Liste und in den Ladevorgängen", () => {
   const raw = defaultData();

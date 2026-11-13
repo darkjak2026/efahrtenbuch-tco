@@ -1,5 +1,7 @@
 "use client";
 
+import type { ChargeRow } from "./types";
+
 export interface LocateResult {
   lat: number;
   lon: number;
@@ -7,16 +9,39 @@ export interface LocateResult {
   toast: string;
 }
 
-// Checks the Permissions API without ever triggering a browser prompt itself —
-// only reports true if the user already granted geolocation access previously.
-export async function hasGeolocationPermission(): Promise<boolean> {
-  if (!("permissions" in navigator) || !("geolocation" in navigator)) return false;
+export type GeoPermission = "granted" | "prompt" | "denied" | "unknown";
+
+// Reads the Permissions API state without ever triggering a browser prompt itself.
+// "unknown" = the browser/PWA shell has no (working) Permissions API for geolocation.
+export async function geolocationPermission(): Promise<GeoPermission> {
+  if (!("permissions" in navigator)) return "unknown";
   try {
     const status = await navigator.permissions.query({ name: "geolocation" });
-    return status.state === "granted";
+    return status.state;
   } catch {
-    return false;
+    return "unknown";
   }
+}
+
+// Automatic lookup when a new charge entry is opened (Wunsch vom 11.11.2026): ask
+// unless the user has explicitly blocked location access. Gating on "granted" (as
+// before) never fired in Opera on Android, which keeps reporting "prompt" - so the
+// location was only captured by tapping the pin.
+export function mayAutoLocate(state: GeoPermission): boolean {
+  return state !== "denied";
+}
+
+// Merges a lookup result into the form row without overwriting what the user typed:
+// the station name only fills an empty field, the coordinates only an empty position
+// (so they are saved with the entry even when the user named the station themselves).
+export function applyLocation(row: ChargeRow, result: LocateResult): ChargeRow {
+  const hasCoords = row.lat !== "" && row.lon !== "" && Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lon));
+  return {
+    ...row,
+    lat: hasCoords ? row.lat : result.lat,
+    lon: hasCoords ? row.lon : result.lon,
+    ladestation: row.ladestation || result.ladestation,
+  };
 }
 
 // Reverse-geocodes to a human-readable "Straße Nr., PLZ Stadt" via OpenStreetMap/Nominatim

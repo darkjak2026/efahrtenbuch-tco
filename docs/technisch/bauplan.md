@@ -2,7 +2,7 @@
 
 > Erzeugt aus `docs/technisch/bauplan.json` mit `npm run bauplan` – nicht von Hand bearbeiten.
 
-Stand der Dokumentation: 25.10.2026 | 00:46
+Stand der Dokumentation: 13.11.2026 | 13:21
 
 ## Teil 1 – Beschreibung der App
 
@@ -28,7 +28,7 @@ Eigener Server bei netcup (VPS) mit Caddy und PostgreSQL, GitHub (Quellcode), Op
 
 ### 1.5 Herausforderungen – Vergangenheit
 
-Am ersten Tag (05.07.2026) entstanden über 50 Änderungen in Folge, vor allem am Eingabeformular; mehrere Bedienideen (Schieberegler, Drehrad für die Dauer) wurden gebaut und wieder verworfen. Fehler, die erst im Alltag auffielen: der Excel-Export stürzte über den Jahreswechsel ab, die Preisautomatik blieb nach dem ersten Rechnen hängen, eine km-Schätzformel kopierte nur alte Werte. Zwei Stresstests im September 2026 fanden u. a. sich gegenseitig überschreibende Speicherungen von zwei Handys; seitdem gibt es eine Konfliktprüfung (optimistisches Sperren).
+Am ersten Tag (05.07.2026) entstanden über 50 Änderungen in Folge, vor allem am Eingabeformular; mehrere Bedienideen (Schieberegler, Drehrad für die Dauer) wurden gebaut und wieder verworfen. Fehler, die erst im Alltag auffielen: der Excel-Export stürzte über den Jahreswechsel ab, die Preisautomatik blieb nach dem ersten Rechnen hängen, eine km-Schätzformel kopierte nur alte Werte. Zwei Stresstests im September 2026 fanden u. a. sich gegenseitig überschreibende Speicherungen von zwei Handys; seitdem gibt es eine Konfliktprüfung (optimistisches Sperren); seit 2.56.02 führt die App die Änderungen beider Handys zusammen, statt die des zweiten zu verwerfen.
 
 ### 1.5 Herausforderungen – Gegenwart
 
@@ -74,7 +74,7 @@ Per Funk fragt die App fremde Stationen: direkt vom Handy Open Charge Map („we
 
 *Gerät · Browser-Geolocation (GPS)*
 
-Die Boje ist das GPS des Handys (Geolocation). Beim Erfassen eines Ladevorgangs liest die App den Standort – automatisch nur, wenn die Erlaubnis schon früher erteilt wurde, sonst per Knopf. Mit den Koordinaten wird über den Funkmast die Ladesäule bzw. Adresse gesucht. Funktioniert nur über eine sichere Verbindung (HTTPS).
+Die Boje ist das GPS des Handys (Geolocation). Beim Öffnen eines neuen Ladevorgangs liest die App den Standort automatisch (seit 2.56.00; nur eine ausdrückliche Sperre im Browser stoppt das, sonst fragt der Browser einmal nach) und speichert die Koordinaten mit dem Eintrag; die Positionsnadel bleibt als Zweitweg. Die gefundene Adresse glimmt kurz auf. Mit den Koordinaten wird über den Funkmast die Ladesäule bzw. Adresse gesucht. Funktioniert nur über eine sichere Verbindung (HTTPS).
 
 ### Ladekran – Datenimport
 
@@ -136,6 +136,8 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 - 24.10.2026: km-Stand ohne Ladevorgang (2.52.00)
 - 25.10.2026: Fixkosten wie abgebucht statt tagesgenau (2.53.00)
 - 25.10.2026: Erklärung „So entsteht der Preis je km“ (2.55.00)
+- 11.11.2026: Ladestandort wird automatisch erfasst, Adresse glimmt auf (2.56.00)
+- 13.11.2026: Gleichzeitiges Speichern von zwei Handys wird zusammengeführt (2.56.02)
 
 ## Glossar
 
@@ -150,7 +152,7 @@ Ein Timer (systemd, täglich 23:50, zusätzlich bei jedem Deploy) ruft POST /api
 - **Endpunkt (Endpoint):** Eine feste Adresse auf dem Server, die eine bestimmte Anfrage beantwortet, hier /api/data.
 - **JSON:** Einfaches Textformat für strukturierte Daten; lesbar für Mensch und Maschine.
 - **PIN:** Gemeinsame Geheimzahl des Haushalts. Ersetzt Benutzerkonten: wer den PIN kennt, sieht und ändert alles.
-- **Optimistisches Sperren (Optimistic Locking):** Jeder Datenstand trägt eine Zählnummer. Wer mit einer veralteten Nummer speichern will, wird abgewiesen – so überschreiben sich zwei Handys nicht still.
+- **Optimistisches Sperren (Optimistic Locking):** Jeder Datenstand trägt eine Zählnummer. Wer mit einer veralteten Nummer speichern will, wird abgewiesen – so überschreiben sich zwei Handys nicht still. Seit 2.56.02 holt die App dann den neuen Stand, führt beide Änderungen zusammen (neue und gelöschte Einträge beider Seiten bleiben, bei demselben Feld gilt die eigene Änderung) und speichert erneut.
 - **localStorage:** Kleiner Speicher im Browser, nur auf diesem einen Gerät. Hier für PIN und Notiz-Entwurf.
 - **Umgebungsvariable:** Einstellung, die dem Programm von außen mitgegeben wird, statt im Code zu stehen – der übliche Ort für Passwörter und Schlüssel.
 - **Geolocation:** Standortabfrage des Browsers (GPS, WLAN, Mobilfunk); braucht die Erlaubnis der Nutzerin bzw. des Nutzers.

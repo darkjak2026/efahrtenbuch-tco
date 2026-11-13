@@ -1,6 +1,6 @@
 {
   "app": "eFahrtenbuch",
-  "stand": "25.10.2026 | 00:46",
+  "stand": "13.11.2026 | 13:21",
   "beschreibung": {
     "kurz": "Das eFahrtenbuch ist ein gemeinsames Ladeprotokoll für die zwei E-Autos der Familie Liese-Held (Leapmotor B10 „BIO-Leapy“ und T03 „Leapy“). Aus jedem Ladevorgang und den Fixkosten rechnet es laufend aus, was ein gefahrener Kilometer wirklich kostet ([TCO](g:tco)). Die App läuft im Handy-Browser, die Daten liegen seit dem 08.10.2026 im [Laderaum](b:laderaum) des eigenen Schiffs auf dem eigenen Server ([Rumpf](b:rumpf)).",
     "ausgangslage_ziel": "Am Anfang stand eine einzelne HTML-Datei, die nur auf einem Gerät speichern konnte. Ziel war, dass beide Haushaltsmitglieder vom eigenen Handy aus Ladevorgänge eintragen und dieselben Zahlen sehen. Deshalb wurde die App am 05.07.2026 auf [Next.js](g:nextjs) umgebaut, zunächst gemietet bei [Vercel](g:vercel) mit Upstash-[Redis](g:redis) als Speicher. Am 08.10.2026 zog sie auf den eigenen Server um (Daten in der EU, eigene Sicherung, keine Abhängigkeit von zwei fremden Anbietern). Bewusst klein gehalten: ein gemeinsamer [PIN](g:pin) statt Benutzerkonten, ein einziger Datensatz.",
@@ -8,7 +8,7 @@
     "backup_datenschutz": "Jede Nacht um 03:30 sichert der Server die Datenbank mit, die Sicherungen bleiben 30 Tage und werden zusätzlich auf den PC geholt ([Rettungsboot](b:rettungsboot)); dazu kommt der Handexport als [JSON](g:json). Die Daten (Ladeorte mit Koordinaten, km-Stände, Kosten) liegen auf dem eigenen Server in Österreich (EU), ohne Auftragsverarbeiter für die Speicherung. Zugang nur mit dem Haushalts-[PIN](g:pin) aus dem [Tresor](b:tresor). Beim GPS-Abruf gehen die Koordinaten direkt vom Handy an Open Charge Map und OpenStreetMap ([Funk](b:funk)). Persönliche Vertragsdaten (Beträge, Kennzeichen, FIN, Vertragsnummern) stehen nur im Datensatz hinter dem PIN, nie im öffentlichen Code: Sie kommen über eine lokale, ausgeschlossene Datei und den [Ladekran](b:ladekran) für Vertragsdaten an Bord.",
     "abhaengigkeiten": "Eigener Server bei netcup ([VPS](g:vps)) mit [Caddy](g:caddy) und [PostgreSQL](g:postgres), GitHub (Quellcode), Open Charge Map und Nominatim/OpenStreetMap (Ladestation und Adresse zum Standort), cdnjs (Excel- und PDF-Bausteine). Fällt der Server aus, steht die App; fallen die anderen aus, fehlen nur Komfortfunktionen.",
     "herausforderungen": {
-      "vergangenheit": "Am ersten Tag (05.07.2026) entstanden über 50 Änderungen in Folge, vor allem am Eingabeformular; mehrere Bedienideen (Schieberegler, Drehrad für die Dauer) wurden gebaut und wieder verworfen. Fehler, die erst im Alltag auffielen: der Excel-Export stürzte über den Jahreswechsel ab, die Preisautomatik blieb nach dem ersten Rechnen hängen, eine km-Schätzformel kopierte nur alte Werte. Zwei Stresstests im September 2026 fanden u. a. sich gegenseitig überschreibende Speicherungen von zwei Handys; seitdem gibt es eine Konfliktprüfung ([optimistisches Sperren](g:optimistic-locking)).",
+      "vergangenheit": "Am ersten Tag (05.07.2026) entstanden über 50 Änderungen in Folge, vor allem am Eingabeformular; mehrere Bedienideen (Schieberegler, Drehrad für die Dauer) wurden gebaut und wieder verworfen. Fehler, die erst im Alltag auffielen: der Excel-Export stürzte über den Jahreswechsel ab, die Preisautomatik blieb nach dem ersten Rechnen hängen, eine km-Schätzformel kopierte nur alte Werte. Zwei Stresstests im September 2026 fanden u. a. sich gegenseitig überschreibende Speicherungen von zwei Handys; seitdem gibt es eine Konfliktprüfung ([optimistisches Sperren](g:optimistic-locking)); seit 2.56.02 führt die App die Änderungen beider Handys zusammen, statt die des zweiten zu verwerfen.",
       "gegenwart": "Seit 08.10.2026 misst das Monitoring (Teil 3) jede Nacht den Zustand von Server und Daten; Alarme bei Ausfällen gibt es noch nicht – auffallen tut ein Problem beim Blick in den Bauplan oder beim Öffnen der App. Der Routendienst für die Planung wartet noch auf seinen Schlüssel. Datenschutzfelder im Projekt-Pass sind nach dem Umzug neu zu bewerten. Für den BIO-Leapy fehlen noch Leasing- und Stichtagsdaten (noch nicht übergeben).",
       "zukunft": "Regelmäßige Updates von Node.js (Debian-Pakete) und Next.js, ein Blick in das Monitoring nach jedem Deploy und bei Gelegenheit eine Benachrichtigung, wenn Sicherung oder Schnappschuss ausfallen. Der eine Datensatz wächst bis Leasingende auf einige hundert Ladevorgänge – unkritisch, aber jedes Speichern schickt den ganzen Datensatz; die Verlaufskurve der Datensatzgröße zeigt, wann sich ein Umbau lohnt."
     }
@@ -66,7 +66,7 @@
       "technik": "Browser-Geolocation (GPS)",
       "ort": "geraet",
       "vorhanden": true,
-      "text": "Die Boje ist das GPS des Handys ([Geolocation](g:geolocation)). Beim Erfassen eines Ladevorgangs liest die App den Standort – automatisch nur, wenn die Erlaubnis schon früher erteilt wurde, sonst per Knopf. Mit den Koordinaten wird über den [Funkmast](b:funk) die Ladesäule bzw. Adresse gesucht. Funktioniert nur über eine sichere Verbindung (HTTPS)."
+      "text": "Die Boje ist das GPS des Handys ([Geolocation](g:geolocation)). Beim Öffnen eines neuen Ladevorgangs liest die App den Standort automatisch (seit 2.56.00; nur eine ausdrückliche Sperre im Browser stoppt das, sonst fragt der Browser einmal nach) und speichert die Koordinaten mit dem Eintrag; die Positionsnadel bleibt als Zweitweg. Die gefundene Adresse glimmt kurz auf. Mit den Koordinaten wird über den [Funkmast](b:funk) die Ladesäule bzw. Adresse gesucht. Funktioniert nur über eine sichere Verbindung (HTTPS)."
     },
     {
       "id": "ladekran",
@@ -191,7 +191,7 @@
     {
       "id": "optimistic-locking",
       "begriff": "Optimistisches Sperren (Optimistic Locking)",
-      "erklaerung": "Jeder Datenstand trägt eine Zählnummer. Wer mit einer veralteten Nummer speichern will, wird abgewiesen – so überschreiben sich zwei Handys nicht still."
+      "erklaerung": "Jeder Datenstand trägt eine Zählnummer. Wer mit einer veralteten Nummer speichern will, wird abgewiesen – so überschreiben sich zwei Handys nicht still. Seit 2.56.02 holt die App dann den neuen Stand, führt beide Änderungen zusammen (neue und gelöschte Einträge beider Seiten bleiben, bei demselben Feld gilt die eigene Änderung) und speichert erneut."
     },
     {
       "id": "localstorage",
@@ -383,6 +383,14 @@
     {
       "datum": "2026-10-25",
       "titel": "Erklärung „So entsteht der Preis je km“ (2.55.00)"
+    },
+    {
+      "datum": "2026-11-11",
+      "titel": "Ladestandort wird automatisch erfasst, Adresse glimmt auf (2.56.00)"
+    },
+    {
+      "datum": "2026-11-13",
+      "titel": "Gleichzeitiges Speichern von zwei Handys wird zusammengeführt (2.56.02)"
     }
   ],
   "offen": [

@@ -4,6 +4,7 @@ import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { clearStoredPin, fetchData, getStoredPin, postData, storePin } from "@/lib/client-api";
 import { defaultData, visibleMonths } from "@/lib/data";
+import { SaveSync } from "@/lib/saveSync";
 import { generateTestData } from "@/lib/testData";
 import type { AppData, ChargeRow } from "@/lib/types";
 import PinGate from "./PinGate";
@@ -75,12 +76,7 @@ export default function AppClient() {
   // Seitliches Wischen wechselt den Menüpunkt (Reihenfolge wie im Menü unten)
   const wischStart = useRef<{ x: number; y: number } | null>(null);
 
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const skipNextSave = useRef(true);
-  // Set while a change is debounced/in flight to Redis, cleared once it lands
-  // (or is known lost via a conflict) - beforeunload below warns only then,
-  // not on every stale leftover timer id.
-  const unsavedRef = useRef(false);
+  const lastRefreshRef = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const celebrateShowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const celebrateClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -92,6 +88,17 @@ export default function AppClient() {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2400);
   }, []);
+
+  // Speichern (v2.56.02): der Ablauf steht in lib/saveSync.ts (ohne React, mit Tests). Er hält den
+  // eigenen Stand, speichert immer nur einen Vorgang gleichzeitig und führt bei einem Konflikt mit
+  // einem anderen Gerät beide Änderungen zusammen (lib/merge.ts). Die Anzeige bekommt den Stand über onData.
+  const [sync] = useState(
+    () => new SaveSync({ post: postData, onData: () => {}, notify: () => {}, onGiveUp: () => {} }, defaultData())
+  );
+  // Rückmeldungen anhängen, bevor die erste Anmeldung Daten lädt (Effekte laufen in dieser Reihenfolge).
+  useEffect(() => {
+    sync.connect({ post: postData, onData: setData, notify: showToast, onGiveUp: () => setSaveConflict(true) });
+  }, [sync, showToast]);
 
   // The reward for finishing a Nach-Erfassung: the dialog has already closed by
   // the time this fires, so the glow/confetti lands on the entry as it settles
@@ -115,8 +122,8 @@ export default function AppClient() {
         failedPinAttempts.current = 0;
         storePin(candidatePin);
         setPin(candidatePin);
-        skipNextSave.current = true;
-        setData(result.data);
+        sync.setPin(candidatePin);
+        sync.load(result.data);
         setStatus("ready");
       } else if (result.status === 401) {
         clearStoredPin();
@@ -147,7 +154,7 @@ export default function AppClient() {
     } finally {
       setPinBusy(false);
     }
-  }, [pinLockedUntil]);
+  }, [pinLockedUntil, sync]);
 
   useEffect(() => {
     // ?testmode=1 skips the PIN gate and loads a full fictional dataset spanning
@@ -155,9 +162,8 @@ export default function AppClient() {
     // save effect below). Safe to try even on the live URL: nothing real is ever
     // touched or exposed, since the data shown is entirely made up.
     if (new URLSearchParams(window.location.search).get("testmode") === "1") {
-      skipNextSave.current = true;
       queueMicrotask(() => {
-        setData(generateTestData());
+        sync.load(generateTestData());
         setTestMode(true);
         setStatus("ready");
       });
@@ -173,67 +179,74 @@ export default function AppClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Speichern einschalten, sobald angemeldet - nicht im Testmodus und nicht nach einem aufgegebenen Konflikt.
   useEffect(() => {
-    if (testMode) return; // fiktive Testdaten werden nie gespeichert
-    if (status !== "ready" || !pin) return;
-    // Ein erkannter Konflikt (siehe unten) stoppt weitere automatische
-    // Speicherversuche - die lokalen Daten sind ab dann bekanntermaßen
-    // veraltet, ein weiterer Versuch würde nur denselben Konflikt erneut
-    // auslösen, ohne dass die Nutzerin etwas davon mitbekommt.
-    if (saveConflict) return;
-    if (skipNextSave.current) {
-      skipNextSave.current = false;
-      return;
-    }
-    unsavedRef.current = true;
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      const result = await postData(pin, data);
-      if (result.ok) {
-        // Nur die vom Server bestätigte Versionsnummer übernehmen (nicht das
-        // ganze Objekt ersetzen) - falls währenddessen schon weiterbearbeitet
-        // wurde, bleiben diese neueren Änderungen erhalten, zählen aber ab
-        // jetzt korrekt gegen die neue Server-Version statt einen Konflikt
-        // mit dem eigenen, gerade erfolgreichen Speichervorgang zu erzeugen.
-        unsavedRef.current = false;
-        skipNextSave.current = true;
-        setData((prev) => (prev._rev === data._rev ? { ...prev, _rev: result.data._rev } : prev));
-      } else if (result.conflict) {
-        // Die Änderung ist bekanntermaßen nicht angekommen - das rote Banner
-        // bleibt sichtbar, bis neu geladen wird; ein beforeunload-Hinweis
-        // würde hier nichts zusätzlich retten.
-        unsavedRef.current = false;
-        setSaveConflict(true);
-      } else {
-        showToast("Speichern fehlgeschlagen — bitte Verbindung prüfen");
-      }
-    }, 800);
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
+    sync.setEnabled(status === "ready" && !!pin && !testMode && !saveConflict);
+  }, [sync, status, pin, testMode, saveConflict]);
+
+  // Etwas zu speichern? Dann nach kurzer Ruhe (800 ms) losschicken. Eine reine Änderung der Revision
+  // zählt nicht (Inhalt gleich dem bestätigten Stand).
+  useEffect(() => {
+    if (!sync.isEnabled() || sync.isClean()) return;
+    const t = setTimeout(() => void sync.flush(), 800);
+    return () => clearTimeout(t);
+  }, [data, sync, status, pin, testMode, saveConflict]);
+
+  // Beim Zurückkehren in die App den Stand vom Server holen, wenn ein anderes Gerät gespeichert hat.
+  // Nicht, solange eigene Änderungen offen sind (dort wird beim Speichern zusammengeführt), ein Dialog
+  // offen ist oder gerade getippt wird.
+  const refresh = useCallback(async () => {
+    const stoert = () => {
+      if (document.querySelector(".fab-overlay, .bp-overlay, .klappe-overlay")) return true;
+      const el = document.activeElement;
+      return !!el && ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName);
     };
-  }, [data, pin, status, testMode, saveConflict, showToast]);
+    if (!pin || !sync.isEnabled() || !sync.isClean() || stoert()) return;
+    if (Date.now() - lastRefreshRef.current < 10_000) return;
+    lastRefreshRef.current = Date.now();
+    const r = await fetchData(pin).catch(() => null);
+    if (!r || !r.ok || !r.data || stoert()) return;
+    // adoptRemote prüft noch einmal, dass inzwischen nichts Eigenes dazukam
+    if (sync.adoptRemote(r.data)) showToast("Neuer Stand von einem anderen Gerät geladen");
+  }, [sync, pin, showToast]);
+
+  useEffect(() => {
+    const onVisibility = () => {
+      // Beim Wegwechseln sofort speichern (mobile Browser frieren Zeitgeber ein), beim Zurückkommen nachladen.
+      if (document.visibilityState === "hidden") void sync.flush();
+      else void refresh();
+    };
+    const onOnline = () => {
+      sync.resetRetries();
+      void sync.flush();
+      void refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("online", onOnline);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("online", onOnline);
+      sync.stop();
+    };
+  }, [sync, refresh]);
 
   // Warnt vor dem Schließen/Neuladen des Tabs, solange eine Änderung noch nicht
   // bestätigt gespeichert ist (die 800ms-Debounce-Lücke oder ein laufender
   // Speicher-Request) - sonst geht ein Eintrag beim hastigen Wegtippen
-  // kommentarlos verloren.
+  // kommentarlos verloren. Im Testmodus und nach einem aufgegebenen Konflikt gibt es nichts zu retten.
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      if (!unsavedRef.current) return;
+      if (!sync.isEnabled() || sync.isClean()) return;
       e.preventDefault();
       e.returnValue = "";
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+  }, [sync]);
 
-  const updateData = useCallback((fn: (d: AppData) => void) => {
-    setData((prev) => {
-      const next = structuredClone(prev);
-      fn(next);
-      return next;
-    });
-  }, []);
+  // Alle Änderungen der Oberfläche laufen hier durch und bauen auf dem jüngsten eigenen Stand auf,
+  // damit mehrere Änderungen kurz hintereinander nicht aneinander vorbeigehen.
+  const updateData = useCallback((fn: (d: AppData) => void) => sync.edit(fn), [sync]);
 
   if (status === "loading") {
     return <div className="loading-screen">Lade…</div>;
@@ -281,7 +294,7 @@ export default function AppClient() {
       )}
       {saveConflict && (
         <div className="conflict-banner">
-          ⚠️ Jemand anderes hat zwischenzeitlich auf einem anderen Gerät gespeichert. Deine letzten Änderungen hier
+          ⚠️ Das Speichern ist mehrfach mit einem anderen Gerät zusammengestoßen. Deine letzten Änderungen hier
           wurden nicht übernommen, damit nichts überschrieben wird.
           <button type="button" onClick={() => window.location.reload()}>
             Seite neu laden

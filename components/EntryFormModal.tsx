@@ -14,7 +14,7 @@ import {
   reichweiteColorClass,
   dateRangeMax,
 } from "@/lib/data";
-import { hasGeolocationPermission, locateStation } from "@/lib/gps";
+import { applyLocation, geolocationPermission, locateStation, mayAutoLocate } from "@/lib/gps";
 import type { AppData, ChargeRow, VehicleKey } from "@/lib/types";
 import {
   BatteryOutlineIcon,
@@ -104,6 +104,15 @@ export default function EntryFormModal({
     return min > 0 && min < 24 * 60 ? { ...initial, dauer: minutesToDuration(min) } : initial;
   });
   const [locating, setLocating] = useState(false);
+  // Standort gefunden und übernommen: die Adresse glimmt kurz auf (Wunsch vom 11.11.2026).
+  const [stationGlimm, setStationGlimm] = useState(false);
+  const glimmTimer = useRef<number | undefined>(undefined);
+  const glimmStation = () => {
+    window.clearTimeout(glimmTimer.current);
+    setStationGlimm(true);
+    glimmTimer.current = window.setTimeout(() => setStationGlimm(false), 1700);
+  };
+  useEffect(() => () => window.clearTimeout(glimmTimer.current), []);
   // Guards against a fast double-click/double-tap on "Speichern" creating a
   // duplicate entry. A ref (checked synchronously, before React re-renders)
   // is the actual guard; the state below only drives the visible disabled look.
@@ -140,23 +149,23 @@ export default function EntryFormModal({
   const chargeStart = new Date(openedAt.getTime() + 3 * 60000);
   const chargeStartLabel = chargeStart.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
-  // On opening the add-entry form, silently try GPS — but only if permission
-  // was already granted previously, so no permission prompt pops up unasked.
-  // The manual locate button remains the fallback if this doesn't fire or fails.
+  // On opening the add-entry form, capture the location automatically (Wunsch vom
+  // 11.11.2026): the pin no longer needs a tap. Only an explicit "blocked" stops it;
+  // otherwise the browser asks once (and stays silent once the user allowed it).
+  // The manual locate button remains the fallback if this fails or is blocked.
   useEffect(() => {
     if (!autoLocate) return;
     let cancelled = false;
-    hasGeolocationPermission().then((granted) => {
-      if (!granted || cancelled) return;
+    geolocationPermission().then((state) => {
+      if (!mayAutoLocate(state) || cancelled) return;
       setLocating(true);
       locateStation(
         "",
         (result) => {
           if (cancelled) return;
           setLocating(false);
-          setForm((f) =>
-            f.ladestation ? f : { ...f, lat: result.lat, lon: result.lon, ladestation: result.ladestation }
-          );
+          setForm((f) => applyLocation(f, result));
+          glimmStation();
           showToast(result.toast);
         },
         () => {
@@ -492,6 +501,7 @@ export default function EntryFormModal({
           (result) => {
             setLocating(false);
             patch({ lat: result.lat, lon: result.lon, ladestation: result.ladestation });
+            glimmStation();
             showToast(result.toast);
           },
           (msg) => {
@@ -526,7 +536,7 @@ export default function EntryFormModal({
           onChange={(e) => patch({ datum: e.target.value })} />{" "}
         an der Ladestation{" "}
         <span className="sentence-station">
-          <input type="text" className="sentence-field sentence-field-wide" placeholder="Ladestation" maxLength={500}
+          <input type="text" className={"sentence-field sentence-field-wide" + (stationGlimm ? " station-glimm" : "")} placeholder="Ladestation" maxLength={500}
             value={form.ladestation} onChange={(e) => patch({ ladestation: e.target.value })} />
           {locateBtn}
         </span>{" "}
@@ -669,7 +679,7 @@ export default function EntryFormModal({
                 <PlugIcon /> Ladestation
               </label>
               <div className="station-cell">
-                <input type="text" placeholder="Name der Ladestation" maxLength={500} value={form.ladestation}
+                <input type="text" className={stationGlimm ? "station-glimm" : undefined} placeholder="Name der Ladestation" maxLength={500} value={form.ladestation}
                   onChange={(e) => patch({ ladestation: e.target.value })} />
                 {locateBtn}
               </div>
